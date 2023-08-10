@@ -3,6 +3,6 @@
     <string name="new_game">New game</string>
     <string name="load_game">Load game</string>
     <string name="start">Start</string>
-    <string name="player_name">Player name</string>
+    <string name="player">Player</string>
     <string name="add_player">Add player</string>
 </resources>

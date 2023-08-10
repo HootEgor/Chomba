@@ -1,13 +1,13 @@
 package com.example.chomba
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import com.example.chomba.data.User
-import kotlin.math.log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.chomba.data.Player
+import kotlinx.coroutines.launch
 
-class GameViewModel(): ViewModel() {
+class GameViewModel(application: Application): AndroidViewModel(application) {
 
     var uiState = mutableStateOf(GameUiState())
         private set
@@ -16,9 +16,46 @@ class GameViewModel(): ViewModel() {
         uiState.value = uiState.value.copy(currentPage = page)
     }
 
-    fun addUser() {
-        val user = User()
-        uiState.value = uiState.value.copy(userList = (uiState.value.userList + user).toMutableList())
+    fun addPlayer() {
+        val player = Player()
+        player.name = "Player ${uiState.value.playerList.size + 1}"
+        uiState.value = uiState.value.copy(playerList = uiState.value.playerList + player)
+
+    }
+
+    fun getNumberOfVisiblePlayers(): Int {
+        return uiState.value.playerList.filter { it.visible }.size
+    }
+
+    fun removePlayer(player: Player) {
+        val updatedPlayerList = uiState.value.playerList.map { existingPlayer ->
+            if (existingPlayer == player) {
+                existingPlayer.copy(visible = false)
+            } else {
+                existingPlayer
+            }
+        }
+
+        uiState.value = uiState.value.copy(playerList = updatedPlayerList)
+    }
+
+    fun updatePlayer(player: Player, newName: String) {
+        val updatedPlayerList = uiState.value.playerList.map { existingPlayer ->
+            if (existingPlayer == player) {
+                existingPlayer.copy(name = newName)
+            } else {
+                existingPlayer
+            }
+        }
+        uiState.value = uiState.value.copy(playerList = updatedPlayerList)
+    }
+
+    fun startGame() {
+        viewModelScope.launch {
+            val updatedPlayerList = uiState.value.playerList.filter { it.visible }
+            uiState.value = uiState.value.copy(playerList = updatedPlayerList)
+            setCurrentPage(2)
+        }
     }
 
 }

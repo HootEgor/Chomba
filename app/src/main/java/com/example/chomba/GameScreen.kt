@@ -6,10 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import com.example.chomba.pages.HomePage
 import com.example.chomba.pages.NewGamePage
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun GameScreen(
-    viewModel: GameViewModel = GameViewModel()
+    viewModel: GameViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState
     when(uiState.currentPage) {
@@ -18,6 +19,9 @@ fun GameScreen(
         }
         1 -> {
             NewGamePage(viewModel = viewModel)
+        }
+        else -> {
+            HomePage(viewModel = viewModel)
         }
     }
 
