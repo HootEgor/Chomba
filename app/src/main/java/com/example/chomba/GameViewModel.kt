@@ -2,6 +2,7 @@ package com.example.chomba
 
 import android.app.Application
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.data.Player
@@ -39,10 +40,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         uiState.value = uiState.value.copy(playerList = updatedPlayerList)
     }
 
-    fun updatePlayer(player: Player, newName: String) {
+    fun updatePlayer(player: Player, newName: String, newColor: Color) {
         val updatedPlayerList = uiState.value.playerList.map { existingPlayer ->
             if (existingPlayer == player) {
-                existingPlayer.copy(name = newName)
+                existingPlayer.copy(name = newName, color = newColor)
             } else {
                 existingPlayer
             }

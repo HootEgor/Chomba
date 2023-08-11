@@ -1,6 +1,5 @@
 package com.example.chomba.pages
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Arrangement
@@ -13,26 +12,32 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
 import com.example.chomba.data.Player
@@ -41,6 +46,9 @@ import com.example.chomba.ui.theme.composable.BasicTextButton
 import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.ext.basicButton
+import com.github.skydoves.colorpicker.compose.ColorEnvelope
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
+import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -75,7 +83,9 @@ fun NewGamePage(
                             PlayerItem(
                                 player = item,
                                 onDelete = { viewModel.removePlayer(item)},
-                                onSave ={ viewModel.updatePlayer(item, it)}
+                                onSave = { name, color ->
+                                    viewModel.updatePlayer(item, name, color)
+                                }
                             )
                         }
                     }
@@ -114,10 +124,13 @@ fun PlayerItem(
     modifier: Modifier = Modifier,
     player: Player,
     onDelete: () -> Unit,
-    onSave: (String) -> Unit
+    onSave: (String, Color) -> Unit
 ){
     val userName = remember { mutableStateOf(player.name) }
     userName.value = player.name
+    val color = remember { mutableStateOf(player.color) }
+    color.value = player.color
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -127,7 +140,7 @@ fun PlayerItem(
             value = userName.value,
             onValueChange = { newValue ->
                 userName.value = newValue
-                onSave(newValue)
+                onSave(userName.value, color.value)
             },
             label = { Text(stringResource(R.string.player))},
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -141,11 +154,82 @@ fun PlayerItem(
             singleLine = true,
             textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
             trailingIcon = {
+                ColorPickerButton(
+                    startColor = color.value,
+                    onColorSelected = {
+                        color.value = it},
+                    saveColor = { onSave(userName.value, color.value)}
+                )
             }
         )
 
         IconButton(icon = R.drawable.baseline_delete_24,
             modifier = Modifier.fillMaxSize(),
             action = { onDelete() })
+    }
+}
+
+@Composable
+fun ColorPickerButton(
+    startColor: Color,
+    onColorSelected: (Color) -> Unit,
+    saveColor: () -> Unit
+) {
+    val selectedColor = remember { mutableStateOf(startColor) }
+    selectedColor.value = startColor
+    val showDialog = remember { mutableStateOf(false) }
+    val controller = rememberColorPickerController()
+
+    Column {
+        IconButton(
+            icon = R.drawable.baseline_square_24,
+            modifier = Modifier.size(24.dp),
+            action = {showDialog.value = true },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = selectedColor.value
+            ),
+            noIcon = true
+        )
+
+        if (showDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDialog.value = false
+                },
+                title = { },
+                text = {
+                    HsvColorPicker(
+                        modifier = Modifier.size(300.dp),
+                        controller = controller,
+                        onColorChanged = { colorEnvelope: ColorEnvelope ->
+                            selectedColor.value = colorEnvelope.color
+                            onColorSelected(selectedColor.value)
+                        },
+                        initialColor = startColor
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            saveColor()
+                            showDialog.value = false
+                        }
+                    ) {
+                        Text(text = stringResource(R.string.ok))
+                    }
+
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                        }
+                    ) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
+            )
+
+        }
     }
 }

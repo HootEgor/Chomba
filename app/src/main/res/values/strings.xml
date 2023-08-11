@@ -5,4 +5,7 @@
     <string name="start">Start</string>
     <string name="player">Player</string>
     <string name="add_player">Add player</string>
+    <string name="select">Select</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">Ok</string>
 </resources>
