@@ -57,6 +57,7 @@ fun NewGamePage(
     viewModel: GameViewModel
 ){
     val uiState by viewModel.uiState
+    val playerList by viewModel.playerList
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -76,7 +77,7 @@ fun NewGamePage(
             Column(modifier = modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.Top) {
                 LazyColumn {
-                    items(uiState.playerList) { item ->
+                    items(playerList) { item ->
                         AnimatedVisibility(
                             visible = item.visible
                         ) {
@@ -111,7 +112,7 @@ fun NewGamePage(
                     modifier = modifier
                         .basicButton()
                         .padding(bottom = 16.dp),
-                    action = {viewModel.setCurrentPage(2)})
+                    action = {viewModel.startGame()})
             }
 
         }

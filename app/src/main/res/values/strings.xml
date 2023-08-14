@@ -8,4 +8,7 @@
     <string name="select">Select</string>
     <string name="cancel">Cancel</string>
     <string name="ok">Ok</string>
+    <string name="round">Round:</string>
+    <string name="next_round">Next round</string>
+    <string name="score_per_round">Score per round</string>
 </resources>
