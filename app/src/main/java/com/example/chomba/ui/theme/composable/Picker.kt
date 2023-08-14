@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.LocalContentColor
@@ -37,7 +38,7 @@ fun Picker(
     visibleItemsCount: Int = 3,
     textModifier: Modifier = Modifier,
     textStyle: TextStyle = LocalTextStyle.current,
-    dividerColor: Color = LocalContentColor.current,
+    dividerColor: Color = LocalContentColor.current
 ) {
 
     val visibleItemsMiddle = visibleItemsCount / 2
@@ -61,12 +62,29 @@ fun Picker(
         )
     }
 
+
+
+    var isScrollingStopped by remember { mutableStateOf(true) }
+
+    LaunchedEffect(listStartIndex){
+        if(isScrollingStopped)
+            listState.animateScrollToItem(listStartIndex)
+    }
+
     LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .map { index -> getItem(index + visibleItemsMiddle) }
+        snapshotFlow { listState.isScrollInProgress }
+            .map { isScrollingInProgress -> !isScrollingInProgress }
             .distinctUntilChanged()
-            .collect { item ->
-                state.selectedItem = item}
+            .collect { stopped ->
+                if (stopped) {
+                    val index = listState.firstVisibleItemIndex + visibleItemsMiddle
+                    val item = getItem(index)
+                    if (state.selectedItem != item) {
+                        state.selectedItem = item
+                    }
+                }
+                isScrollingStopped = stopped
+            }
     }
 
     Box(modifier = modifier) {
@@ -102,29 +120,7 @@ fun Picker(
             color = dividerColor,
             modifier = Modifier.offset(y = itemHeightDp * (visibleItemsMiddle + 1))
         )
-
     }
-
-    suspend fun resetToSelectedPosition(selectedIndex: Int) {
-        if (selectedIndex >= 0) {
-            // Calculate the scroll position to center the selected item
-            val scrollToIndex = listStartIndex + selectedIndex
-
-            // Scroll to the desired position
-            listState.animateScrollToItem(scrollToIndex)
-        }
-    }
-
-    if (state.selectedItem != items[startIndex]){
-        state.resetToItem = items[startIndex]
-    }
-
-    LaunchedEffect(state.resetToItem) {
-        val selectedIndex = items.indexOf(state.resetToItem)
-        resetToSelectedPosition(selectedIndex)
-        state.resetToItem = ""
-    }
-
 
 }
 
@@ -143,7 +139,6 @@ fun rememberPickerState() = remember { PickerState() }
 
 class PickerState() {
     var selectedItem by mutableStateOf("")
-    var resetToItem by mutableStateOf("")
 }
 
 

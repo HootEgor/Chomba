@@ -16,18 +16,20 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -39,7 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.chargemap.compose.numberpicker.ListItemPicker
+import androidx.compose.ui.unit.sp
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
 import com.example.chomba.data.Player
@@ -47,8 +49,12 @@ import com.example.chomba.data.getTotalScore
 import com.example.chomba.data.getZeroNum
 import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
+import com.example.chomba.ui.theme.composable.Picker
 import com.example.chomba.ui.theme.composable.TopBar
+import com.example.chomba.ui.theme.composable.rememberPickerState
 import com.example.chomba.ui.theme.ext.basicButton
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun GamePage(
@@ -178,7 +184,8 @@ fun PlayerCard(
                        }
                    }
                    Box(modifier = Modifier
-                           .weight(2f)){
+                           .weight(2f),
+                       contentAlignment = Alignment.Center){
                        Surface(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -191,15 +198,11 @@ fun PlayerCard(
                             shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.background,
                        ) {
-                           Box(
-                               contentAlignment = Alignment.Center,
-                           ){
-                               ScorePicker(
-                                   modifier = Modifier.fillMaxSize(),
-                                   onSelect = { onSave(it)},
-                                   startScore = player.scorePerRound
-                               )
-                           }
+                           ScorePicker(
+                               modifier = Modifier.fillMaxSize(),
+                               onSelect = { onSave(it)},
+                               startScore = player.scorePerRound
+                           )
                        }
                    }
                }
@@ -280,39 +283,26 @@ fun ScorePicker(
     modifier: Modifier = Modifier,
     onSelect: (Int) -> Unit,
     startScore: Int,
-){
-    val scores = (0..420)
-    val pickerValue = remember { mutableStateOf(0) }
-
-    NumberPicker(
-        value = pickerValue.value,
-        range = scores,
-        onValueChange = {
-            pickerValue.value = it
-            onSelect(it)
-        }
-    )
-}
-
-@Composable
-fun NumberPicker(
-    modifier: Modifier = Modifier,
-    label: (Int) -> String = {
-        it.toString()
-    },
-    value: Int,
-    onValueChange: (Int) -> Unit,
-    dividersColor: Color = MaterialTheme.colorScheme.primary,
-    range: Iterable<Int>,
-    textStyle: TextStyle = LocalTextStyle.current,
 ) {
-    ListItemPicker(
-        modifier = modifier,
-        label = label,
-        value = value,
-        onValueChange = onValueChange,
-        dividersColor = dividersColor,
-        list = range.toList(),
-        textStyle = textStyle
+    val scores = remember { (0..420).map { it.toString() } }
+    val pickerValue = rememberPickerState()
+
+    LaunchedEffect(startScore) {
+        pickerValue.selectedItem = startScore.toString()
+    }
+
+    LaunchedEffect(pickerValue.selectedItem) {
+        onSelect(pickerValue.selectedItem.toIntOrNull() ?: startScore)
+    }
+
+    Picker(
+        state = pickerValue,
+        items = scores,
+        visibleItemsCount = 3,
+        modifier = modifier.fillMaxSize(),
+        textModifier = Modifier.padding(5.dp),
+        textStyle = TextStyle(fontSize = 16.sp),
+        startIndex = scores.indexOf(startScore.toString())
     )
 }
+
