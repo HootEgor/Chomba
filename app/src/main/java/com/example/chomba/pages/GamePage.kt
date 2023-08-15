@@ -1,6 +1,7 @@
 package com.example.chomba.pages
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -153,7 +155,7 @@ fun GamePage(
 
         AlertDialog(
             onDismissRequest = { setDeclarer.value = false },
-            title = { Text(text = stringResource(R.string.next_round), style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(text = stringResource(R.string.set_declarer), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Surface(shape = RoundedCornerShape(4.dp),
                     color = MaterialTheme.colorScheme.surface,
@@ -230,12 +232,8 @@ fun GamePage(
             onDismissRequest = { nextRound.value = false },
             title = { Text(text = stringResource(R.string.next_round), style = MaterialTheme.typography.headlineSmall) },
             text = {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(1),
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    items(playerList) { player ->
+                Column {
+                    for(player in playerList){
                         Text(text = player.name + " : " + player.scorePerRound.toString(),
                             style = MaterialTheme.typography.titleMedium,
                             textAlign = TextAlign.Center)
@@ -347,7 +345,8 @@ fun PlayerCard(
                contentAlignment = Alignment.Center) {
                CircularChart(
                    modifier = Modifier
-                       .fillMaxSize(0.75f)
+                          .fillMaxSize(0.75f),
+                   pressModifier = Modifier
                        .combinedClickable(
                            onClick = {},
                            onLongClick = {
@@ -371,8 +370,11 @@ fun ScoreListAlert(
     setVisible: (Boolean) -> Unit,
 ){
     AlertDialog(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.7f),
         onDismissRequest = { setVisible(false)},
-        title = { Text(text = stringResource(R.string.winner), style = MaterialTheme.typography.headlineSmall) },
+        title = { Text(text = stringResource(R.string.player_score_list) +" "+ player.name, style = MaterialTheme.typography.headlineSmall) },
         text = {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(1),
@@ -418,6 +420,7 @@ fun ScoreCard(
 @Composable
 fun CircularChart(
     modifier: Modifier,
+    pressModifier: Modifier,
     value: Int,
     maxValue: Int,
     color: Color,
@@ -468,33 +471,40 @@ fun CircularChart(
             )
         }
 
-        Column (
+        Surface(
             modifier = Modifier
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Text(
-                text = value.toString(),
-                style = MaterialTheme.typography.displaySmall
-            )
-
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(0.5f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
+            shape = CircleShape,
+            color = Color.Transparent,
+            content = {Column (
+                modifier = pressModifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ){
-                items(zeroNum){
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .background(color = Color.Red, shape = CircleShape)
-                    )
+                Text(
+                    text = value.toString(),
+                    style = MaterialTheme.typography.displaySmall
+                )
+
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(0.5f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ){
+                    items(zeroNum){
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .background(color = Color.Red, shape = CircleShape)
+                        )
+                    }
                 }
-            }
 
 
-        }
+            }}
+        )
+
 
     }
 }
