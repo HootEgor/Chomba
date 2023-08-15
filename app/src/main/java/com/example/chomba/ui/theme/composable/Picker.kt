@@ -68,7 +68,7 @@ fun Picker(
 
     LaunchedEffect(listStartIndex){
         if(isScrollingStopped)
-            listState.animateScrollToItem(listStartIndex)
+            listState.scrollToItem(listStartIndex)
     }
 
     LaunchedEffect(listState) {

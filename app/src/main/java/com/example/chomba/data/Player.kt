@@ -4,20 +4,43 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import java.lang.reflect.GenericDeclaration
 
 data class Player(
     var visible: Boolean = true,
     var name: String = "",
     var color: Color = Color.Magenta,
     var scoreList: List<Score> = listOf(),
-    var scorePerRound: Int = 0
+    var scorePerRound: Int = 0,
+    var declaration: Int = 0,
 )
 
 fun Player.getTotalScore(): Int {
     var totalScore = 0
+    var zeroNum = 0
     for (score in scoreList) {
-        totalScore += score.value
+        if(score.type == 0) {
+            totalScore -= score.value
+            zeroNum++
+        }
+        else if(score.type == 1) {
+            totalScore += score.value
+        }
+
+        if (score.type == -3) {
+            totalScore -= score.value
+        }
+
+        if (score.type == 2 && score.value == 120) {
+            totalScore += score.value
+        }
+
+        if(zeroNum == 3) {
+            zeroNum = 0
+            totalScore = 0
+        }
     }
+
     return totalScore
 }
 
@@ -37,5 +60,36 @@ fun Player.getZeroNum(): Int {
         zeroNum = 0
     }
 
+    if (getTotalScore()==880)
+        zeroNum = 0
+
     return zeroNum
+}
+
+fun Player.getMissBarrel(): Int {
+    var missBarrel = 0
+    for (score in scoreList) {
+        if (score.type == -2) {
+            missBarrel++
+        }else if (score.type != 2){
+            missBarrel = 0
+        }
+
+        if(missBarrel == 4) {
+            missBarrel = 1
+        }
+    }
+
+    return missBarrel
+}
+
+fun Player.totalMissBarrel(): Int {
+    var missBarrel = 0
+    for (score in scoreList) {
+        if (score.type == -2) {
+            missBarrel++
+        }
+    }
+
+    return missBarrel
 }
