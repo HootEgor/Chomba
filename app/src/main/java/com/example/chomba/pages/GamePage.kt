@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -48,8 +49,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -125,14 +128,57 @@ fun GamePage(
 
         if(uiState.declarer != null){
             Row{
-                BasicIconButton(text = R.string.next_round,
-                    icon = R.drawable.baseline_border_color_24,
-                    modifier = Modifier.basicButton().weight(1f),
-                    action = {viewModel.makeDissolution()})
+                if(uiState.playerOnBarrel == null){
+                    val visible = remember { mutableStateOf(false) }
+                    BasicIconButton(text = R.string.dissolution,
+                        icon = R.drawable.baseline_border_color_24,
+                        modifier = Modifier
+                            .basicButton()
+                            .weight(1f),
+                        action = {visible.value = true})
+
+                    if(visible.value){
+                        AlertDialog(
+                            onDismissRequest = {visible.value = false},
+                            title = { Text(text = stringResource(R.string.make_dissolution), style = MaterialTheme.typography.headlineSmall) },
+                            text = {
+                                Text(text = stringResource(R.string.are_you_sure),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    textAlign = TextAlign.Center)
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = { visible.value= false
+                                        viewModel.makeDissolution()}
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.ok),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(
+                                    onClick = { visible.value= false}
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.cancel),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        )
+                    }
+
+                }
 
                 BasicIconButton(text = R.string.next_round,
                     icon = R.drawable.baseline_calculate_24,
-                    modifier = Modifier.basicButton().weight(1f),
+                    modifier = Modifier
+                        .basicButton()
+                        .weight(1f),
                     action = {nextRound.value = true})
             }
 
@@ -409,7 +455,7 @@ fun PlayerCard(
                    maxValue = 1000,
                    color = player.color,
                      zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
-                    else player.getZeroNum()
+                    else 0
                )
            }
         }
@@ -573,10 +619,12 @@ fun CircularChart(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ){
                     items(zeroNum){
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .background(color = Color.Red, shape = CircleShape)
+                        Image(
+                            painter = painterResource(
+                                id = R.drawable.ic_1200952
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
                         )
                     }
                 }

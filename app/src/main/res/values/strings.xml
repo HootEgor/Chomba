@@ -16,4 +16,7 @@
     <string name="error">error</string>
     <string name="player_score_list">Score list of</string>
     <string name="_120">-120</string>
+    <string name="dissolution">Dissolution</string>
+    <string name="make_dissolution">Make dissolution</string>
+    <string name="are_you_sure">Are you sure?</string>
 </resources>
