@@ -9,4 +9,6 @@ data class GameUiState(
     val winner: Player? = null,
     val showScoreList: Boolean = false,
     val showPlayer: Player? = null,
+    val round: Int = 1,
+    val distributorIndex: Int = 0,
     )

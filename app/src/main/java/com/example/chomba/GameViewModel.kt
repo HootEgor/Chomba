@@ -8,9 +8,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
+import com.example.chomba.data.countDissolution
+import com.example.chomba.data.getDissolution
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
 import kotlinx.coroutines.launch
+import kotlin.math.round
 
 class GameViewModel(application: Application): AndroidViewModel(application) {
 
@@ -66,8 +69,19 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         playerList.value = updatedPlayerList
     }
 
+    fun setScorePerRoundD(player: Player){
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer == player) {
+                existingPlayer.copy(scorePerRound = existingPlayer.declaration)
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
+    }
+
     fun getCurrentRound(): Int {
-        return playerList.value[0].scoreList.size + 1
+        return uiState.value.round
     }
 
     fun getPlayersName(): List<String> {
@@ -95,8 +109,6 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
             if (existingPlayer.scorePerRound == 0) {
                 type = 0
-            } else if (existingPlayer.scorePerRound < 0) {
-                type = -1
             }
 
             if(uiState.value.declarer?.name == existingPlayer.name) {
@@ -104,7 +116,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 if(existingPlayer.scorePerRound >= existingPlayer.declaration) {
                     type = 1
                 } else {
-                    type = 0
+                    type = -1
                 }
                 score = existingPlayer.declaration
             }
@@ -119,11 +131,11 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
 
             if(uiState.value.playerOnBarrel?.name == existingPlayer.name) {
-                if(type == 0 && existingPlayer.getMissBarrel() < 2) {
+                if(type == -1 && existingPlayer.getMissBarrel() < 2) {
                     type = -2
                 }
                 else if(type != 1)
-                    type = -3
+                    type = -1
 
                 score = 120
             }else if(existingPlayer.getTotalScore() == 880) {
@@ -154,6 +166,83 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             uiState.value = uiState.value.copy(playerOnBarrel = null,
                 declarer = null)
         }
+
+        uiState.value = uiState.value.copy(round = uiState.value.round + 1,
+            distributorIndex = nextDistributorIndex())
+    }
+
+    fun makeDissolution(){
+
+        val declarer = playerList.value.find { it.name == uiState.value.declarer?.name }
+        val declaration = declarer?.declaration
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            var score = 0
+            var type = 3
+
+            if (declaration != null) {
+                if(existingPlayer.name == uiState.value.declarer?.name) {
+                    score = declaration
+                    type = -3
+                } else {
+                    score = declaration.div(2)
+                    score = (round((score / 5).toDouble()) * 5).toInt()
+                }
+            }
+
+            val newScore = Score(score, type)
+
+            existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
+                scorePerRound = 0)
+        }
+
+        playerList.value = updatedPlayerList
+
+        playerList.value.map { existingPlayer ->
+            if (existingPlayer.getTotalScore() == 1000) {
+                setWinner(existingPlayer)
+            }
+        }
+
+        val playerOnBarrel = getPlayerOnBarrel()
+        if (playerOnBarrel != null){
+            uiState.value = uiState.value.copy(playerOnBarrel = playerOnBarrel)
+            setDeclarer(playerOnBarrel.name, 120)
+        }
+        else{
+            uiState.value = uiState.value.copy(playerOnBarrel = null,
+                declarer = null)
+        }
+
+        uiState.value = uiState.value.copy(round = uiState.value.round + 1,
+            distributorIndex = nextDistributorIndex())
+    }
+
+    fun makePenalty(player: Player){
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            var score = 0
+
+            if(existingPlayer.name == player.name) {
+                score = -120
+            }
+
+            val newScore = Score(score, 1)
+
+            if (score != 0){
+                existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
+                    scorePerRound = 0)
+            }
+            else{
+                existingPlayer
+            }
+
+        }
+
+        playerList.value = updatedPlayerList
+    }
+
+    private fun nextDistributorIndex(): Int {
+        val index = uiState.value.distributorIndex
+        return if (index == playerList.value.size - 1) 0 else index + 1
     }
 
     private fun getPlayerOnBarrel(): Player? {

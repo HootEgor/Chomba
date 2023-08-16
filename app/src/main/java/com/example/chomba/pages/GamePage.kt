@@ -1,5 +1,6 @@
 package com.example.chomba.pages
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,6 +30,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,6 +50,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +66,7 @@ import com.example.chomba.data.getZeroNum
 import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
 import com.example.chomba.ui.theme.composable.BasicTextButton
+import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.Picker
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.composable.rememberPickerState
@@ -107,17 +115,27 @@ fun GamePage(
                         player = player,
                         onSave = {viewModel.saveScorePerRound(player, it)},
                         declarer = uiState.declarer,
-                        showScoreList = {viewModel.showScoreList(player, true)}
+                        showScoreList = {viewModel.showScoreList(player, true)},
+                        isDistributor = player.name == playerList[uiState.distributorIndex].name,
+                        setScorePerRoundD = {viewModel.setScorePerRoundD(player)}
                     )
                 }
             }
         }
 
         if(uiState.declarer != null){
-            BasicIconButton(text = R.string.next_round,
-                icon = R.drawable.baseline_calculate_24,
-                modifier = Modifier.basicButton(),
-                action = {nextRound.value = true})
+            Row{
+                BasicIconButton(text = R.string.next_round,
+                    icon = R.drawable.baseline_border_color_24,
+                    modifier = Modifier.basicButton().weight(1f),
+                    action = {viewModel.makeDissolution()})
+
+                BasicIconButton(text = R.string.next_round,
+                    icon = R.drawable.baseline_calculate_24,
+                    modifier = Modifier.basicButton().weight(1f),
+                    action = {nextRound.value = true})
+            }
+
         }
         else{
             BasicIconButton(text = R.string.set_declarer,
@@ -150,7 +168,7 @@ fun GamePage(
         val players = remember { viewModel.getPlayersName() }
         val playersValue = rememberPickerState()
 
-        val scores = remember { (100..420).map { it.toString() } }
+        val scores = remember { (100..420 step 5).map { it.toString() } }
         val scoresValue = rememberPickerState()
 
         AlertDialog(
@@ -180,7 +198,7 @@ fun GamePage(
                                 .weight(1f),
                             textModifier = Modifier.padding(4.dp),
                             textStyle = TextStyle(fontSize = 16.sp),
-                            startIndex = players.indexOf(uiState.declarer?.name)
+                            startIndex = 0
                         )
 
                         Picker(
@@ -193,7 +211,7 @@ fun GamePage(
                                 .weight(1f),
                             textModifier = Modifier.padding(4.dp),
                             textStyle = TextStyle(fontSize = 16.sp),
-                            startIndex = scores.indexOf(uiState.declarer?.declaration.toString())
+                            startIndex = 0
                         )
                     }
                 }
@@ -269,7 +287,8 @@ fun GamePage(
 
     if(uiState.showScoreList){
         uiState.showPlayer?.let { ScoreListAlert(player = it,
-            setVisible = {viewModel.showScoreList(null, false)}) }
+            setVisible = {viewModel.showScoreList(null, false)},
+            onMakePenalty = { viewModel.makePenalty(it) }) }
     }
 }
 
@@ -280,7 +299,9 @@ fun PlayerCard(
     player: Player,
     onSave:(Int) -> Unit,
     declarer: Player?,
-    showScoreList: () -> Unit
+    showScoreList: () -> Unit,
+    isDistributor: Boolean,
+    setScorePerRoundD: () -> Unit
 ){
 
     Surface(
@@ -303,6 +324,13 @@ fun PlayerCard(
                    Row(modifier = Modifier.weight(1f),
                        verticalAlignment = Alignment.CenterVertically,
                        horizontalArrangement = Arrangement.SpaceEvenly) {
+                       Icon(
+                           painter = painterResource(id = R.drawable.baseline_hail_24),
+                           contentDescription = null,
+                            modifier = Modifier.padding(start = 16.dp),
+                           tint = if(!isDistributor) Color.Transparent
+                           else MaterialTheme.colorScheme.onTertiaryContainer,
+                       )
                        Text(text = player.name,
                            style = MaterialTheme.typography.titleMedium,
                            modifier = Modifier.weight(2f),
@@ -310,31 +338,56 @@ fun PlayerCard(
                        Text(text = if(player.name == declarer?.name) player.declaration.toString()
                        else "",
                            style = MaterialTheme.typography.titleLarge,
-                           modifier = Modifier.weight(1f),
+                           modifier = Modifier
+                               .weight(1f)
+                               .combinedClickable(
+                                   onClick = {},
+                                   onLongClick = { setScorePerRoundD() }
+                               ),
                            textAlign = TextAlign.Center)
                    }
                    Box(modifier = Modifier
                            .weight(2f),
                        contentAlignment = Alignment.Center){
-                       Surface(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(4.dp)
-                                .border(
-                                    width = 2.dp,
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = Shapes.large
-                                ),
-                            shape = RoundedCornerShape(8.dp),
-                            color = MaterialTheme.colorScheme.background,
-                       ) {
-                           ScorePicker(
-                               modifier = Modifier
-                                   .fillMaxSize()
-                                   .padding(horizontal = 4.dp),
-                               onSelect = { onSave(it)},
-                               startScore = player.scorePerRound
-                           )
+                       Row{
+                           Box(modifier = Modifier.weight(1f)){
+                               Surface(
+                                   modifier = Modifier
+                                       .fillMaxSize()
+                                       .padding(4.dp)
+                                       .border(
+                                           width = 2.dp,
+                                           color = MaterialTheme.colorScheme.secondaryContainer,
+                                           shape = Shapes.large
+                                       ),
+                                   shape = RoundedCornerShape(8.dp),
+                                   color = MaterialTheme.colorScheme.background,
+                               ) {
+
+                               }
+                           }
+                           Box(modifier = Modifier.weight(1f)){
+                               Surface(
+                                   modifier = Modifier
+                                       .fillMaxSize()
+                                       .padding(vertical = 4.dp)
+                                       .border(
+                                           width = 2.dp,
+                                           color = MaterialTheme.colorScheme.secondaryContainer,
+                                           shape = Shapes.large
+                                       ),
+                                   shape = RoundedCornerShape(8.dp),
+                                   color = MaterialTheme.colorScheme.background,
+                               ) {
+                                   ScorePicker(
+                                       modifier = Modifier
+                                           .fillMaxSize()
+                                           .padding(horizontal = 4.dp),
+                                       onSelect = { onSave(it)},
+                                       startScore = player.scorePerRound
+                                   )
+                               }
+                           }
                        }
                    }
                }
@@ -363,28 +416,39 @@ fun PlayerCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScoreListAlert(
     modifier: Modifier = Modifier,
     player: Player,
     setVisible: (Boolean) -> Unit,
+    onMakePenalty: () -> Unit
 ){
+    val penalty = remember { mutableStateOf(false) }
     AlertDialog(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight(0.7f),
         onDismissRequest = { setVisible(false)},
-        title = { Text(text = stringResource(R.string.player_score_list) +" "+ player.name, style = MaterialTheme.typography.headlineSmall) },
+        title = {
+            Text(text = stringResource(R.string.player_score_list) +" "+ player.name,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.combinedClickable(
+                    onClick = {},
+                    onLongClick = {penalty.value = true}
+                ))
+                },
         text = {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                items(player.scoreList) { score ->
-                    ScoreCard(score = score)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(1),
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    items(player.scoreList) { score ->
+                        ScoreCard(score = score)
+                    }
                 }
-            }
+
         },
         confirmButton = {
             TextButton(
@@ -396,6 +460,22 @@ fun ScoreListAlert(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
+        },
+        dismissButton = {
+            AnimatedVisibility(penalty.value ){
+                TextButton(
+                    onClick = {onMakePenalty()
+                        penalty.value = false
+                        setVisible(false)}
+                ) {
+                    Text(
+                        text = stringResource(R.string._120),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
         }
     )
 
@@ -515,7 +595,7 @@ fun ScorePicker(
     onSelect: (Int) -> Unit,
     startScore: Int,
 ) {
-    val scores = remember { (0..420).map { it.toString() } }
+    val scores = remember { (0..420 step 5).map { it.toString() } }
     val pickerValue = rememberPickerState()
 
     LaunchedEffect(pickerValue.selectedItem) {

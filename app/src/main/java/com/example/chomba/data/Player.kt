@@ -18,25 +18,39 @@ data class Player(
 fun Player.getTotalScore(): Int {
     var totalScore = 0
     var zeroNum = 0
+    var dissolutionNum = 0
     for (score in scoreList) {
         if(score.type == 0) {
             totalScore -= score.value
             zeroNum++
         }
-        else if(score.type == 1) {
+        else if(score.type == 1 || score.type == 3) {
             totalScore += score.value
-        }
-
-        if (score.type == -3) {
-            totalScore -= score.value
         }
 
         if (score.type == 2 && score.value == 120) {
             totalScore += score.value
         }
 
+        if (score.type == -1) {
+            totalScore -= score.value
+        }
+
+        if (score.type == -3) {
+            dissolutionNum++
+        }
+
+        if(dissolutionNum == 3) {
+            dissolutionNum = 0
+            totalScore = 0
+        }
+
         if(zeroNum == 3) {
             zeroNum = 0
+            totalScore = 0
+        }
+
+        if (totalScore == 555) {
             totalScore = 0
         }
     }
@@ -83,13 +97,32 @@ fun Player.getMissBarrel(): Int {
     return missBarrel
 }
 
-fun Player.totalMissBarrel(): Int {
-    var missBarrel = 0
+fun Player.getDissolution(): Int{
+    var dissolutionNum = 0
     for (score in scoreList) {
-        if (score.type == -2) {
-            missBarrel++
+        if (score.type == -3) {
+            dissolutionNum++
+        }
+
+        if(dissolutionNum == 4) {
+            dissolutionNum = 1
         }
     }
 
-    return missBarrel
+    if (dissolutionNum == 3) {
+        dissolutionNum = 0
+    }
+
+    return dissolutionNum
+}
+
+fun Player.countDissolution(): Int {
+    var dissolutionNum = 0
+    for (score in scoreList) {
+        if (score.type == -3) {
+            dissolutionNum++
+        }
+    }
+
+    return dissolutionNum
 }
