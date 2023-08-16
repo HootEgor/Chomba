@@ -8,8 +8,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
-import com.example.chomba.data.countDissolution
-import com.example.chomba.data.getDissolution
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
 import kotlinx.coroutines.launch
@@ -135,7 +133,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                     type = -2
                 }
                 else if(type != 1)
-                    type = -1
+                    type = -4
 
                 score = 120
             }else if(existingPlayer.getTotalScore() == 880) {

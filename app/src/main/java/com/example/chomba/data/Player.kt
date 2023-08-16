@@ -32,7 +32,7 @@ fun Player.getTotalScore(): Int {
             totalScore += score.value
         }
 
-        if (score.type == -1) {
+        if (score.type == -1 || score.type == -4) {
             totalScore -= score.value
         }
 
@@ -97,6 +97,17 @@ fun Player.getMissBarrel(): Int {
     return missBarrel
 }
 
+fun Player.getBarrel(): Int {
+    var barrel = 0
+    for (score in scoreList) {
+        if (score.type == -2 || score.type == -4) {
+            barrel++
+        }
+    }
+
+    return barrel
+}
+
 fun Player.getDissolution(): Int{
     var dissolutionNum = 0
     for (score in scoreList) {
@@ -116,13 +127,4 @@ fun Player.getDissolution(): Int{
     return dissolutionNum
 }
 
-fun Player.countDissolution(): Int {
-    var dissolutionNum = 0
-    for (score in scoreList) {
-        if (score.type == -3) {
-            dissolutionNum++
-        }
-    }
 
-    return dissolutionNum
-}

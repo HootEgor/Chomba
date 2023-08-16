@@ -1,5 +1,6 @@
 package com.example.chomba.pages
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Brush
@@ -63,6 +64,8 @@ import com.example.chomba.GameViewModel
 import com.example.chomba.R
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
+import com.example.chomba.data.getBarrel
+import com.example.chomba.data.getDissolution
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
 import com.example.chomba.data.getZeroNum
@@ -409,7 +412,63 @@ fun PlayerCard(
                                    shape = RoundedCornerShape(8.dp),
                                    color = MaterialTheme.colorScheme.background,
                                ) {
+                                   Column(
+                                       modifier = Modifier
+                                           .fillMaxSize()
+                                           .padding(start = 8.dp)
+                                           .padding(vertical = 4.dp),
+                                       verticalArrangement = Arrangement.SpaceEvenly,
+                                       horizontalAlignment = Alignment.CenterHorizontally
+                                   ) {
+                                       Row (modifier = Modifier.weight(1f),
+                                           horizontalArrangement = Arrangement.SpaceAround,
+                                           verticalAlignment = Alignment.CenterVertically){
+                                           Icon(
+                                               painter = painterResource(
+                                                   id = R.drawable.baseline_border_color_24
+                                               ),
+                                               contentDescription = null,
+                                               modifier = Modifier.size(24.dp),
+                                           )
+                                           Text(text = player.getDissolution().toString(),
+                                               style = MaterialTheme.typography.titleMedium,
+                                               modifier = Modifier.weight(1f),
+                                               textAlign = TextAlign.Center)
 
+                                       }
+                                       Row (modifier = Modifier.weight(1f),
+                                           horizontalArrangement = Arrangement.SpaceAround,
+                                           verticalAlignment = Alignment.CenterVertically){
+                                           Icon(
+                                               painter = painterResource(
+                                                   id = R.drawable.baseline_horizontal_rule_24
+                                               ),
+                                               contentDescription = null,
+                                               modifier = Modifier.size(24.dp),
+                                           )
+                                           Text(text = player.getZeroNum().toString(),
+                                               style = MaterialTheme.typography.titleMedium,
+                                               modifier = Modifier.weight(1f),
+                                               textAlign = TextAlign.Center)
+
+                                       }
+                                       Row (modifier = Modifier.weight(1f),
+                                           horizontalArrangement = Arrangement.SpaceAround,
+                                           verticalAlignment = Alignment.CenterVertically){
+                                           Image(
+                                               painter = painterResource(
+                                                   id = R.drawable.ic_1200952
+                                               ),
+                                               contentDescription = null,
+                                               modifier = Modifier.size(24.dp),
+                                           )
+                                           Text(text = player.getBarrel().toString(),
+                                               style = MaterialTheme.typography.titleMedium,
+                                               modifier = Modifier.weight(1f),
+                                               textAlign = TextAlign.Center)
+
+                                       }
+                                   }
                                }
                            }
                            Box(modifier = Modifier.weight(1f)){
@@ -531,15 +590,16 @@ fun ScoreListAlert(
 fun ScoreCard(
     score: Score
 ){
+    val prefix = if(score.type == -1 || score.type == -4 ) "-"
+    else ""
     Row {
-        Text(text = score.value.toString(),
+        Text(text = prefix + score.value.toString(),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center)
-        Text(text = score.type.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center)
+        Icon(painter = painterResource(id = typeIcon(score.type)),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp).weight(1f))
     }
 }
 
@@ -661,5 +721,18 @@ fun ScorePicker(
         textStyle = TextStyle(fontSize = 16.sp),
         startIndex = scores.indexOf(startScore.toString())
     )
+}
+
+@DrawableRes
+fun typeIcon(type: Int): Int {
+    return when (type) {
+        -1 -> R.drawable.baseline_close_24
+        0 -> R.drawable.baseline_horizontal_rule_24
+        1 -> R.drawable.baseline_check_24
+        2, -2, -4 -> R.drawable.ic_1200952
+        3 -> R.drawable.ic_gift
+        -3 -> R.drawable.baseline_border_color_24
+        else -> R.drawable.baseline_square_24
+    }
 }
 
