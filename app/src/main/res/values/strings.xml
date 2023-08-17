@@ -19,4 +19,10 @@
     <string name="dissolution">Dissolution</string>
     <string name="make_dissolution">Make dissolution</string>
     <string name="are_you_sure">Are you sure?</string>
+    <string name="tips">Tips</string>
+    <string name="hand">Hand</string>
+    <string name="pool">Pool</string>
+    <string name="cards">Cards</string>
+    <string name="chomba">Chomba</string>
+    <string name="reshuffle">Reshuffle</string>
 </resources>

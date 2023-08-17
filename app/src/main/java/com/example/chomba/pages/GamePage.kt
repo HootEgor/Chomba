@@ -3,61 +3,45 @@ package com.example.chomba.pages
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chomba.GameViewModel
@@ -71,14 +55,10 @@ import com.example.chomba.data.getTotalScore
 import com.example.chomba.data.getZeroNum
 import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
-import com.example.chomba.ui.theme.composable.BasicTextButton
-import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.Picker
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.composable.rememberPickerState
 import com.example.chomba.ui.theme.ext.basicButton
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -90,6 +70,7 @@ fun GamePage(
     val playerList by viewModel.playerList
     val nextRound = remember { mutableStateOf(false) }
     val setDeclarer = remember { mutableStateOf(false) }
+    val showTip = remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -101,7 +82,10 @@ fun GamePage(
             modifier = Modifier.combinedClickable(
                 onClick = {},
                 onLongClick = {setDeclarer.value = true}
-            )
+            ),
+            secondButtonIcon = R.drawable.baseline_lightbulb_24,
+            onSecondActionClick = { showTip.value = true },
+            secondIconEnabled = true
         )
         Surface(
             modifier = modifier
@@ -206,6 +190,161 @@ fun GamePage(
                     textAlign = TextAlign.Center)
             },
             confirmButton = {
+            },
+            dismissButton = {
+            }
+        )
+    }
+
+    if(showTip.value){
+        AlertDialog(
+            onDismissRequest = {showTip.value = false},
+            title = { Text(text = stringResource(R.string.tips), style = MaterialTheme.typography.headlineSmall) },
+            text = {
+                val pagerState = rememberPagerState(initialPage = 1)
+                val currentPage = remember { mutableStateOf(1) }
+                LaunchedEffect(currentPage.value){
+                    pagerState.animateScrollToPage(currentPage.value)
+                }
+                Column{
+                    Row {
+                        ToggleUnderlineText(
+                            modifier = Modifier.weight(1f),
+                            text = stringResource(R.string.cards),
+                            onClick = { currentPage.value = 0 },
+                            isUnderlined = pagerState.currentPage == 0
+                        )
+                        ToggleUnderlineText(
+                            modifier = Modifier.weight(1f),
+                            text = stringResource(R.string.chomba),
+                            onClick = { currentPage.value = 1 },
+                            isUnderlined = pagerState.currentPage == 1
+                        )
+                        ToggleUnderlineText(
+                            modifier = Modifier.weight(1f),
+                            text = stringResource(R.string.reshuffle),
+                            onClick = { currentPage.value = 2 },
+                            isUnderlined = pagerState.currentPage == 2
+                        )
+                    }
+                    HorizontalPager(pageCount = 3,
+                        state = pagerState,
+                        modifier = Modifier
+                            .size(400.dp)
+                    ) { page ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ){
+                            if(page == 1){
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    val iconSize = 32.dp
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_pica),
+                                        text = "40")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_trebol),
+                                        text = "60")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_diamante),
+                                        text = "80")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_corazon),
+                                        text = "100")
+                                    ChombaCard(iconSize = iconSize*2,
+                                        painter = painterResource(id = R.drawable.ic_ace),
+                                        text = "200")
+                                }
+
+                            }else if(page == 2){
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp),
+                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    val iconSize = 40.dp
+                                    CenterStripesText(
+                                        text = stringResource(R.string.hand),
+                                        stripeColor = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(text = "<13",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        textAlign = TextAlign.Center)
+                                    RepeatIcon(painter = painterResource(id = R.drawable.ic_nine),
+                                        iconSize = iconSize,
+                                        number = 3)
+                                    RepeatIcon(painter = painterResource(id = R.drawable.ic_jack),
+                                        iconSize = iconSize,
+                                        number = 4)
+                                    CenterStripesText(
+                                        text = stringResource(R.string.pool),
+                                        stripeColor = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(text = "<5",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        textAlign = TextAlign.Center)
+                                    RepeatIcon(painter = painterResource(id = R.drawable.ic_nine),
+                                        iconSize = iconSize,
+                                        number = 2)
+                                    RepeatIcon(painter = painterResource(id = R.drawable.ic_jack),
+                                        iconSize = iconSize,
+                                        number = 3)
+                                }
+                            }
+                            else{
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp),
+                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    val iconSize = 50.dp
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_nine),
+                                        text = "0")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_jack),
+                                        text = "2")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_queen),
+                                        text = "3")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_king),
+                                        text = "4")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_ten),
+                                        text = "10")
+                                    ChombaCard(iconSize = iconSize,
+                                        painter = painterResource(id = R.drawable.ic_ace_one),
+                                        text = "11")
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showTip.value = false}
+                ) {
+                    Text(
+                        text = stringResource(R.string.ok),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             },
             dismissButton = {
             }
@@ -338,6 +477,110 @@ fun GamePage(
         uiState.showPlayer?.let { ScoreListAlert(player = it,
             setVisible = {viewModel.showScoreList(null, false)},
             onMakePenalty = { viewModel.makePenalty(it) }) }
+    }
+}
+
+@Composable
+fun CenterStripesText(
+    text: String,
+    stripeColor: Color,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Divider(
+            color = stripeColor,
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Divider(
+            color = stripeColor,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun ToggleUnderlineText(
+    modifier: Modifier = Modifier,
+    text: String,
+    onClick: () -> Unit,
+    isUnderlined: Boolean = true,
+) {
+    Text(
+        text = text,
+        modifier = modifier
+            .combinedClickable(
+            onClick = { onClick() }
+        ),
+        style = if (!isUnderlined) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleMedium.copy(
+            color = MaterialTheme.colorScheme.primary,
+            textDecoration = TextDecoration.Underline
+        ),
+        textAlign = TextAlign.Center
+    )
+}
+
+@Composable
+fun ChombaCard(
+    iconSize: Dp,
+    painter: Painter,
+    text: String,
+    ){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier
+                .size(iconSize)
+                .weight(1f),
+        )
+        Text(text = text,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.Center)
+    }
+}
+
+@Composable
+fun RepeatIcon(
+    modifier: Modifier = Modifier,
+    iconSize: Dp,
+    painter: Painter,
+    number: Int,
+){
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.weight(1f))
+        for(i in 0 until number){
+            Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(iconSize)
+                    .weight(1f),
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 
@@ -599,7 +842,9 @@ fun ScoreCard(
             textAlign = TextAlign.Center)
         Icon(painter = painterResource(id = typeIcon(score.type)),
             contentDescription = null,
-            modifier = Modifier.size(24.dp).weight(1f))
+            modifier = Modifier
+                .size(24.dp)
+                .weight(1f))
     }
 }
 
@@ -722,6 +967,7 @@ fun ScorePicker(
         startIndex = scores.indexOf(startScore.toString())
     )
 }
+
 
 @DrawableRes
 fun typeIcon(type: Int): Int {
