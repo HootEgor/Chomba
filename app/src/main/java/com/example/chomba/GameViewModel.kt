@@ -47,7 +47,9 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     init {
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser != null) {
-            profileUi.value = profileUi.value.copy(isAuthenticated = true)
+            profileUi.value = profileUi.value.copy(isAuthenticated = true,
+                displayName = auth.currentUser?.displayName ?: "",
+                userPicture = auth.currentUser?.photoUrl ?: Uri.EMPTY)
         }
     }
 
@@ -389,14 +391,20 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    profileUi.value = profileUi.value.copy(isAuthenticated = true)
+                    profileUi.value = profileUi.value.copy(isAuthenticated = true,
+                        displayName = user?.displayName ?: "",
+                        userPicture = user?.photoUrl ?: Uri.EMPTY)
                 } else {
                     // Обработка ошибок
                 }
             }
     }
 
-
+    fun signOut() {
+        viewModelScope.launch {
+            auth.signOut()
+        }
+    }
 
 
 }

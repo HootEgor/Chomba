@@ -1,5 +1,6 @@
 package com.example.chomba.pages.user
 
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -7,17 +8,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,14 +38,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
+import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
 import com.example.chomba.ui.theme.composable.BasicTextButton
+import com.example.chomba.ui.theme.composable.IconButton
+import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.ext.basicButton
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -63,8 +75,80 @@ fun UserProfile(
     modifier: Modifier = Modifier,
     viewModel: GameViewModel
 ) {
-    Text(text = "User Profile")
+    val uiState by viewModel.profileUi
+
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = 16.dp)
+    ) {
+
+        UserNameBar(
+            name = uiState.displayName,
+            picture = uiState.userPicture,
+            signOutAction = {viewModel.signOut()}
+        )
+
+//        UserScreenMenu(viewModel = viewModel)
+
+    }
 }
+
+@Composable
+fun UserNameBar(
+    name: String,
+    picture: Uri?,
+    signOutAction: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = Shapes.medium,
+        //shadowElevation = 4.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            modifier = modifier.height(56.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (picture != null) {
+                AsyncImage(
+                    model = picture,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                modifier = modifier.weight(1f)
+            )
+            IconButton(
+                icon = R.drawable.baseline_logout_24,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(2.dp),
+                action = signOutAction,
+            )
+
+        }
+    }
+}
+
+
 
 @Composable
 fun LoginScreen(
