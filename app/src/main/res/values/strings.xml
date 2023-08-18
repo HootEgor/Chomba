@@ -25,4 +25,9 @@
     <string name="cards">Cards</string>
     <string name="chomba">Chomba</string>
     <string name="reshuffle">Reshuffle</string>
+    <string name="continue_game">Continue</string>
+    <string name="email">Email</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_in_with_email">Sign in with email</string>
 </resources>

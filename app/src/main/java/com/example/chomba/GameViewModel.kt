@@ -1,15 +1,36 @@
 package com.example.chomba
 
 import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.ContactsContract.CommonDataKinds.Email
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
+import com.example.chomba.data.User
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
+import com.example.chomba.pages.user.ProfileScreenUiState
+import com.example.chomba.ui.theme.ext.isValidEmail
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.signin.GoogleSignInResult
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.ActionCodeSettings
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlin.math.round
 
@@ -18,6 +39,17 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     val playerList = mutableStateOf<List<Player>>(listOf())
     var uiState = mutableStateOf(GameUiState())
         private set
+
+    var profileUi = mutableStateOf(ProfileScreenUiState())
+        private set
+
+    private val auth = FirebaseAuth.getInstance()
+    init {
+        val auth = FirebaseAuth.getInstance()
+        if (auth.currentUser != null) {
+            profileUi.value = profileUi.value.copy(isAuthenticated = true)
+        }
+    }
 
     fun setCurrentPage(page: Int) {
         uiState.value = uiState.value.copy(currentPage = page)
@@ -290,6 +322,81 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             setCurrentPage(2)
         }
     }
+
+    fun sendSignInLink(email: String) {
+        auth.sendSignInLinkToEmail(email, buildActionCodeSettings())
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.w("signIN", "sendSignInLinkToEmail:failure", task.exception)
+                } else {
+                    Log.w("signIN", "sendSignInLinkToEmail:failure", task.exception)
+                }
+            }
+    }
+
+    private fun buildActionCodeSettings(): ActionCodeSettings {
+        return ActionCodeSettings.newBuilder()
+            .setUrl("https://chomba.page.link/signup") // Используйте существующую ссылку
+            .setHandleCodeInApp(true)
+            .setAndroidPackageName("com.example.chomba", true, "12")
+            .build()
+    }
+
+    fun completeSignInWithLink(email: String, code: String) {
+        auth.signInWithEmailLink(email, code)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    val newUser = User(email = email)
+
+                    // Сохранение информации о пользователе в базу данных
+                    // Например, используя Firebase Firestore:
+                     val db = FirebaseFirestore.getInstance()
+                    user?.let { db.collection("users").document(it.uid).set(newUser) }
+
+                    // Вызов метода для автоматического входа в приложение
+                    // Например, установка статуса аутентификации в вашей ViewModel:
+                     profileUi.value = profileUi.value.copy(isAuthenticated = true)
+                } else {
+                    // Обработка ошибок
+                    Log.w("signIN", "sendSignInLinkToEmail:failure", task.exception)
+                }
+            }
+    }
+
+    fun getSignInRequest(apiKey: String): BeginSignInRequest {
+
+        return BeginSignInRequest.builder()
+            .setPasswordRequestOptions(
+                BeginSignInRequest.PasswordRequestOptions.builder()
+                    .setSupported(true)
+                    .build())
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(apiKey)
+                    .setFilterByAuthorizedAccounts(false)
+                    .build())
+            .setAutoSelectEnabled(true)
+            .build()
+
+    }
+
+    fun signInWithGoogleToken(googleIdToken: String) {
+        val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
+
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    profileUi.value = profileUi.value.copy(isAuthenticated = true)
+                } else {
+                    // Обработка ошибок
+                }
+            }
+    }
+
+
 
 
 }
