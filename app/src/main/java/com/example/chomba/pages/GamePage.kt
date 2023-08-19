@@ -55,6 +55,8 @@ import com.example.chomba.data.getTotalScore
 import com.example.chomba.data.getZeroNum
 import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
+import com.example.chomba.ui.theme.composable.CircleLoader
+import com.example.chomba.ui.theme.composable.CircularChart
 import com.example.chomba.ui.theme.composable.Picker
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.composable.rememberPickerState
@@ -71,22 +73,40 @@ fun GamePage(
     val nextRound = remember { mutableStateOf(false) }
     val setDeclarer = remember { mutableStateOf(false) }
     val showTip = remember { mutableStateOf(false) }
+    val saveButton = remember { mutableStateOf(false) }
+    val saveAlert = remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        TopBar(
-            title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
-            onFirstActionClick = { viewModel.setCurrentPage(0) },
-            modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = {setDeclarer.value = true}
-            ),
-            secondButtonIcon = R.drawable.baseline_lightbulb_24,
-            onSecondActionClick = { showTip.value = true },
-            secondIconEnabled = true
-        )
+        if(!saveButton.value){
+            TopBar(
+                title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
+                onFirstActionClick = { viewModel.setCurrentPage(0)},
+                modifier = Modifier.combinedClickable(
+                    onClick = {saveButton.value = true},
+                    onLongClick = {setDeclarer.value = true},
+                ),
+                secondButtonIcon = R.drawable.baseline_lightbulb_24,
+                onSecondActionClick = { showTip.value = true},
+                secondIconEnabled = true
+            )
+        }else{
+            TopBar(
+                title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
+                onFirstActionClick = { viewModel.setCurrentPage(0)},
+                modifier = Modifier.combinedClickable(
+                    onClick = {saveButton.value = false},
+                    onLongClick = {setDeclarer.value = true},
+                ),
+                secondButtonIcon = R.drawable.baseline_save_24,
+                onSecondActionClick = { viewModel.saveGame()
+                    saveAlert.value = true},
+                secondIconEnabled = true
+            )
+        }
+
         Surface(
             modifier = modifier
                 .fillMaxSize(0.9f),
@@ -113,7 +133,14 @@ fun GamePage(
             }
         }
 
-        if(uiState.declarer != null){
+        if(viewModel.isCurrentGameFinished()){
+            BasicIconButton(text = R.string.save_and_exit,
+                icon = R.drawable.baseline_home_24,
+                modifier = Modifier.basicButton(),
+                action = {viewModel.setCurrentPage(0)
+                    viewModel.saveGame()})
+        }
+        else if(uiState.declarer != null){
             Row{
                 if(uiState.playerOnBarrel == null){
                     val visible = remember { mutableStateOf(false) }
@@ -178,6 +205,26 @@ fun GamePage(
         }
 
 
+    }
+
+    if(saveAlert.value){
+        AlertDialog(
+            onDismissRequest = {saveAlert.value = false},
+            title = { Text(text = stringResource(R.string.saving), style = MaterialTheme.typography.headlineSmall) },
+            text = {
+                   if(uiState.inProgress){
+                       CircleLoader()
+                   }else{
+                          Text(text = stringResource(R.string.complete),
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center)
+                   }
+            },
+            confirmButton = {
+            },
+            dismissButton = {
+            }
+        )
     }
 
     if(uiState.winner != null){
@@ -845,100 +892,6 @@ fun ScoreCard(
             modifier = Modifier
                 .size(24.dp)
                 .weight(1f))
-    }
-}
-
-@Composable
-fun CircularChart(
-    modifier: Modifier,
-    pressModifier: Modifier,
-    value: Int,
-    maxValue: Int,
-    color: Color,
-    zeroNum: Int,
-    backgroundCircleColor: Color = Color.LightGray.copy(alpha = 0.3f),
-    thicknessFraction: Float = 0.2f
-) {
-    var sweepAngle = value.toFloat()/ maxValue.toFloat() * 360f
-
-    if (sweepAngle<0)
-        sweepAngle = 0f
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            val size = size.width.coerceAtMost(size.height)
-            val arcRadius = size / 2
-
-            val adjustedThickness = arcRadius * thicknessFraction
-            drawArc(
-                color = backgroundCircleColor,
-                startAngle = 90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
-                size = Size(arcRadius * 2, arcRadius * 2),
-                topLeft = Offset(
-                    x = (size - arcRadius * 2) / 2,
-                    y = (size - arcRadius * 2) / 2
-                )
-            )
-            drawArc(
-                color = color,
-                startAngle = 90f,
-                sweepAngle = sweepAngle,
-                useCenter = false,
-                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
-                size = Size(arcRadius * 2, arcRadius * 2),
-                topLeft = Offset(
-                    x = (size - arcRadius * 2) / 2,
-                    y = (size - arcRadius * 2) / 2
-                )
-            )
-        }
-
-        Surface(
-            modifier = Modifier
-                .fillMaxSize(),
-            shape = CircleShape,
-            color = Color.Transparent,
-            content = {Column (
-                modifier = pressModifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ){
-                Text(
-                    text = value.toString(),
-                    style = MaterialTheme.typography.displaySmall
-                )
-
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(0.5f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ){
-                    items(zeroNum){
-                        Image(
-                            painter = painterResource(
-                                id = R.drawable.ic_1200952
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    }
-                }
-
-
-            }}
-        )
-
-
     }
 }
 

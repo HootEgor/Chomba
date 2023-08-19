@@ -35,19 +35,14 @@ fun HomePage(
             verticalArrangement = Arrangement.Center
         ) {
 
-            if(viewModel.playerList.value.isEmpty()){
-                BasicTextButton(text = R.string.new_game,
-                    modifier = modifier.smallButton(),
-                    action = {viewModel.setCurrentPage(1)})
-            }else{
-                BasicTextButton(text = R.string.continue_game,
-                    modifier = modifier.smallButton(),
-                    action = {viewModel.setCurrentPage(2)})
-            }
-
-            BasicTextButton(text = R.string.load_game,
+            BasicTextButton(text = R.string.new_game,
                 modifier = modifier.smallButton(),
-                action = {})
+                action = {viewModel.newGame()})
+
+            BasicTextButton(text = R.string.load_games,
+                modifier = modifier.smallButton(),
+                action = {viewModel.setCurrentPage(3)
+                    viewModel.loadGames()})
         }
     }
 

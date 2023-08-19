@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Chomba</string>
     <string name="new_game">New game</string>
-    <string name="load_game">Load game</string>
+    <string name="load_games">Load games</string>
     <string name="start">Start</string>
     <string name="player">Player</string>
     <string name="add_player">Add player</string>
@@ -30,4 +30,11 @@
     <string name="sign_in">Sign in</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="sign_in_with_email">Sign in with email</string>
+    <string name="save_game">Save game</string>
+    <string name="home">Home</string>
+    <string name="saving">Saving...</string>
+    <string name="game_saved">Game saved</string>
+    <string name="complete">Complete!</string>
+    <string name="no_saved_games">No saved games</string>
+    <string name="save_and_exit">Save and Exit</string>
 </resources>

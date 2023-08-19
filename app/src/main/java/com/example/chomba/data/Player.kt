@@ -13,7 +13,9 @@ data class Player(
     var scoreList: List<Score> = listOf(),
     var scorePerRound: Int = 0,
     var declaration: Int = 0,
-)
+){
+    constructor() : this(visible = true, name = "", color = Color.Magenta, scoreList = listOf(), scorePerRound = 0, declaration = 0)
+}
 
 fun Player.getTotalScore(): Int {
     var totalScore = 0

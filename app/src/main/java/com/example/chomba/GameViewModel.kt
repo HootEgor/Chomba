@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.chomba.data.Game
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
 import com.example.chomba.data.User
@@ -31,6 +32,10 @@ import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import kotlin.math.round
 
@@ -44,6 +49,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         private set
 
     private val auth = FirebaseAuth.getInstance()
+
     init {
         val auth = FirebaseAuth.getInstance()
         if (auth.currentUser != null) {
@@ -51,6 +57,29 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 displayName = auth.currentUser?.displayName ?: "",
                 userPicture = auth.currentUser?.photoUrl ?: Uri.EMPTY)
         }
+    }
+
+    private fun startProgressProfile(){
+        profileUi.value = profileUi.value.copy(inProgress = true)
+    }
+
+    private fun stopProgressProfile(){
+        profileUi.value = profileUi.value.copy(inProgress = false)
+    }
+
+    private fun startProgressGame(){
+        uiState.value = uiState.value.copy(inProgress = true)
+    }
+
+    private fun stopProgressGame(){
+        uiState.value = uiState.value.copy(inProgress = false)
+    }
+
+    fun newGame() {
+        profileUi.value = profileUi.value.copy(currentGameIndex = null)
+        playerList.value = listOf()
+        uiState.value = GameUiState()
+        setCurrentPage(1)
     }
 
     fun setCurrentPage(page: Int) {
@@ -403,7 +432,114 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     fun signOut() {
         viewModelScope.launch {
             auth.signOut()
+        }.invokeOnCompletion {
+            profileUi.value = profileUi.value.copy(isAuthenticated = false,
+                displayName = "",
+                userPicture = Uri.EMPTY)
         }
+    }
+
+    fun saveGame() {
+        viewModelScope.launch {
+            startProgressGame()
+            var id = ""
+            val db = Firebase.firestore
+            val userUid = auth.currentUser?.uid
+
+            if (userUid != null) {
+                if(profileUi.value.currentGameIndex != null){
+                    id = profileUi.value.gameList[profileUi.value.currentGameIndex!!].id
+                }
+                else{
+                    id = db.collection("users").document(userUid)
+                        .collection("gameList")
+                        .document().id
+                }
+                val date = System.currentTimeMillis()
+                val gameData = Game(id, date ,playerList.value, uiState.value)
+                db.collection("users").document(userUid)
+                    .collection("gameList")
+                    .document(id) // Указываем конкретный ID документа
+                    .set(gameData, SetOptions.merge()) // Используем SetOptions.merge()
+                    .addOnSuccessListener {
+                        Log.w("dataBase", "saveGameList:success")
+                    }
+                    .addOnFailureListener {
+                        Log.w("dataBase", "saveGameList:failure", it)
+                    }
+            }
+
+        }.invokeOnCompletion {
+            stopProgressGame()
+        }
+
+    }
+
+    fun loadGames(){
+        viewModelScope.launch {
+            startProgressProfile()
+            val db = Firebase.firestore
+            val userUid = auth.currentUser?.uid
+            if (userUid != null) {
+                db.collection("users").document(userUid)
+                    .collection("gameList")
+                    .orderBy("date", Query.Direction.DESCENDING)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        profileUi.value = profileUi.value.copy(gameList = emptyList())
+                        for (document in result) {
+                            try{
+                                val gameData = document.toObject(Game::class.java)
+                                profileUi.value = profileUi.value.copy(gameList = profileUi.value.gameList + gameData)
+                            }catch (e: Exception){
+                                Log.w("dataBase", "loadGameList:failure", e)
+                            }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.w("dataBase", "loadGameList:failure", exception)
+                    }
+            }
+        }.invokeOnCompletion {
+            profileUi.value = profileUi.value.copy(currentGameIndex = null)
+            stopProgressProfile()
+        }
+
+    }
+
+    fun setCurrentGame(id: Int){
+        val game = profileUi.value.gameList[id]
+        if(!isGameFinished(game)){
+            profileUi.value = profileUi.value.copy(currentGameIndex = id)
+        }
+    }
+
+    fun continueGame(){
+        val game = profileUi.value.gameList[profileUi.value.currentGameIndex!!]
+        viewModelScope.launch {
+            playerList.value = game.playerList
+            uiState.value = game.uiState
+        }.invokeOnCompletion {
+            setCurrentPage(2)
+        }
+    }
+
+    fun isGameFinished(game: Game): Boolean {
+        for (player in game.playerList){
+            if (player.getTotalScore() == 1000){
+                return true
+            }
+        }
+        return false
+    }
+
+    fun isCurrentGameFinished(): Boolean {
+        for (player in playerList.value){
+            if (player.getTotalScore() == 1000){
+                return true
+            }
+        }
+        return false
     }
 
 

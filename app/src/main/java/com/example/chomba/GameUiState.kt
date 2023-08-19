@@ -11,4 +11,6 @@ data class GameUiState(
     val showPlayer: Player? = null,
     val round: Int = 1,
     val distributorIndex: Int = 0,
+
+    val inProgress: Boolean = false,
     )
