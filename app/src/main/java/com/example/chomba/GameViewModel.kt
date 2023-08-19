@@ -8,6 +8,7 @@ import android.provider.ContactsContract.CommonDataKinds.Email
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -462,11 +463,13 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                     .document(id) // Указываем конкретный ID документа
                     .set(gameData, SetOptions.merge()) // Используем SetOptions.merge()
                     .addOnSuccessListener {
-                        Log.w("dataBase", "saveGameList:success")
+                        uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
                     }
                     .addOnFailureListener {
-                        Log.w("dataBase", "saveGameList:failure", it)
+                        uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
                     }
+            }else{
+                uiState.value = uiState.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
             }
 
         }.invokeOnCompletion {

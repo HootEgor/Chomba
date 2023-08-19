@@ -37,4 +37,7 @@
     <string name="complete">Complete!</string>
     <string name="no_saved_games">No saved games</string>
     <string name="save_and_exit">Save and Exit</string>
+    <string name="failed_you_are_not_authenticated">Failed. You are not authenticated.</string>
+    <string name="successfully_saved">Successfully saved</string>
+    <string name="failed_to_save_game">Failed to save game</string>
 </resources>

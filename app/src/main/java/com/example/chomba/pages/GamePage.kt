@@ -215,7 +215,7 @@ fun GamePage(
                    if(uiState.inProgress){
                        CircleLoader()
                    }else{
-                          Text(text = stringResource(R.string.complete),
+                          Text(text = stringResource(uiState.saveMsg),
                             style = MaterialTheme.typography.titleMedium,
                             textAlign = TextAlign.Center)
                    }
