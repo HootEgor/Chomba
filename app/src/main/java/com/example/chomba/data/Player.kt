@@ -4,17 +4,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import com.google.firebase.firestore.DocumentSnapshot
 import java.lang.reflect.GenericDeclaration
 
 data class Player(
     var visible: Boolean = true,
     var name: String = "",
-    var color: Color = Color.Magenta,
+    var color: String = Color.Magenta.value.toString(),
     var scoreList: List<Score> = listOf(),
     var scorePerRound: Int = 0,
     var declaration: Int = 0,
 ){
-    constructor() : this(visible = true, name = "", color = Color.Magenta, scoreList = listOf(), scorePerRound = 0, declaration = 0)
+    constructor() : this(visible = true, name = "", color = Color.Magenta.value.toString(), scoreList = listOf(), scorePerRound = 0, declaration = 0)
 }
 
 fun Player.getTotalScore(): Int {

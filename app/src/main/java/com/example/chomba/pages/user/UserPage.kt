@@ -382,7 +382,7 @@ fun PlayerGameCard(
                 pressModifier = Modifier,
                 value = player.getTotalScore(),
                 maxValue = 1000,
-                color = player.color,
+                color = Color(player.color.toULong()),
                 zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
                 else 0
             )

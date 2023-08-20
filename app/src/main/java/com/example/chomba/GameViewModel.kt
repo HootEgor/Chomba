@@ -1,16 +1,11 @@
 package com.example.chomba
 
 import android.app.Application
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.provider.ContactsContract.CommonDataKinds.Email
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.data.Game
 import com.example.chomba.data.Player
@@ -19,17 +14,8 @@ import com.example.chomba.data.User
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
 import com.example.chomba.pages.user.ProfileScreenUiState
-import com.example.chomba.ui.theme.ext.isValidEmail
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.auth.api.signin.GoogleSignInResult
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.ActionCodeSettings
-import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
@@ -109,7 +95,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         playerList.value = updatedPlayerList
     }
 
-    fun updatePlayer(player: Player, newName: String, newColor: Color) {
+    fun updatePlayer(player: Player, newName: String, newColor: String) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             if (existingPlayer == player) {
                 existingPlayer.copy(name = newName, color = newColor)

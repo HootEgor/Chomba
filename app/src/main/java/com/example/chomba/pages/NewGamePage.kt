@@ -85,7 +85,7 @@ fun NewGamePage(
                                 player = item,
                                 onDelete = { viewModel.removePlayer(item)},
                                 onSave = { name, color ->
-                                    viewModel.updatePlayer(item, name, color)
+                                    viewModel.updatePlayer(item, name, color.toString())
                                 }
                             )
                         }
@@ -125,7 +125,7 @@ fun PlayerItem(
     modifier: Modifier = Modifier,
     player: Player,
     onDelete: () -> Unit,
-    onSave: (String, Color) -> Unit
+    onSave: (String, String) -> Unit
 ){
     val userName = remember { mutableStateOf(player.name) }
     userName.value = player.name
@@ -156,9 +156,9 @@ fun PlayerItem(
             textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
             trailingIcon = {
                 ColorPickerButton(
-                    startColor = color.value,
+                    startColor = Color(color.value.toULong()),
                     onColorSelected = {
-                        color.value = it},
+                        color.value = it.value.toString()},
                     saveColor = { onSave(userName.value, color.value)}
                 )
             }
