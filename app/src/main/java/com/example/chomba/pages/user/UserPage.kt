@@ -86,7 +86,8 @@ fun UserPage(
 @Composable
 fun UserProfile(
     modifier: Modifier = Modifier,
-    viewModel: GameViewModel
+    viewModel: GameViewModel,
+
 ) {
     val uiState by viewModel.profileUi
 
@@ -124,8 +125,8 @@ fun UserProfile(
                 items(uiState.gameList.size) { index ->
                     GameCard(
                         game = uiState.gameList[index],
-                        onSelect = { viewModel.setCurrentGame(index) },
-                        selected = index == uiState.currentGameIndex
+                        onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
+                        selected = uiState.gameList[index].id == uiState.currentGameIndex
                     )
                 }
             }

@@ -13,5 +13,5 @@ data class GameUiState(
     val distributorIndex: Int = 0,
 
     val inProgress: Boolean = false,
-    val saveMsg: Int = R.string.failed_you_are_not_authenticated,
+    val saveMsg: Int = R.string.failed_to_save_game,
     )

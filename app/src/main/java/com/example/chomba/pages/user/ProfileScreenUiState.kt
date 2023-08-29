@@ -16,7 +16,7 @@ data class ProfileScreenUiState(
 
     val gameList: List<Game> = emptyList(),
 
-    val currentGameIndex: Int? = null,
+    val currentGameIndex: String? = null,
 
     val inProgress: Boolean = false,
 

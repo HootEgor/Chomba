@@ -169,7 +169,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 score = existingPlayer.declaration
             }
 
-            if(existingPlayer.getTotalScore() + score >= 880) {
+            if(existingPlayer.getTotalScore() + score >= 880 && type != -1) {
                 if(existingPlayer.getTotalScore() >= 880 && score >= 120) {
                     score = 120
                 } else {
@@ -435,7 +435,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
             if (userUid != null) {
                 if(profileUi.value.currentGameIndex != null){
-                    id = profileUi.value.gameList[profileUi.value.currentGameIndex!!].id
+                    id = profileUi.value.currentGameIndex!!
                 }
                 else{
                     id = db.collection("users").document(userUid)
@@ -446,10 +446,11 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 val gameData = Game(id, date ,playerList.value, uiState.value)
                 db.collection("users").document(userUid)
                     .collection("gameList")
-                    .document(id) // Указываем конкретный ID документа
-                    .set(gameData, SetOptions.merge()) // Используем SetOptions.merge()
+                    .document(id)
+                    .set(gameData, SetOptions.merge())
                     .addOnSuccessListener {
                         uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
+                        profileUi.value = profileUi.value.copy(currentGameIndex = id)
                     }
                     .addOnFailureListener {
                         uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
@@ -496,15 +497,15 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     }
 
-    fun setCurrentGame(id: Int){
-        val game = profileUi.value.gameList[id]
+    fun setCurrentGame(id: String){
+        val game = profileUi.value.gameList.find { it.id == id }!!
         if(!isGameFinished(game)){
             profileUi.value = profileUi.value.copy(currentGameIndex = id)
         }
     }
 
     fun continueGame(){
-        val game = profileUi.value.gameList[profileUi.value.currentGameIndex!!]
+        val game = profileUi.value.gameList.find { it.id == profileUi.value.currentGameIndex }!!
         viewModelScope.launch {
             playerList.value = game.playerList
             uiState.value = game.uiState
