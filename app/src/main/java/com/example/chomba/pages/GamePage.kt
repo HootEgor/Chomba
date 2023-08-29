@@ -19,8 +19,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,6 +48,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
 import com.example.chomba.data.Player
@@ -57,6 +62,7 @@ import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
 import com.example.chomba.ui.theme.composable.CircleLoader
 import com.example.chomba.ui.theme.composable.CircularChart
+import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.Picker
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.composable.rememberPickerState
@@ -75,37 +81,43 @@ fun GamePage(
     val showTip = remember { mutableStateOf(false) }
     val saveButton = remember { mutableStateOf(false) }
     val saveAlert = remember { mutableStateOf(false) }
+    val isMenuExpanded = remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if(!saveButton.value){
-            TopBar(
-                title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
-                onFirstActionClick = { viewModel.setCurrentPage(0)},
-                modifier = Modifier.combinedClickable(
-                    onClick = {saveButton.value = true},
-                    onLongClick = {setDeclarer.value = true},
-                ),
-                secondButtonIcon = R.drawable.baseline_lightbulb_24,
-                onSecondActionClick = { showTip.value = true},
-                secondIconEnabled = true
-            )
-        }else{
-            TopBar(
-                title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
-                onFirstActionClick = { viewModel.setCurrentPage(0)},
-                modifier = Modifier.combinedClickable(
-                    onClick = {saveButton.value = false},
-                    onLongClick = {setDeclarer.value = true},
-                ),
-                secondButtonIcon = R.drawable.baseline_save_24,
-                onSecondActionClick = { viewModel.saveGame()
-                    saveAlert.value = true},
-                secondIconEnabled = true
-            )
-        }
+
+        TopBar(
+            title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
+            onFirstActionClick = { viewModel.setCurrentPage(0) },
+            secondButtonIcon = R.drawable.baseline_menu_24,
+            onSecondActionClick = {isMenuExpanded.value = true},
+            secondIconEnabled = true,
+            isMenuExpanded = true,
+            menu = {
+                val buttonsWithIcons = listOf(
+                    R.drawable.baseline_lightbulb_24 to stringResource(R.string.tips),
+                    R.drawable.baseline_save_24 to stringResource(R.string.save_game),
+                    R.drawable.baseline_blind_24 to stringResource(R.string.set_declarer),
+                )
+
+                Dropdown(
+                    buttonsWithIcons = buttonsWithIcons,
+                    onItemClick = { selectedItem ->
+                        when (selectedItem) {
+                            buttonsWithIcons[0].second -> showTip.value = true
+                            buttonsWithIcons[1].second -> {
+                                viewModel.saveGame()
+                                saveAlert.value = true
+                            }
+                            buttonsWithIcons[2].second -> setDeclarer.value = true
+                        }
+                    },
+                    icon = R.drawable.baseline_menu_24
+                )
+            }
+        )
 
         Surface(
             modifier = modifier
@@ -212,13 +224,9 @@ fun GamePage(
             onDismissRequest = {saveAlert.value = false},
             title = { Text(text = stringResource(R.string.saving), style = MaterialTheme.typography.headlineSmall) },
             text = {
-                   if(uiState.inProgress){
-                       CircleLoader()
-                   }else{
-                          Text(text = stringResource(uiState.saveMsg),
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center)
-                   }
+                Text(text = stringResource(uiState.saveMsg),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center)
             },
             confirmButton = {
             },
@@ -919,6 +927,67 @@ fun ScorePicker(
         textStyle = TextStyle(fontSize = 16.sp),
         startIndex = scores.indexOf(startScore.toString())
     )
+}
+
+@Composable
+fun Dropdown(
+    buttonsWithIcons: List<Pair<Int, String>>,
+    onItemClick: (String) -> Unit,
+    icon: Int
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    IconButton(
+        icon = icon,
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(2.dp),
+        action = { expanded = true }
+    )
+
+    Box(
+        contentAlignment = Alignment.TopEnd,
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(end = 8.dp)
+    ) {
+
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+
+                .background(MaterialTheme.colorScheme.tertiaryContainer)
+        ) {
+            buttonsWithIcons.forEach { (buttonIcon, buttonText) ->
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start,
+                        ) {
+                            Icon(
+                                painter = painterResource(id = buttonIcon),
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 8.dp),
+                            )
+                            Text(text = buttonText)
+                        }
+                    },
+                    onClick = {
+                        onItemClick(buttonText)
+                        expanded = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    colors = MenuDefaults.itemColors(
+                        textColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                )
+            }
+        }
+    }
 }
 
 

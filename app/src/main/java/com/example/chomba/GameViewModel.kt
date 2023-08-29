@@ -55,7 +55,8 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     }
 
     private fun startProgressGame(){
-        uiState.value = uiState.value.copy(inProgress = true)
+        uiState.value = uiState.value.copy(inProgress = true,
+            saveMsg = R.string.in_progress)
     }
 
     private fun stopProgressGame(){

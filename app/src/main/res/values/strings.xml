@@ -40,4 +40,5 @@
     <string name="failed_you_are_not_authenticated">Failed. You are not authenticated.</string>
     <string name="successfully_saved">Successfully saved</string>
     <string name="failed_to_save_game">Failed to save game</string>
+    <string name="in_progress">In progress</string>
 </resources>

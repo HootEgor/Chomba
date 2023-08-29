@@ -1,8 +1,10 @@
 package com.example.chomba.ui.theme.composable
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -23,33 +25,46 @@ fun TopBar(
     onFirstActionClick: () -> Unit = {},
     secondButtonIcon: Int = R.drawable.baseline_save_24,
     onSecondActionClick: () -> Unit = {},
-    secondIconEnabled: Boolean = false
+    secondIconEnabled: Boolean = false,
+    isMenuExpanded: Boolean = false,
+    menu: @Composable () -> Unit = {}
 ){
-    Surface(shape = Shapes.medium) {
-        Row(modifier = modifier.height(56.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
-                icon = firstButtonIcon,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(2.dp),
-                action = onFirstActionClick
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            IconButton(
-                icon = secondButtonIcon,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(2.dp),
-                action = onSecondActionClick,
-                noIcon = !secondIconEnabled
-            )
+    Box(
+        modifier = modifier
+            .height(56.dp),
+    ) {
+        Surface(shape = Shapes.medium) {
+            Row(modifier = modifier.height(56.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    icon = firstButtonIcon,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(2.dp),
+                    action = onFirstActionClick
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (isMenuExpanded) {
+                    menu()
+                }
+                else{
+                    IconButton(
+                        icon = secondButtonIcon,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(2.dp),
+                        action = onSecondActionClick,
+                        noIcon = !secondIconEnabled
+                    )
+                }
+
+            }
         }
     }
 }

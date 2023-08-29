@@ -91,15 +91,7 @@ fun UserProfile(
 ) {
     val uiState by viewModel.profileUi
 
-    if(uiState.inProgress){
-        Box(
-            modifier = modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircleLoader()
-        }
-    }
+
 
 
     Column(
@@ -117,7 +109,15 @@ fun UserProfile(
             signOutAction = { viewModel.signOut() }
         )
 
-        if(uiState.gameList.isNotEmpty()){
+        if(uiState.inProgress){
+            Box(
+                modifier = modifier
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircleLoader()
+            }
+        }else if(uiState.gameList.isNotEmpty()){
             LazyColumn(
                 modifier = modifier
                     .weight(1f)
