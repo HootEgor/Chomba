@@ -47,7 +47,8 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     }
 
     private fun startProgressProfile(){
-        profileUi.value = profileUi.value.copy(inProgress = true)
+        profileUi.value = profileUi.value.copy(inProgress = true,
+            saveMsg = R.string.in_progress)
     }
 
     private fun stopProgressProfile(){
@@ -486,8 +487,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                                 Log.w("dataBase", "loadGameList:failure", e)
                             }
                         }
+                        profileUi.value = profileUi.value.copy(saveMsg = R.string.no_saved_games)
                     }
                     .addOnFailureListener { exception ->
+                        profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_load_games)
                         Log.w("dataBase", "loadGameList:failure", exception)
                     }
             }

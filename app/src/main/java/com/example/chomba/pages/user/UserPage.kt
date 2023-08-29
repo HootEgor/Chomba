@@ -109,15 +109,7 @@ fun UserProfile(
             signOutAction = { viewModel.signOut() }
         )
 
-        if(uiState.inProgress){
-            Box(
-                modifier = modifier
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                CircleLoader()
-            }
-        }else if(uiState.gameList.isNotEmpty()){
+        if(uiState.gameList.isNotEmpty()){
             LazyColumn(
                 modifier = modifier
                     .weight(1f)
@@ -132,7 +124,7 @@ fun UserProfile(
             }
         }else{
             Text(
-                text = stringResource(R.string.no_saved_games),
+                text = stringResource(uiState.saveMsg),
                 style = MaterialTheme.typography.titleMedium
             )
         }

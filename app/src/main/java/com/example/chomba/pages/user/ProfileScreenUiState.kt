@@ -2,6 +2,7 @@ package com.example.chomba.pages.user
 
 import android.net.Uri
 import com.example.chomba.GameUiState
+import com.example.chomba.R
 import com.example.chomba.data.Game
 import com.example.chomba.data.Player
 
@@ -20,4 +21,6 @@ data class ProfileScreenUiState(
 
     val inProgress: Boolean = false,
 
-)
+    val saveMsg: Int = R.string.in_progress,
+
+    )
