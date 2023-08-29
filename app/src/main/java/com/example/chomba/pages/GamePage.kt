@@ -259,7 +259,9 @@ fun GamePage(
                 val pagerState = rememberPagerState(initialPage = 1)
                 val currentPage = remember { mutableStateOf(1) }
                 LaunchedEffect(currentPage.value){
+                    if(currentPage.value == -1) return@LaunchedEffect
                     pagerState.animateScrollToPage(currentPage.value)
+                    currentPage.value = -1
                 }
                 Column{
                     Row {
