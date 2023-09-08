@@ -161,7 +161,8 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 type = 0
             }
 
-            if(uiState.value.declarer?.name == existingPlayer.name) {
+            if(uiState.value.declarer?.name == existingPlayer.name
+                || uiState.value.playerOnBarrel?.name == existingPlayer.name) {
 
                 if(existingPlayer.scorePerRound >= existingPlayer.declaration) {
                     type = 1
@@ -183,11 +184,15 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             if(uiState.value.playerOnBarrel?.name == existingPlayer.name) {
                 if(type == -1 && existingPlayer.getMissBarrel() < 2) {
                     type = -2
+                    score = existingPlayer.scorePerRound
                 }
-                else if(type != 1)
+                else if(type != 1){
                     type = -4
+                    score = 120
+                }
 
-                score = 120
+
+//                score = 120
             }else if(existingPlayer.getTotalScore() == 880) {
                 type = 2
             }
@@ -210,7 +215,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         val playerOnBarrel = getPlayerOnBarrel()
         if (playerOnBarrel != null){
             uiState.value = uiState.value.copy(playerOnBarrel = playerOnBarrel)
-            setDeclarer(playerOnBarrel.name, 120)
+            setDeclarer(playerOnBarrel.name, 125)
         }
         else{
             uiState.value = uiState.value.copy(playerOnBarrel = null,
@@ -236,6 +241,12 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 } else {
                     score = declaration.div(2)
                     score = (round((score / 5).toDouble()) * 5).toInt()
+                    if(existingPlayer.getTotalScore() >= 880) {
+                        score = 0
+                        type = -2
+                    }else if(existingPlayer.getTotalScore() + score >= 880) {
+                        score = 880 - existingPlayer.getTotalScore()
+                    }
                 }
             }
 
@@ -256,7 +267,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         val playerOnBarrel = getPlayerOnBarrel()
         if (playerOnBarrel != null){
             uiState.value = uiState.value.copy(playerOnBarrel = playerOnBarrel)
-            setDeclarer(playerOnBarrel.name, 120)
+            setDeclarer(playerOnBarrel.name, 125)
         }
         else{
             uiState.value = uiState.value.copy(playerOnBarrel = null,
@@ -309,18 +320,37 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             return playersOnBarrel[0]
         }
         else if (playersOnBarrel.size > 1){
+            var countList: List<Int> = listOf()
             for (player in playersOnBarrel){
                 var count = 0
                 for(i in playersOnBarrel.size-1 downTo 1){
                     if (player.scoreList[scoreListSize - i].type == 2 ||
-                        player.scoreList[scoreListSize - i].type != -2){
+                        player.scoreList[scoreListSize - i].type == -2){
                        count++
                     }
                 }
-                if (count == playersOnBarrel.size-1){
-                    return player
+                countList = countList + count
+            }
+
+            val minIndex = countList.indexOf(countList.minOrNull())
+            var playerOnBarrel = playersOnBarrel[0]
+            //count equal values in countList
+            if(countList.count(countList[minIndex]::equals) == playersOnBarrel.size){
+                for(player in playersOnBarrel){
+                    makePenalty(player)
+                }
+                return null
+            }else{
+                for(player in playersOnBarrel){
+                    if(playersOnBarrel.indexOf(player) == minIndex){
+                        playerOnBarrel = player
+                    }else{
+                        makePenalty(player)
+                    }
                 }
             }
+
+            return playerOnBarrel
         }
 
         return null

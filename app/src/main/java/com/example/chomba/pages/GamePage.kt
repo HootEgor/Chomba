@@ -154,7 +154,7 @@ fun GamePage(
         }
         else if(uiState.declarer != null){
             Row{
-                if(uiState.playerOnBarrel == null){
+                if(uiState.playerOnBarrel?.name != uiState.declarer?.name){
                     val visible = remember { mutableStateOf(false) }
                     BasicIconButton(text = R.string.dissolution,
                         icon = R.drawable.baseline_border_color_24,
