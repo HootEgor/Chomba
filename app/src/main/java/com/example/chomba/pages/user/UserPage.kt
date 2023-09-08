@@ -377,7 +377,8 @@ fun PlayerGameCard(
                 maxValue = 1000,
                 color = Color(player.color.toULong()),
                 zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
-                else 0
+                else 0,
+                blind = false
             )
         }
     }

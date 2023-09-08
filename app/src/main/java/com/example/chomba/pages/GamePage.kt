@@ -114,7 +114,7 @@ fun GamePage(
                             buttonsWithIcons[2].second -> setDeclarer.value = true
                         }
                     },
-                    icon = R.drawable.baseline_menu_24
+                    icon = R.drawable.baseline_more_vert_24
                 )
             }
         )
@@ -139,7 +139,8 @@ fun GamePage(
                         declarer = uiState.declarer,
                         showScoreList = {viewModel.showScoreList(player, true)},
                         isDistributor = player.name == playerList[uiState.distributorIndex].name,
-                        setScorePerRoundD = {viewModel.setScorePerRoundD(player)}
+                        setScorePerRoundD = {viewModel.setScorePerRoundD(player)},
+                        setBlind = {viewModel.setBlind(player)}
                     )
                 }
             }
@@ -497,7 +498,7 @@ fun GamePage(
             text = {
                 Column {
                     for(player in playerList){
-                        Text(text = player.name + " : " + player.scorePerRound.toString(),
+                        Text(text = player.name + " : " + player.scorePerRound.toString() + if(player.blind) " x2" else "",
                             style = MaterialTheme.typography.titleMedium,
                             textAlign = TextAlign.Center)
                     }
@@ -650,7 +651,8 @@ fun PlayerCard(
     declarer: Player?,
     showScoreList: () -> Unit,
     isDistributor: Boolean,
-    setScorePerRoundD: () -> Unit
+    setScorePerRoundD: () -> Unit,
+    setBlind: () -> Unit
 ){
 
     Surface(
@@ -809,12 +811,14 @@ fun PlayerCard(
                            onClick = {},
                            onLongClick = {
                                showScoreList()
-                           }),
+                           },
+                           onDoubleClick = {setBlind()}),
                    value = player.getTotalScore(),
                    maxValue = 1000,
                    color = Color(player.color.toULong()),
-                     zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
-                    else 0
+                   zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
+                    else 0,
+                   blind = player.blind,
                )
            }
         }

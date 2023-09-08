@@ -34,7 +34,8 @@ fun CircularChart(
     color: Color,
     zeroNum: Int = 0,
     backgroundCircleColor: Color = Color.LightGray.copy(alpha = 0.3f),
-    thicknessFraction: Float = 0.2f
+    thicknessFraction: Float = 0.2f,
+    blind: Boolean
 ) {
     var sweepAngle = value.toFloat()/ maxValue.toFloat() * 360f
 
@@ -95,12 +96,21 @@ fun CircularChart(
                     text = value.toString(),
                     style = MaterialTheme.typography.displaySmall
                 )
-
+                    if(blind && zeroNum == 0){
+                        Image(
+                            painter = painterResource(
+                                id = R.drawable.baseline_visibility_off_24
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(0.5f),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ){
+
                     items(zeroNum){
                         Image(
                             painter = painterResource(

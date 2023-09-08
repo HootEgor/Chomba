@@ -110,7 +110,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun saveScorePerRound(player: Player, score: Int) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
-            if (existingPlayer == player) {
+            if (existingPlayer.name == player.name) {
                 existingPlayer.copy(scorePerRound = score)
             } else {
                 existingPlayer
@@ -121,8 +121,26 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun setScorePerRoundD(player: Player){
         val updatedPlayerList = playerList.value.map { existingPlayer ->
-            if (existingPlayer == player) {
+            if (existingPlayer.name == player.name) {
                 existingPlayer.copy(scorePerRound = existingPlayer.declaration)
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
+    }
+
+    fun setBlind(player: Player) {
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer.name == player.name ) {
+                if(uiState.value.declarer == null){
+                    existingPlayer.copy(blind = existingPlayer.blind.not())
+                }else if (existingPlayer.name == uiState.value.declarer?.name){
+                    existingPlayer.copy(blind = existingPlayer.blind.not())
+                }else{
+                    existingPlayer
+                }
+
             } else {
                 existingPlayer
             }
@@ -143,7 +161,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             if (existingPlayer.name == name) {
                 existingPlayer.copy(declaration = score)
             } else {
-                existingPlayer
+                existingPlayer.copy(blind = false)
             }
         }
 
@@ -170,13 +188,15 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                     type = -1
                 }
                 score = existingPlayer.declaration
+                if(existingPlayer.blind)
+                    score *= 2
             }
 
             if(existingPlayer.getTotalScore() + score >= 880 && type != -1) {
-                if(existingPlayer.getTotalScore() >= 880 && score >= 120) {
-                    score = 120
+                score = if(existingPlayer.getTotalScore() >= 880 && score >= 120) {
+                    120
                 } else {
-                    score = 880 - existingPlayer.getTotalScore()
+                    880 - existingPlayer.getTotalScore()
                 }
             }
 
@@ -200,7 +220,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             val newScore = Score(score, type)
 
             existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
-                scorePerRound = 0)
+                scorePerRound = 0, blind = false)
 
         }
 

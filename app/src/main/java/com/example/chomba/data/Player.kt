@@ -14,8 +14,15 @@ data class Player(
     var scoreList: List<Score> = listOf(),
     var scorePerRound: Int = 0,
     var declaration: Int = 0,
+    var blind: Boolean = false,
 ){
-    constructor() : this(visible = true, name = "", color = Color.Magenta.value.toString(), scoreList = listOf(), scorePerRound = 0, declaration = 0)
+    constructor() : this(visible = true,
+        name = "",
+        color = Color.Magenta.value.toString(),
+        scoreList = listOf(),
+        scorePerRound = 0,
+        declaration = 0,
+        blind = false)
 }
 
 fun Player.getTotalScore(): Int {
