@@ -27,13 +27,19 @@ fun HomePage(
         TopBar(
             title = stringResource(R.string.app_name),
             firstButtonIcon = R.drawable.baseline_account_circle_24,
-            onFirstActionClick = { viewModel.setCurrentPage(3) },
+            onFirstActionClick = { viewModel.setCurrentPage(3)
+                viewModel.loadGames()},
         )
         Column(
             modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            if(viewModel.playerList.value.isNotEmpty()) {
+                BasicTextButton(text = R.string.continue_game,
+                    modifier = modifier.smallButton(),
+                    action = {viewModel.setCurrentPage(1)})
+            }
 
             BasicTextButton(text = R.string.new_game,
                 modifier = modifier.smallButton(),
