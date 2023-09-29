@@ -15,6 +15,7 @@ data class Player(
     var scorePerRound: Int = 0,
     var declaration: Int = 0,
     var blind: Boolean = false,
+    var hand: List<Card> = listOf(),
 ){
     constructor() : this(visible = true,
         name = "",
