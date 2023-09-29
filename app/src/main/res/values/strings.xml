@@ -42,4 +42,5 @@
     <string name="failed_to_save_game">Failed to save game</string>
     <string name="in_progress">In progress</string>
     <string name="failed_to_load_games">Failed to load games</string>
+    <string name="solo_game">Solo Game</string>
 </resources>
