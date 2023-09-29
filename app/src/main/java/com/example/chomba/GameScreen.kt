@@ -19,7 +19,8 @@ fun GameScreen(
 
     when(uiState.currentPage) {
         0 -> {
-            HomePage(viewModel = viewModel)
+            HomePage(viewModel = viewModel,
+                soloViewModel = soloViewModel)
         }
         1 -> {
             NewGamePage(viewModel = viewModel)
@@ -35,7 +36,8 @@ fun GameScreen(
                 soloViewModel = soloViewModel)
         }
         else -> {
-            HomePage(viewModel = viewModel)
+            HomePage(viewModel = viewModel,
+                soloViewModel = soloViewModel)
         }
     }
 }

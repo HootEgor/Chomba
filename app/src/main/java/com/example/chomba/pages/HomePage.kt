@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
+import com.example.chomba.pages.solo.SoloViewModel
 import com.example.chomba.ui.theme.composable.BasicTextButton
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.ext.smallButton
@@ -21,7 +22,8 @@ import com.example.chomba.ui.theme.ext.smallButton
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
-    viewModel: GameViewModel
+    viewModel: GameViewModel,
+    soloViewModel: SoloViewModel
 ) {
     Column {
         TopBar(
@@ -43,7 +45,8 @@ fun HomePage(
 
             BasicTextButton(text = R.string.solo_game,
                 modifier = modifier.smallButton(),
-                action = {viewModel.setCurrentPage(4)})
+                action = {viewModel.setCurrentPage(4)
+                    soloViewModel.newGame()})
 
             BasicTextButton(text = R.string.new_game,
                 modifier = modifier.smallButton(),

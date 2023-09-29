@@ -13,6 +13,7 @@ import com.example.chomba.data.Score
 import com.example.chomba.data.User
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
+import com.example.chomba.pages.solo.SoloViewModel
 import com.example.chomba.pages.user.ProfileScreenUiState
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.firebase.auth.ActionCodeSettings
