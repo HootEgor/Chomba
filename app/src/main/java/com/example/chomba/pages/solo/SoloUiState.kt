@@ -3,7 +3,12 @@ package com.example.chomba.pages.solo
 import com.example.chomba.data.Card
 
 data class SoloUiState (
-    var pricup: List<Card> = listOf(),
-    var selectedCard: Card? = null,
-    var playerHand: List<Card> = listOf()
+    val pricup: List<Card> = listOf(),
+    val playerHand: List<Card> = listOf(),
+    val gameIsStart: Boolean = false,
+    val declarer: String = "",
+    val declaration: Int = 0,
+    val isTrade: Boolean = false,
+
+    val distributorIndex: Int = 0,
 )

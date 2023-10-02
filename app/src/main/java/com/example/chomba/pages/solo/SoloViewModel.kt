@@ -8,6 +8,7 @@ import com.example.chomba.data.CardSuit
 import com.example.chomba.data.CardValue
 import com.example.chomba.data.Player
 import com.google.firebase.auth.FirebaseAuth
+import kotlin.random.Random
 
 class SoloViewModel(application: Application): AndroidViewModel(application)  {
 
@@ -19,8 +20,8 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
     fun newGame() {
         val newPlayerList = mutableListOf<Player>()
         newPlayerList.add(Player(name = auth.currentUser?.displayName ?: "", isBot = false))
-        newPlayerList.add(Player(name = "Player 2", isBot = true))
-        newPlayerList.add(Player(name = "Player 3", isBot = true))
+        newPlayerList.add(Player(name = "Bot 1", isBot = true))
+        newPlayerList.add(Player(name = "Bot 2", isBot = true))
 
         val deck = createDeck()
         shuffleDeck(deck)
@@ -29,7 +30,87 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         sortCardsForPlayer()
         uiState.value = uiState.value.copy(
             pricup = deal.second,
-            playerHand = playerList.value[0].hand)
+            playerHand = playerList.value[0].hand,
+            isTrade = true,
+            declaration = 100)
+    }
+
+    fun startGame() {
+        if(uiState.value.pricup.size != 2) {
+            return
+        }
+        for(player in playerList.value) {
+            if(player.isBot) {
+                player.hand += uiState.value.pricup[0]
+                uiState.value = uiState.value.copy(
+                    pricup = uiState.value.pricup.drop(1)
+                )
+            }
+        }
+        uiState.value = uiState.value.copy(
+            gameIsStart = true,
+        )
+    }
+
+    fun setDeclarer(declarer: String) {
+        uiState.value = uiState.value.copy(
+            declarer = declarer,
+            declaration = uiState.value.declaration + 5
+        )
+    }
+
+    fun pass(p: String) {
+        playerList.value = playerList.value.map { player ->
+            if (player.name == p) {
+                player.isPass = true
+            }
+            player
+        }
+    }
+
+    fun botTrade(){
+        for(player in playerList.value) {
+            if(player.isBot && !player.isPass) {
+                val random = Random.nextDouble()
+                if (random < 0.5) {
+                    setDeclarer(player.name)
+                }else{
+                    pass(player.name)
+                }
+            }
+        }
+
+        nextTradeRound()
+    }
+
+    fun nextTradeRound(){
+        if(playerList.value[0].isPass){
+            for(player in playerList.value) {
+                if(player.isBot) {
+                    if(!player.isPass) {
+                        botTrade()
+                    }
+                }
+            }
+            uiState.value = uiState.value.copy(
+                isTrade = false
+            )
+        }
+
+        uiState.value = uiState.value.copy(
+            isTrade = false
+        )
+        for(player in playerList.value) {
+            if(player.isBot) {
+                if(!player.isPass) {
+                    uiState.value = uiState.value.copy(
+                        isTrade = true
+                    )
+                }
+            }
+        }
+
+
     }
 
     private fun sortCardsForPlayer() {
@@ -42,40 +123,39 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
     }
 
     fun getCardFromPricup(card: Card){
-        if (uiState.value.selectedCard == null) {
-            playerList.value = playerList.value.map { player ->
-                if (!player.isBot) {
-                    player.hand += card
-                    player.hand = sortCards(player.hand)
-                    uiState.value = uiState.value.copy(
-                        playerHand = player.hand
-                    )
-                }
-                player
+        playerList.value = playerList.value.map { player ->
+            if (!player.isBot) {
+                player.hand += card
+                player.hand = sortCards(player.hand)
+                uiState.value = uiState.value.copy(
+                    playerHand = player.hand
+                )
             }
-
-            uiState.value = uiState.value.copy(
-                selectedCard = card,
-                pricup = uiState.value.pricup - card,
-            )
-        } else {
-            playerList.value = playerList.value.map { player ->
-                if (!player.isBot) {
-                    player.hand -= uiState.value.selectedCard!!
-                    player.hand += card
-                    player.hand = sortCards(player.hand)
-                    uiState.value = uiState.value.copy(
-                        playerHand = player.hand
-                    )
-                }
-                player
-            }
-
-            uiState.value = uiState.value.copy(
-                selectedCard = card,
-                pricup = uiState.value.pricup + uiState.value.selectedCard!! - card
-            )
+            player
         }
+
+        uiState.value = uiState.value.copy(
+            pricup = uiState.value.pricup - card,
+        )
+    }
+
+    fun getCardFromPlayer(card: Card){
+        if(uiState.value.pricup.size >= 2) {
+            return
+        }
+        playerList.value = playerList.value.map { player ->
+            if (!player.isBot) {
+                player.hand -= card
+                uiState.value = uiState.value.copy(
+                    playerHand = player.hand
+                )
+            }
+            player
+        }
+
+        uiState.value = uiState.value.copy(
+            pricup = uiState.value.pricup + card,
+        )
     }
 
     private fun createDeck(): MutableList<Card> {
@@ -92,14 +172,13 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         deck.shuffle()
     }
 
-    // Раздача карт игрокам
     private fun dealCards(players: List<Player>, deck: MutableList<Card>, numberOfCards: Int): Pair<MutableList<Player>, List<Card>>  {
         repeat(numberOfCards) { cardIndex ->
             for (player in players) {
-                player.hand += deck.removeAt(0) // Берем верхнюю карту из колоды и добавляем в руку игрока
+                player.hand += deck.removeAt(0)
             }
         }
-        uiState.value.selectedCard = null
+
         return Pair(first = players.toMutableList(),
             second = deck)
     }

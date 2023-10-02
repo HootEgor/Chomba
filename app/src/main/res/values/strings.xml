@@ -44,4 +44,6 @@
     <string name="failed_to_load_games">Failed to load games</string>
     <string name="solo_game">Solo Game</string>
     <string name="confirm">Confirm</string>
+    <string name="_5">+5</string>
+    <string name="pass">Pass</string>
 </resources>

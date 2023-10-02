@@ -111,7 +111,7 @@ fun SoloGamePage(
                                 .padding(4.dp),
                             contentAlignment = Alignment.Center
                         ) {
-
+                            Text(text = soloUiState.declarer + ": " + soloUiState.declaration.toString())
                         }
 
                         Row(
@@ -122,18 +122,38 @@ fun SoloGamePage(
                             horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically
                         ){
-                            Spacer(modifier = Modifier.size(32.dp))
+                            Spacer(modifier = Modifier.size(16.dp))
                             soloUiState.pricup.let{
                                 for(card in it){
-                                    CardView(card = card,
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .aspectRatio(0.7f)
-                                            .padding(4.dp),
-                                        onClick = {soloViewModel.getCardFromPricup(card)})
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ){
+                                        if(!soloUiState.isTrade
+                                            && soloUiState.declarer == soloViewModel.playerList.value[0].name){
+                                            if(soloUiState.pricup.size == 2 && !soloUiState.gameIsStart){
+                                                Text(text = "Bot " + (soloUiState.pricup.indexOf(card)+1).toString()+":")
+                                            }
+                                            CardView(card = card,
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .aspectRatio(0.7f)
+                                                    .padding(4.dp),
+                                                onClick = {soloViewModel.getCardFromPricup(card)})
+                                        }else{
+                                            CardView(card = null,
+                                                modifier = Modifier
+                                                    .fillMaxHeight()
+                                                    .aspectRatio(0.7f)
+                                                    .padding(4.dp),
+                                                onClick = {})
+                                        }
+
+                                    }
+
                                 }
                             }
-                            Spacer(modifier = Modifier.size(32.dp))
+                            Spacer(modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -150,18 +170,40 @@ fun SoloGamePage(
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(0.7f)
-                                .padding(4.dp))
+                                .padding(4.dp),
+                            onClick = {soloViewModel.getCardFromPlayer(card)})
                     }
                 }
             }
         }
 
-        BasicIconButton(text = R.string.confirm,
-            icon = R.drawable.baseline_check_24,
-            modifier = Modifier
-                .basicButton()
-                .weight(1f),
-            action = {})
+        if(!soloUiState.isTrade){
+            BasicIconButton(text = R.string.confirm,
+                icon = R.drawable.baseline_check_24,
+                modifier = Modifier
+                    .basicButton()
+                    .weight(1f),
+                action = {soloViewModel.startGame()})
+        }else if(!soloViewModel.playerList.value[0].isPass){
+            Row{
+                BasicIconButton(text = R.string._5,
+                    icon = R.drawable.baseline_check_24,
+                    modifier = Modifier
+                        .basicButton()
+                        .weight(1f),
+                    action = {soloViewModel.setDeclarer(soloViewModel.playerList.value[0].name)
+                        soloViewModel.botTrade()})
+                BasicIconButton(text = R.string.pass,
+                    icon = R.drawable.baseline_check_24,
+                    modifier = Modifier
+                        .basicButton()
+                        .weight(1f),
+                    action = {soloViewModel.pass(soloViewModel.playerList.value[0].name)
+                        soloViewModel.botTrade()})
+            }
+
+        }
+
 
 
     }
