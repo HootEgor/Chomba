@@ -189,7 +189,7 @@ fun SoloGamePage(
                 modifier = Modifier
                     .basicButton()
                     .weight(1f),
-                action = {})
+                action = {soloViewModel.confirmTurn()})
         }else if(!soloUiState.isTrade){
             BasicIconButton(text = R.string.confirm,
                 icon = R.drawable.baseline_check_24,

@@ -57,11 +57,17 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
                     )
                 }
             }
+            else{
+                uiState.value = uiState.value.copy(
+                    currentTraderIndex = playerList.value.indexOf(player)
+                )
+            }
             player
         }
         uiState.value = uiState.value.copy(
             gameIsStart = true,
         )
+        botTurn()
     }
 
     fun setDeclarer(declarer: String) {
@@ -190,25 +196,38 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         )
     }
 
-    fun playCard(card: Card){
-        playerList.value = playerList.value.map { player ->
-            if (!player.isBot) {
-                player.hand -= card
-                if(uiState.value.playedCard != null){
-                    player.hand += uiState.value.playedCard!!
+    fun playCard(card: Card, name: String = ""){
+        if(name == ""){
+            playerList.value = playerList.value.map { player ->
+                if (!player.isBot) {
+                    player.hand -= card
+                    if(uiState.value.playedCard != null){
+                        player.hand += uiState.value.playedCard!!
+                        uiState.value = uiState.value.copy(
+                            pricup = uiState.value.pricup - uiState.value.playedCard!!
+                        )
+                    }
+                    player.hand = sortCards(player.hand)
                     uiState.value = uiState.value.copy(
-                        pricup = uiState.value.pricup - uiState.value.playedCard!!
+                        playerHand = player.hand,
+                        playedCard = card,
+                        pricup = uiState.value.pricup + card
                     )
                 }
-                player.hand = sortCards(player.hand)
-                uiState.value = uiState.value.copy(
-                    playerHand = player.hand,
-                    playedCard = card,
-                    pricup = uiState.value.pricup + card
-                )
+                player
             }
-            player
+        }else{
+            playerList.value = playerList.value.map { player ->
+                if (player.name == name){
+                    player.hand -= card
+                    uiState.value = uiState.value.copy(
+                        pricup = uiState.value.pricup + card
+                    )
+                }
+                player
+            }
         }
+
     }
 
     fun confirmTurn(){
@@ -232,12 +251,15 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         }
         val turner = playerList.value[uiState.value.currentTraderIndex]
         if(turner.isBot) {
-            val random = Random.nextDouble()
-            if (random < 0.5) {
-                playCard(turner.hand[0])
+            if(uiState.value.pricup.isNotEmpty()){
+                val card = turner.hand.filter { it.suit == uiState.value.pricup[0].suit }.minByOrNull { it.value }!!
+                playCard(card, turner.name)
             }else{
-                playCard(turner.hand[1])
+                val card = turner.hand.maxByOrNull { it.value }!!
+                playCard(card, turner.name)
             }
+
+            confirmTurn()
         }
     }
 
