@@ -1,6 +1,7 @@
 package com.example.chomba.pages.solo
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import com.example.chomba.data.Card
@@ -31,21 +32,32 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         uiState.value = uiState.value.copy(
             pricup = deal.second,
             playerHand = playerList.value[0].hand,
+            gameIsStart = false,
             isTrade = true,
-            declaration = 100)
+            declaration = 95,
+            distributorIndex = 0,
+            currentTraderIndex = 1)
+        setDeclarer(playerList.value[1].name)
     }
 
     fun startGame() {
         if(uiState.value.pricup.size != 2) {
             return
         }
-        for(player in playerList.value) {
-            if(player.isBot) {
+
+        playerList.value = playerList.value.map { player ->
+            if(player.name != uiState.value.declarer) {
                 player.hand += uiState.value.pricup[0]
                 uiState.value = uiState.value.copy(
                     pricup = uiState.value.pricup.drop(1)
                 )
+                if(!player.isBot){
+                    uiState.value = uiState.value.copy(
+                        playerHand = player.hand
+                    )
+                }
             }
+            player
         }
         uiState.value = uiState.value.copy(
             gameIsStart = true,
@@ -57,6 +69,8 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
             declarer = declarer,
             declaration = uiState.value.declaration + 5
         )
+        nextTrader()
+        botTrade()
     }
 
     fun pass(p: String) {
@@ -66,51 +80,53 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
             }
             player
         }
+        nextTrader()
+        botTrade()
     }
 
-    fun botTrade(){
-        for(player in playerList.value) {
-            if(player.isBot && !player.isPass) {
-                val random = Random.nextDouble()
-                if (random < 0.5) {
-                    setDeclarer(player.name)
-                }else{
-                    pass(player.name)
-                }
-            }
+    private fun nextTrader() {
+        val nextTraderIndex = (uiState.value.currentTraderIndex + 1) % playerList.value.size
+        if(playerList.value[nextTraderIndex].isPass) {
+            uiState.value = uiState.value.copy(
+                currentTraderIndex = nextTraderIndex
+            )
+            nextTrader()
+        }else{
+            uiState.value = uiState.value.copy(
+                currentTraderIndex = nextTraderIndex
+            )
         }
-
-        nextTradeRound()
     }
 
-    fun nextTradeRound(){
-        if(playerList.value[0].isPass){
+    private fun botTrade(){
+        if(playerList.value.filter { it.isPass }.size == 2){
             for(player in playerList.value) {
                 if(player.isBot) {
                     if(!player.isPass) {
-                        botTrade()
+                        getAllCardsFromPricup(player.name)
+                        for (card in player.hand.sortedBy { it.value }.take(2)) {
+                            getCardFromPlayer(card, player.name)
+                        }
+                        startGame()
+                        botTurn()
                     }
                 }
             }
             uiState.value = uiState.value.copy(
                 isTrade = false
             )
+            return
         }
 
-        uiState.value = uiState.value.copy(
-            isTrade = false
-        )
-        for(player in playerList.value) {
-            if(player.isBot) {
-                if(!player.isPass) {
-                    uiState.value = uiState.value.copy(
-                        isTrade = true
-                    )
-                }
+        val trader = playerList.value[uiState.value.currentTraderIndex]
+        if(trader.isBot && !trader.isPass) {
+            val random = Random.nextDouble()
+            if (random < 0.5) {
+                setDeclarer(trader.name)
+            }else{
+                pass(trader.name)
             }
         }
-
-
     }
 
     private fun sortCardsForPlayer() {
@@ -139,16 +155,32 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         )
     }
 
-    fun getCardFromPlayer(card: Card){
+    private fun getAllCardsFromPricup(bot: String){
+        playerList.value = playerList.value.map { player ->
+            if (player.name == bot) {
+                player.hand += uiState.value.pricup
+            }
+            player
+        }
+
+        uiState.value = uiState.value.copy(
+            pricup = listOf(),
+        )
+    }
+
+    fun getCardFromPlayer(card: Card, name: String = playerList.value[0].name){
         if(uiState.value.pricup.size >= 2) {
             return
         }
+
         playerList.value = playerList.value.map { player ->
-            if (!player.isBot) {
+            if (player.name == name) {
                 player.hand -= card
-                uiState.value = uiState.value.copy(
-                    playerHand = player.hand
-                )
+                if(!player.isBot){
+                    uiState.value = uiState.value.copy(
+                        playerHand = player.hand
+                    )
+                }
             }
             player
         }
@@ -156,6 +188,57 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         uiState.value = uiState.value.copy(
             pricup = uiState.value.pricup + card,
         )
+    }
+
+    fun playCard(card: Card){
+        playerList.value = playerList.value.map { player ->
+            if (!player.isBot) {
+                player.hand -= card
+                if(uiState.value.playedCard != null){
+                    player.hand += uiState.value.playedCard!!
+                    uiState.value = uiState.value.copy(
+                        pricup = uiState.value.pricup - uiState.value.playedCard!!
+                    )
+                }
+                player.hand = sortCards(player.hand)
+                uiState.value = uiState.value.copy(
+                    playerHand = player.hand,
+                    playedCard = card,
+                    pricup = uiState.value.pricup + card
+                )
+            }
+            player
+        }
+    }
+
+    fun confirmTurn(){
+        uiState.value = uiState.value.copy(
+            playedCard = null
+        )
+        nextTurner()
+        botTurn()
+    }
+
+    private fun nextTurner(){
+        val nextTurnerIndex = (uiState.value.currentTraderIndex + 1) % playerList.value.size
+        uiState.value = uiState.value.copy(
+            currentTraderIndex = nextTurnerIndex
+        )
+    }
+
+    private fun botTurn(){
+        if(uiState.value.currentTraderIndex == 0){
+            return
+        }
+        val turner = playerList.value[uiState.value.currentTraderIndex]
+        if(turner.isBot) {
+            val random = Random.nextDouble()
+            if (random < 0.5) {
+                playCard(turner.hand[0])
+            }else{
+                playCard(turner.hand[1])
+            }
+        }
     }
 
     private fun createDeck(): MutableList<Card> {

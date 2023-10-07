@@ -11,4 +11,7 @@ data class SoloUiState (
     val isTrade: Boolean = false,
 
     val distributorIndex: Int = 0,
+    val currentTraderIndex: Int = 0,
+
+    val playedCard: Card? = null,
 )

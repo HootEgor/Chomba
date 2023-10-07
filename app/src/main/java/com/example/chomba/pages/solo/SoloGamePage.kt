@@ -130,7 +130,8 @@ fun SoloGamePage(
                                         verticalAlignment = Alignment.CenterVertically
                                     ){
                                         if(!soloUiState.isTrade
-                                            && soloUiState.declarer == soloViewModel.playerList.value[0].name){
+                                            && soloUiState.declarer == soloViewModel.playerList.value[0].name
+                                            || soloUiState.gameIsStart){
                                             if(soloUiState.pricup.size == 2 && !soloUiState.gameIsStart){
                                                 Text(text = "Bot " + (soloUiState.pricup.indexOf(card)+1).toString()+":")
                                             }
@@ -139,7 +140,7 @@ fun SoloGamePage(
                                                     .fillMaxHeight()
                                                     .aspectRatio(0.7f)
                                                     .padding(4.dp),
-                                                onClick = {soloViewModel.getCardFromPricup(card)})
+                                                onClick = { if(!soloUiState.gameIsStart) soloViewModel.getCardFromPricup(card) })
                                         }else{
                                             CardView(card = null,
                                                 modifier = Modifier
@@ -166,40 +167,50 @@ fun SoloGamePage(
                     horizontalArrangement = Arrangement.Center,
                 ) {
                     items(soloUiState.playerHand) { card ->
+                        val action = if(soloUiState.gameIsStart){
+                            {soloViewModel.playCard(card)}
+                        }else{
+                            {soloViewModel.getCardFromPlayer(card)}
+                        }
                         CardView(card = card,
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(0.7f)
                                 .padding(4.dp),
-                            onClick = {soloViewModel.getCardFromPlayer(card)})
+                            onClick = action)
                     }
                 }
             }
         }
 
-        if(!soloUiState.isTrade){
+        if(soloUiState.gameIsStart){
+            BasicIconButton(text = R.string.turn,
+                icon = R.drawable.baseline_check_24,
+                modifier = Modifier
+                    .basicButton()
+                    .weight(1f),
+                action = {})
+        }else if(!soloUiState.isTrade){
             BasicIconButton(text = R.string.confirm,
                 icon = R.drawable.baseline_check_24,
                 modifier = Modifier
                     .basicButton()
                     .weight(1f),
                 action = {soloViewModel.startGame()})
-        }else if(!soloViewModel.playerList.value[0].isPass){
+        }else if(!soloViewModel.playerList.value[0].isPass || soloUiState.declarer == soloViewModel.playerList.value[0].name){
             Row{
                 BasicIconButton(text = R.string._5,
                     icon = R.drawable.baseline_check_24,
                     modifier = Modifier
                         .basicButton()
                         .weight(1f),
-                    action = {soloViewModel.setDeclarer(soloViewModel.playerList.value[0].name)
-                        soloViewModel.botTrade()})
+                    action = {soloViewModel.setDeclarer(soloViewModel.playerList.value[0].name)})
                 BasicIconButton(text = R.string.pass,
                     icon = R.drawable.baseline_check_24,
                     modifier = Modifier
                         .basicButton()
                         .weight(1f),
-                    action = {soloViewModel.pass(soloViewModel.playerList.value[0].name)
-                        soloViewModel.botTrade()})
+                    action = {soloViewModel.pass(soloViewModel.playerList.value[0].name)})
             }
 
         }
