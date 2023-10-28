@@ -200,19 +200,26 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         if(name == ""){
             playerList.value = playerList.value.map { player ->
                 if (!player.isBot) {
-                    player.hand -= card
-                    if(uiState.value.playedCard != null){
-                        player.hand += uiState.value.playedCard!!
+                    if(uiState.value.pricup.isEmpty() ||
+                        card.suit == uiState.value.pricup[0].suit ||
+                        player.hand.none { it.suit == uiState.value.pricup[0].suit} ||
+                        uiState.value.pricup[0] == uiState.value.playedCard){
+
+                        player.hand -= card
+                        if(uiState.value.playedCard != null){
+                            player.hand += uiState.value.playedCard!!
+                            uiState.value = uiState.value.copy(
+                                pricup = uiState.value.pricup - uiState.value.playedCard!!
+                            )
+                        }
+                        player.hand = sortCards(player.hand)
+                        card.player = player
                         uiState.value = uiState.value.copy(
-                            pricup = uiState.value.pricup - uiState.value.playedCard!!
+                            playerHand = player.hand,
+                            playedCard = card,
+                            pricup = uiState.value.pricup + card
                         )
                     }
-                    player.hand = sortCards(player.hand)
-                    uiState.value = uiState.value.copy(
-                        playerHand = player.hand,
-                        playedCard = card,
-                        pricup = uiState.value.pricup + card
-                    )
                 }
                 player
             }
@@ -220,6 +227,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
             playerList.value = playerList.value.map { player ->
                 if (player.name == name){
                     player.hand -= card
+                    card.player = player
                     uiState.value = uiState.value.copy(
                         pricup = uiState.value.pricup + card
                     )
@@ -231,11 +239,45 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
     }
 
     fun confirmTurn(){
-        uiState.value = uiState.value.copy(
-            playedCard = null
-        )
-        nextTurner()
-        botTurn()
+        if(uiState.value.pricup.size == 3){
+            var player = Player()
+            val suit = if(uiState.value.currentChomba == null){
+                uiState.value.pricup[0].suit
+            }else{
+                uiState.value.currentChomba!!
+            }
+
+            val maxCard = uiState.value.pricup.filter { it.suit == suit }.maxBy{ it.value }
+            player = playerList.value.first { it.name == maxCard.player?.name }
+            playerList.value = playerList.value.map { p ->
+                if(p.name == player.name){
+                    p.scorePerRound += uiState.value.pricup.sumOf { it.value } + Chomba(maxCard, player)
+                }
+                p
+            }
+
+            uiState.value = uiState.value.copy(
+                playedCard = null,
+                pricup = listOf(),
+                currentTraderIndex = playerList.value.indexOf(player),
+            )
+        }
+        else{
+            uiState.value = uiState.value.copy(
+                playedCard = null
+            )
+            nextTurner()
+        }
+        if(!endRound()){
+            botTurn()
+        }
+    }
+
+    private fun endRound(): Boolean{
+        if(playerList.value.all { it.hand.isEmpty() }){
+            return true
+        }
+        return false
     }
 
     private fun nextTurner(){
@@ -252,7 +294,11 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         val turner = playerList.value[uiState.value.currentTraderIndex]
         if(turner.isBot) {
             if(uiState.value.pricup.isNotEmpty()){
-                val card = turner.hand.filter { it.suit == uiState.value.pricup[0].suit }.minByOrNull { it.value }!!
+                var card = turner.hand.filter { it.suit == uiState.value.pricup[0].suit }.minByOrNull { it.value }
+                if(card == null){
+                    card = turner.hand.minBy { it.value }
+                }
+                Log.d("card", card.toString())
                 playCard(card, turner.name)
             }else{
                 val card = turner.hand.maxByOrNull { it.value }!!
@@ -261,6 +307,26 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 
             confirmTurn()
         }
+    }
+
+    private fun Chomba(card: Card, player: Player): Int {
+        if(card.value == CardValue.KING.customValue || card.value == CardValue.QUEEN.customValue
+            && player.scorePerRound > 0){
+            if(player.hand.any { it.value == CardValue.KING.customValue ||
+                it.value == CardValue.QUEEN.customValue && it.suit == card.suit}){
+                uiState.value = uiState.value.copy(
+                    currentChomba = card.suit
+                )
+                return when(card.suit){
+                    CardSuit.CORAZON.ordinal -> 100
+                    CardSuit.DIAMANTE.ordinal -> 80
+                    CardSuit.TREBOL.ordinal -> 60
+                    CardSuit.PICA.ordinal -> 40
+                    else -> 0
+                }
+            }
+        }
+        return 0
     }
 
     private fun createDeck(): MutableList<Card> {

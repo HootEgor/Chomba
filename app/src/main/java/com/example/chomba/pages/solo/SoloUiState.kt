@@ -12,6 +12,7 @@ data class SoloUiState (
 
     val distributorIndex: Int = 0,
     val currentTraderIndex: Int = 0,
+    val currentChomba: Int? = null,
 
     val playedCard: Card? = null,
 )

@@ -49,7 +49,6 @@ fun SoloGamePage(
 ){
     val uiState by viewModel.uiState
     val soloUiState by soloViewModel.uiState
-    val playerList by viewModel.playerList
     val nextRound = remember { mutableStateOf(false) }
     val setDeclarer = remember { mutableStateOf(false) }
     val showTip = remember { mutableStateOf(false) }
@@ -104,6 +103,7 @@ fun SoloGamePage(
                     contentAlignment = Alignment.Center
                 ) {
                     Column {
+
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -111,7 +111,18 @@ fun SoloGamePage(
                                 .padding(4.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = soloUiState.declarer + ": " + soloUiState.declaration.toString())
+                            if(!soloUiState.gameIsStart){
+                                Text(text = soloUiState.declarer + ": " + soloUiState.declaration.toString())
+                            }else{
+                                Column (
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ){
+                                    for(player in soloViewModel.playerList.value){
+                                        Text(text = player.name + ": " + player.scorePerRound.toString())
+                                    }
+                                }
+                            }
                         }
 
                         Row(
@@ -190,6 +201,7 @@ fun SoloGamePage(
                     .basicButton()
                     .weight(1f),
                 action = {soloViewModel.confirmTurn()})
+
         }else if(!soloUiState.isTrade){
             BasicIconButton(text = R.string.confirm,
                 icon = R.drawable.baseline_check_24,

@@ -72,12 +72,12 @@ fun CardView(
                 ) {
                     Text(
                         text = when (nonNullCard.value) {
-                            CardValue.NINE.ordinal -> "9"
-                            CardValue.JACK.ordinal -> "J"
-                            CardValue.QUEEN.ordinal -> "Q"
-                            CardValue.KING.ordinal -> "K"
-                            CardValue.TEN.ordinal -> "10"
-                            CardValue.ACE.ordinal -> "A"
+                            CardValue.NINE.customValue -> "9"
+                            CardValue.JACK.customValue -> "J"
+                            CardValue.QUEEN.customValue -> "Q"
+                            CardValue.KING.customValue -> "K"
+                            CardValue.TEN.customValue -> "10"
+                            CardValue.ACE.customValue -> "A"
                             else -> ""
                         },
                         fontSize = 24.sp
