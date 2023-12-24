@@ -152,6 +152,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         }
 
         val trader = playerList.value[uiState.value.currentTraderIndex]
+
         if(trader.isBot && !trader.isPass) {
             val random = Random.nextDouble()
             if (random < 0.5) {
