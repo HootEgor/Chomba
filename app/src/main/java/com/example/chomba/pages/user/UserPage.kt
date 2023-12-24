@@ -67,6 +67,7 @@ import com.example.chomba.ui.theme.ext.basicButton
 import com.example.chomba.ui.theme.ext.smallButton
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.example.chomba.ui.theme.composable.GameCard
 
 @Composable
 fun UserPage(
@@ -314,73 +315,4 @@ fun LoginScreen(
     }
 }
 
-@Composable
-fun GameCard(
-    modifier: Modifier = Modifier,
-    game: Game,
-    onSelect: () -> Unit,
-    selected: Boolean = false
-){
-    Surface (
-        shape = Shapes.large,
-        color = MaterialTheme.colorScheme.background,
-        modifier = modifier
-            .fillMaxWidth()
-            .border(
-                width = 2.dp,
-                color = if (selected) MaterialTheme.colorScheme.onTertiaryContainer
-                else MaterialTheme.colorScheme.secondaryContainer,
-                shape = Shapes.large
-            )
-            .clickable(onClick = onSelect)
-    ){
-        Row(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            for(player in game.playerList){
-                PlayerGameCard(
-                    modifier = modifier
-                        .weight(1f),
-                    player = player
-                )
-            }
-        }
-    }
-}
 
-@Composable
-fun PlayerGameCard(
-    modifier: Modifier = Modifier,
-    player: Player,
-){
-    Column (
-        modifier = modifier
-            .fillMaxHeight(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ){
-        Text(
-            text = player.name,
-            style = MaterialTheme.typography.titleMedium
-        )
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .aspectRatio(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularChart(
-                modifier = Modifier
-                    .fillMaxSize(0.75f),
-                pressModifier = Modifier,
-                value = player.getTotalScore(),
-                maxValue = 1000,
-                color = Color(player.color.toULong()),
-                zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
-                else 0,
-                blind = false
-            )
-        }
-    }
-
-}

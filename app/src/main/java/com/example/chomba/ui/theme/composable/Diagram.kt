@@ -2,11 +2,17 @@ package com.example.chomba.ui.theme.composable
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +30,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.chomba.R
+import com.example.chomba.data.Game
+import com.example.chomba.data.Player
+import com.example.chomba.data.getMissBarrel
+import com.example.chomba.data.getTotalScore
+import com.example.chomba.ui.theme.Shapes
 
 @Composable
 fun CircularChart(
@@ -129,4 +140,75 @@ fun CircularChart(
 
 
     }
+}
+
+@Composable
+fun GameCard(
+    modifier: Modifier = Modifier,
+    game: Game,
+    onSelect: () -> Unit,
+    selected: Boolean = false
+){
+    Surface (
+        shape = Shapes.large,
+        color = MaterialTheme.colorScheme.background,
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = 2.dp,
+                color = if (selected) MaterialTheme.colorScheme.onTertiaryContainer
+                else MaterialTheme.colorScheme.secondaryContainer,
+                shape = Shapes.large
+            )
+            .clickable(onClick = onSelect)
+    ){
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            for(player in game.playerList){
+                PlayerGameCard(
+                    modifier = modifier
+                        .weight(1f),
+                    player = player
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PlayerGameCard(
+    modifier: Modifier = Modifier,
+    player: Player,
+){
+    Column (
+        modifier = modifier
+            .fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ){
+        Text(
+            text = player.name,
+            style = MaterialTheme.typography.titleMedium
+        )
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .aspectRatio(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularChart(
+                modifier = Modifier
+                    .fillMaxSize(0.75f),
+                pressModifier = Modifier,
+                value = player.getTotalScore(),
+                maxValue = 1000,
+                color = Color(player.color.toULong()),
+                zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
+                else 0,
+                blind = false
+            )
+        }
+    }
+
 }

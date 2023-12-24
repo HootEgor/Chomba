@@ -35,6 +35,7 @@ import com.example.chomba.pages.Dropdown
 import com.example.chomba.pages.PlayerCard
 import com.example.chomba.ui.theme.composable.BasicIconButton
 import com.example.chomba.ui.theme.composable.CardView
+import com.example.chomba.ui.theme.composable.GameCard
 import com.example.chomba.ui.theme.composable.SaveGame
 import com.example.chomba.ui.theme.composable.Tips
 import com.example.chomba.ui.theme.composable.TopBar
@@ -118,9 +119,15 @@ fun SoloGamePage(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ){
+
+                                    Text(text = soloUiState.declarer + ": " + soloUiState.declaration.toString())
                                     for(player in soloViewModel.playerList.value){
                                         Text(text = player.name + ": " + player.scorePerRound.toString())
                                     }
+                                    GameCard(
+                                        game = soloViewModel.getCurrentGame(),
+                                        onSelect = {},
+                                    )
                                 }
                             }
                         }
@@ -200,8 +207,8 @@ fun SoloGamePage(
                 modifier = Modifier
                     .basicButton()
                     .weight(1f),
-                action = {soloViewModel.confirmTurn()})
-
+                action = {if(soloViewModel.isPlayerMakeTurn())
+                            soloViewModel.confirmTurn()})
         }else if(!soloUiState.isTrade){
             BasicIconButton(text = R.string.confirm,
                 icon = R.drawable.baseline_check_24,
