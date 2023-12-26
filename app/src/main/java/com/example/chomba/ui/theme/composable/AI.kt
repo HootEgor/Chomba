@@ -1,4 +1,4 @@
-package com.example.chomba.ai
+package com.example.chomba.ui.theme.composable
 
 import android.content.Context
 import android.util.Log
@@ -20,15 +20,16 @@ import org.encog.neural.networks.training.propagation.resilient.ResilientPropaga
 import org.encog.persist.EncogDirectoryPersistence
 import java.io.File
 import kotlin.random.Random
+import com.example.chomba.ai.CardEvaluator as CardEvaluator1
 
 
-class CardEvaluator(context: Context?) {
+class CardEvaluator(context: Context) {
     private val modelFileName = "neural_network_model.eg"
-    private val modelFilePath: String = File(context?.filesDir, modelFileName).absolutePath
+    private val modelFilePath: String = File(context.filesDir, modelFileName).absolutePath
     private val inputSize = 24
     private val outputSize = 1
 
-    private val network: BasicNetwork = createOrLoadNeuralNetwork()
+    private val network: BasicNetwork = createNeuralNetwork()
 
     private fun createOrLoadNeuralNetwork(): BasicNetwork {
         val loadedNetwork = try {
@@ -86,11 +87,21 @@ class CardEvaluator(context: Context?) {
     }
 
     fun predict(hand: List<Card>): Double {
-        val inputArray = hand.flatMap { cardToInputArray(it) }.toDoubleArray()
-        val input = BasicMLData(inputArray)
+//        val inputArray = hand.flatMap { cardToInputArray(it) }.toDoubleArray()
+//        val input = BasicMLData(inputArray)
+//
+//        val output: MLData = network.compute(input)
+//        return output.getData(0)
 
-        val output: MLData = network.compute(input)
-        return output.getData(0)
+        if(hand.none{it.value == CardValue.ACE.customValue}) {
+            return Random.nextDouble(0.0, 0.3)
+        }
+        else if(hand.firstOrNull{it.value == CardValue.ACE.customValue} != null){
+            return Random.nextDouble(0.4, 0.8)
+        }
+        else {
+            return Random.nextDouble(0.5, 1.0)
+        }
     }
 
     fun cardToInputArray(card: Card): List<Double> {
@@ -119,6 +130,13 @@ class CardEvaluator(context: Context?) {
         inputArray[index] = 1.0
 
         return inputArray.toList()
+    }
+
+    fun some(){
+        val cardEvaluator = CardEvaluator1(null)
+        cardEvaluator.train(listOf(listOf(Card(CardValue.ACE.customValue, CardSuit.CORAZON.ordinal))), listOf(0.0))
+        cardEvaluator.endTraining()
+        cardEvaluator.predict(listOf(Card(CardValue.ACE.customValue, CardSuit.CORAZON.ordinal)))
     }
 }
 

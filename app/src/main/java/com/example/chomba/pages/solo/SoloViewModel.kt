@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.chomba.GameUiState
+import com.example.chomba.ui.theme.composable.CardEvaluator
 import com.example.chomba.data.Card
 import com.example.chomba.data.CardSuit
 import com.example.chomba.data.CardValue
@@ -14,6 +16,8 @@ import com.example.chomba.data.Score
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 class SoloViewModel(application: Application): AndroidViewModel(application)  {
@@ -23,14 +27,17 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         private set
 
     private val auth = FirebaseAuth.getInstance()
+
+    val cardEvaluator = CardEvaluator(getApplication())
     fun newGame() {
         val newPlayerList = mutableListOf<Player>()
         newPlayerList.add(Player(name = auth.currentUser?.displayName ?: "", isBot = false))
         newPlayerList.add(Player(name = "Bot 1", isBot = true))
         newPlayerList.add(Player(name = "Bot 2", isBot = true))
-//        newPlayerList.add(Player(name = "Bot 3", isBot = true))
 
         playerList.value = newPlayerList
+
+//        train()
         distributeCards()
 //        val deck = createDeck()
 //        shuffleDeck(deck)
@@ -53,8 +60,15 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         shuffleDeck(deck)
         val deal = dealCards(playerList.value, deck, 7)
         playerList.value = playerList.value.map { player ->
+            val hand = deal.first.first { it.name == player.name }.hand
+            var declaration = countBotScore(hand)
+            val predict = cardEvaluator.predict(hand)
+            if (predict<=0.6){
+                declaration = (declaration*predict).roundToInt()
+            }
             player.copy(hand = deal.first.first { it.name == player.name }.hand,
-                isPass = false,)
+                isPass = false,
+                declaration = declaration,)
         }
         uiState.value = uiState.value.copy(
             pricup = deal.second,
@@ -65,6 +79,8 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
             distributorIndex = 0,
             currentTraderIndex = 1)
         setDeclarer(playerList.value[1].name)
+
+        Log.d("AI_test", "Predicted: ${cardEvaluator.predict(playerList.value[0].hand)}, Actual: ${countBotScore(playerList.value[0].hand)}")
     }
 
     fun startGame() {
@@ -154,8 +170,8 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         val trader = playerList.value[uiState.value.currentTraderIndex]
 
         if(trader.isBot && !trader.isPass) {
-            val random = Random.nextDouble()
-            if (random < 0.5) {
+            Log.d("AI_test", "${trader.name}: ${trader.declaration}")
+            if (trader.declaration >= uiState.value.declaration) {
                 setDeclarer(trader.name)
             }else{
                 pass(trader.name)
@@ -311,6 +327,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         }else{
             nextRound()
         }
+
     }
 
     private fun nextRound(){
@@ -410,7 +427,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
     }
 
     private fun botTurn(){
-        if(uiState.value.currentTraderIndex == 0){
+        if(uiState.value.currentTraderIndex == 0 && !playerList.value[0].isBot){
             return
         }
         val turner = playerList.value[uiState.value.currentTraderIndex]
@@ -571,5 +588,141 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         val index = uiState.value.distributorIndex
         return if (index == playerList.value.size - 1) 0 else index + 1
     }
+
+    private fun train(){
+        val cardEvaluator = CardEvaluator(getApplication())
+
+        val totalIterations = 100
+
+        val hands = mutableListOf<List<Card>>()
+        val actualPointsList = mutableListOf<Double>()
+        val ap = mutableListOf<Double>()
+
+        for (iteration in 0..totalIterations) {
+            val newPlayerList = mutableListOf<Player>()
+            newPlayerList.add(Player(name = "Bot 1", isBot = true))
+            newPlayerList.add(Player(name = "Bot 2", isBot = true))
+            newPlayerList.add(Player(name = "Bot 3", isBot = true))
+
+            playerList.value = newPlayerList
+
+            val deck = createDeck()
+            shuffleDeck(deck)
+            val deal = dealCards(playerList.value, deck, 7)
+            playerList.value = playerList.value.map { player ->
+                player.copy(hand = deal.first.first { it.name == player.name }.hand,
+                    isPass = false,
+                    declaration = cardEvaluator.predict(player.hand).roundToInt(),
+                    scorePerRound = 0)
+            }
+            uiState.value = uiState.value.copy(
+                pricup = deal.second,)
+            val currentHand: MutableList<List<Card>> = mutableListOf()
+            for (player in playerList.value){
+                currentHand.add(player.hand)
+            }
+
+            val predictedPoints: MutableList<Double> = mutableListOf()
+            for (player in playerList.value){
+                predictedPoints.add(player.declaration.toDouble())
+            }
+            botPlay()
+            val actualPoints: MutableList<Double> = mutableListOf()
+            for (player in playerList.value){
+                actualPoints.add(player.scorePerRound.toDouble())
+            }
+
+            hands.add(currentHand[0])
+            ap.add(actualPoints[0])
+            if((actualPoints[0] - countBotScore(hands[0]).toDouble()) >= 0)
+                actualPoints[0] = 1.0
+            else
+                actualPoints[0] = 0.0
+            actualPointsList.add(actualPoints[0])
+
+//            cardEvaluator.train(currentHand[0], predictedPoints[0], actualPoints[0])
+
+//            Log.d("AI_test", "Predicted: ${cardEvaluator.predict(currentHand[0])}, Actual: ${deNormalizeValues(actualPoints)}")
+//            if(iteration % 1000 == 0 || iteration >= totalIterations-10 || iteration<=10)
+//                Log.d("AI_test", "Iteration $iteration: predicted ${cardEvaluator.predict(currentHand[0])}, actual ${actualPoints[0]}")
+        }
+        cardEvaluator.train(hands, actualPointsList)
+        cardEvaluator.endTraining()
+
+        var n = 0
+        for(i in 0..100){
+            val predict = cardEvaluator.predict(hands[i])
+            if(predict < 0.5 && actualPointsList[i] == 0.0){
+                n++
+                Log.d("AI_test", "$n Predicted: ${predict}, Actual: ${actualPointsList[i]}")
+                Log.d("AI_test", "$n Predicted: ${countBotScore(hands[i])}, Actual: ${ap[i]}")
+            }
+            else if (predict > 0.5 && actualPointsList[i] == 1.0){
+                n++
+                Log.d("AI_test", "$n Predicted: ${predict}, Actual: ${actualPointsList[i]}")
+                Log.d("AI_test", "$n Predicted: ${countBotScore(hands[i])}, Actual: ${ap[i]}")
+            }
+        }
+
+    }
+
+    private fun botPlay(){
+        val turner = playerList.value[0]
+        getAllCardsFromPricup(turner.name)
+        for (card in turner.hand.sortedBy { it.value }.take(2)) {
+            getCardFromPlayer(card, turner.name)
+        }
+        playerList.value = playerList.value.map { player ->
+            if(player.name != turner.name) {
+                player.hand += uiState.value.pricup[0]
+                uiState.value = uiState.value.copy(
+                    pricup = uiState.value.pricup.drop(1)
+                )
+                if(!player.isBot){
+                    uiState.value = uiState.value.copy(
+                        playerHand = player.hand
+                    )
+                }
+            }
+            else{
+                uiState.value = uiState.value.copy(
+                    currentTraderIndex = playerList.value.indexOf(player),
+                    declaration = player.declaration,
+                    declarer = player.name
+                )
+            }
+            player
+        }
+
+        botTurn()
+
+    }
+
+    fun countBotScore(hand: List<Card>): Int{
+        var score = 0
+        hand.forEach { card ->
+            score += card.value
+        }
+        //check if bot has chomba
+        //chomba it is a king or queen of the same suit as the player's hand
+        for(card in hand){
+            if(card.value == CardValue.KING.customValue || card.value == CardValue.QUEEN.customValue){
+                if(hand.any { it.value == CardValue.KING.customValue ||
+                    it.value == CardValue.QUEEN.customValue && it.suit == card.suit && it != card}){
+                    score += when(card.suit){
+                        CardSuit.CORAZON.ordinal -> 50
+                        CardSuit.DIAMANTE.ordinal -> 40
+                        CardSuit.TREBOL.ordinal -> 30
+                        CardSuit.PICA.ordinal -> 20
+                        else -> 0
+                    }
+                }
+            }
+        }
+
+        return score
+    }
+
+
 
 }
