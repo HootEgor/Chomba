@@ -28,7 +28,7 @@ class CardEvaluator(context: Context?) {
     private val inputSize = 24
     private val outputSize = 1
 
-    private val network: BasicNetwork = createOrLoadNeuralNetwork()
+    private val network: BasicNetwork = createNeuralNetwork()
 
     private fun createOrLoadNeuralNetwork(): BasicNetwork {
         val loadedNetwork = try {
@@ -46,9 +46,7 @@ class CardEvaluator(context: Context?) {
         val net = BasicNetwork()
 
         net.addLayer(BasicLayer(ActivationSigmoid(), true, inputSize))
-        net.addLayer(BasicLayer(ActivationSigmoid(), true, 100))
         net.addLayer(BasicLayer(ActivationSigmoid(), true, 50))
-        net.addLayer(BasicLayer(ActivationSigmoid(), true, inputSize))
         net.addLayer(BasicLayer(ActivationSigmoid(), true, outputSize))
 
         net.structure.finalizeStructure()
