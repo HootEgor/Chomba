@@ -6,9 +6,11 @@ import com.example.chomba.data.Card
 import com.example.chomba.data.CardSuit
 import com.example.chomba.data.CardValue
 import org.encog.Encog
+import org.encog.engine.network.activation.ActivationBipolarSteepenedSigmoid
 import org.encog.engine.network.activation.ActivationLinear
 import org.encog.engine.network.activation.ActivationReLU
 import org.encog.engine.network.activation.ActivationSigmoid
+import org.encog.engine.network.activation.ActivationSoftMax
 import org.encog.engine.network.activation.ActivationTANH
 import org.encog.ml.data.MLData
 import org.encog.ml.data.basic.BasicMLData
@@ -28,7 +30,7 @@ class CardEvaluator(context: Context?) {
     private val inputSize = 24
     private val outputSize = 1
 
-    private val network: BasicNetwork = createNeuralNetwork()
+    private val network: BasicNetwork = createOrLoadNeuralNetwork()
 
     private fun createOrLoadNeuralNetwork(): BasicNetwork {
         val loadedNetwork = try {
@@ -41,13 +43,23 @@ class CardEvaluator(context: Context?) {
     }
     private fun saveNeuralNetwork() {
         EncogDirectoryPersistence.saveObject(File(modelFilePath), network)
-    }
+            }
     private fun createNeuralNetwork(): BasicNetwork {
         val net = BasicNetwork()
 
         net.addLayer(BasicLayer(ActivationSigmoid(), true, inputSize))
-        net.addLayer(BasicLayer(ActivationSigmoid(), true, 50))
+        net.addLayer(BasicLayer(ActivationReLU(), true, 48))
+        net.addLayer(BasicLayer(ActivationSoftMax(), true, 48))
         net.addLayer(BasicLayer(ActivationSigmoid(), true, outputSize))
+
+        //net.addLayer(BasicLayer(ActivationSigmoid(), true, inputSize))
+        //net.addLayer(BasicLayer(ActivationTANH(), true, 64))
+        //net.addLayer(BasicLayer(ActivationReLU(), true, 64))
+        //net.addLayer(BasicLayer(ActivationTANH(), true, 64))
+        //net.addLayer(BasicLayer(ActivationSigmoid(), true, outputSize))
+
+
+
 
         net.structure.finalizeStructure()
         net.reset()
@@ -68,7 +80,7 @@ class CardEvaluator(context: Context?) {
 
         val train = ResilientPropagation(network, dataSet)
 
-        for (i in 0..100) {
+        for (i in 0..10) {
             train.iteration()
 //            if(i % 10 == 0)
 //                Log.d("AI_test", "Iteration: $i Error: ${train.error}")

@@ -591,11 +591,11 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         return if (index == playerList.value.size - 1) 0 else index + 1
     }
 
-    private fun train(){
+    private fun train() {
         val cardEvaluator = CardEvaluator(getApplication())
 
-        val totalIterations = 100
-
+        val totalIterations = 1000
+            //for (i in 0..10) {
         val hands = mutableListOf<List<Card>>()
         val actualPointsList = mutableListOf<Double>()
         val ap = mutableListOf<Double>()
@@ -612,31 +612,34 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
             shuffleDeck(deck)
             val deal = dealCards(playerList.value, deck, 7)
             playerList.value = playerList.value.map { player ->
-                player.copy(hand = deal.first.first { it.name == player.name }.hand,
+                player.copy(
+                    hand = deal.first.first { it.name == player.name }.hand,
                     isPass = false,
                     declaration = cardEvaluator.predict(player.hand).roundToInt(),
-                    scorePerRound = 0)
+                    scorePerRound = 0
+                )
             }
             uiState.value = uiState.value.copy(
-                pricup = deal.second,)
+                pricup = deal.second,
+            )
             val currentHand: MutableList<List<Card>> = mutableListOf()
-            for (player in playerList.value){
+            for (player in playerList.value) {
                 currentHand.add(player.hand)
             }
 
             val predictedPoints: MutableList<Double> = mutableListOf()
-            for (player in playerList.value){
+            for (player in playerList.value) {
                 predictedPoints.add(player.declaration.toDouble())
             }
             botPlay()
             val actualPoints: MutableList<Double> = mutableListOf()
-            for (player in playerList.value){
+            for (player in playerList.value) {
                 actualPoints.add(player.scorePerRound.toDouble())
             }
 
             hands.add(currentHand[0])
             ap.add(actualPoints[0])
-            if((actualPoints[0] - countBotScore(hands[0]).toDouble()) >= 0)
+            if ((actualPoints[0] - countBotScore(hands[0]).toDouble()) >= 0)
                 actualPoints[0] = 1.0
             else
                 actualPoints[0] = 0.0
@@ -645,20 +648,37 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 //            cardEvaluator.train(currentHand[0], predictedPoints[0], actualPoints[0])
 
 //            Log.d("AI_test", "Predicted: ${cardEvaluator.predict(currentHand[0])}, Actual: ${deNormalizeValues(actualPoints)}")
-            if(iteration % 1000 == 0 || iteration >= totalIterations-10 || iteration<=10)
-                Log.d("AI_test", "Iteration $iteration: predicted ${cardEvaluator.predict(currentHand[0])}, actual ${actualPoints[0]}")
+//            if (iteration % 1000 == 0 || iteration >= totalIterations - 10 || iteration <= 10)
+//                Log.d(
+//                    "AI_test",
+//                    "Iteration $iteration: predicted ${cardEvaluator.predict(currentHand[0])}, actual ${actualPoints[0]}"
+//                )
         }
-        cardEvaluator.train(hands, actualPointsList)
+            cardEvaluator.train(hands, actualPointsList)
         cardEvaluator.endTraining()
 
-        Log.d("AI_test", "Avg: ${Random.nextDouble(0.0, 0.3)}")
 
-        Log.d("AI_test", "Precision: ${Random.nextInt(100,400)}/1000")
+        var x = 0
+        for (iteration in 0..totalIterations) {
 
-        Log.d("AI_test", "Avg: ${Random.nextDouble(0.7, 1.0)}")
+            var predict = cardEvaluator.predict(hands[iteration])
+//                if (iteration >= totalIterations - 100) {
+//                    Log.d(
+//                        "AI_test",
+//                        "Precision: ${predict} -actual: ${actualPointsList[iteration]}"
+//                    )
+//                }
+            if (predict <= 0.4 && 0.0 == actualPointsList[iteration]) {
+                x++
+            }
+            if (predict >= 0.7 && 1.0 == actualPointsList[iteration]) {
+                x++
+            }
+        }
+        Log.d("AI_test", "Matches: ${x} / ${totalIterations}")
 
-        Log.d("AI_test", "Precision: ${Random.nextInt(800,1000)}/1000")
 
+        //  }
     }
 
     private fun botPlay(){
