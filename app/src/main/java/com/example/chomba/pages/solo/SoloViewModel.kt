@@ -612,37 +612,35 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
             shuffleDeck(deck)
             val deal = dealCards(playerList.value, deck, 7)
             playerList.value = playerList.value.map { player ->
-                player.copy(
-                    hand = deal.first.first { it.name == player.name }.hand,
+                player.copy(hand = deal.first.first { it.name == player.name }.hand,
                     isPass = false,
                     declaration = cardEvaluator.predict(player.hand).roundToInt(),
-                    scorePerRound = 0
-                )
+                    scorePerRound = 0)
             }
             uiState.value = uiState.value.copy(
-                pricup = deal.second,
-            )
+                pricup = deal.second,)
             val currentHand: MutableList<List<Card>> = mutableListOf()
-            for (player in playerList.value) {
+            for (player in playerList.value){
                 currentHand.add(player.hand)
             }
 
             val predictedPoints: MutableList<Double> = mutableListOf()
-            for (player in playerList.value) {
+            for (player in playerList.value){
                 predictedPoints.add(player.declaration.toDouble())
             }
             botPlay()
             val actualPoints: MutableList<Double> = mutableListOf()
-            for (player in playerList.value) {
+            for (player in playerList.value){
                 actualPoints.add(player.scorePerRound.toDouble())
             }
 
             hands.add(currentHand[0])
             ap.add(actualPoints[0])
-            if ((actualPoints[0] - countBotScore(hands[0]).toDouble()) >= 0)
-                actualPoints[0] = 1.0
-            else
-                actualPoints[0] = 0.0
+//            if((actualPoints[0] - countBotScore(hands[0]).toDouble()) >= 0)
+//                actualPoints[0] = 1.0
+//            else
+//                actualPoints[0] = 0.0
+            actualPoints[0] = actualPoints[0]/420
             actualPointsList.add(actualPoints[0])
 
 //            cardEvaluator.train(currentHand[0], predictedPoints[0], actualPoints[0])
@@ -654,7 +652,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 //                    "Iteration $iteration: predicted ${cardEvaluator.predict(currentHand[0])}, actual ${actualPoints[0]}"
 //                )
         }
-            cardEvaluator.train(hands, actualPointsList)
+        cardEvaluator.train(hands, actualPointsList)
         cardEvaluator.endTraining()
 
 
@@ -668,17 +666,13 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 //                        "Precision: ${predict} -actual: ${actualPointsList[iteration]}"
 //                    )
 //                }
-            if (predict <= 0.4 && 0.0 == actualPointsList[iteration]) {
-                x++
-            }
-            if (predict >= 0.7 && 1.0 == actualPointsList[iteration]) {
+            if (predict >= actualPointsList[iteration]*0.9 && predict <= actualPointsList[iteration]*1.1) {
                 x++
             }
         }
         Log.d("AI_test", "Matches: ${x} / ${totalIterations}")
 
 
-        //  }
     }
 
     private fun botPlay(){
