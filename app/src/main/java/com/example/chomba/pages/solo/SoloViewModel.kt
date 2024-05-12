@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.chomba.GameUiState
 //import com.example.chomba.ui.theme.composable.CardEvaluator
 import com.example.chomba.ai.CardEvaluator
+import com.example.chomba.ai.GptEvaluator
 import com.example.chomba.data.Card
 import com.example.chomba.data.CardSuit
 import com.example.chomba.data.CardValue
@@ -38,7 +39,8 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 //
 //        playerList.value = newPlayerList
 
-        train()
+//        train()
+        gptTest()
 //        distributeCards()
 //        val deck = createDeck()
 //        shuffleDeck(deck)
@@ -675,6 +677,70 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 
     }
 
+    private fun gptTest() {
+        val ctx = getApplication<Application>().applicationContext
+        val cardEvaluator = GptEvaluator(ctx)
+
+        val totalIterations = 1
+        val hands = mutableListOf<List<Card>>()
+        val actualPointsList = mutableListOf<Int>()
+
+        for (iteration in 0..totalIterations) {
+            val newPlayerList = mutableListOf<Player>()
+            newPlayerList.add(Player(name = "Bot 1", isBot = true))
+            newPlayerList.add(Player(name = "Bot 2", isBot = true))
+            newPlayerList.add(Player(name = "Bot 3", isBot = true))
+
+            playerList.value = newPlayerList
+
+            val deck = createDeck()
+            shuffleDeck(deck)
+            val deal = dealCards(playerList.value, deck, 7)
+            playerList.value = playerList.value.map { player ->
+                player.copy(hand = deal.first.first { it.name == player.name }.hand,
+                    isPass = false,
+                    declaration = 0,
+                    scorePerRound = 0)
+            }
+            uiState.value = uiState.value.copy(
+                pricup = deal.second,)
+            val currentHand: MutableList<List<Card>> = mutableListOf()
+            for (player in playerList.value){
+                currentHand.add(player.hand)
+            }
+
+            val predictedPoints: MutableList<Double> = mutableListOf()
+            for (player in playerList.value){
+                predictedPoints.add(player.declaration.toDouble())
+            }
+            botPlay()
+            val actualPoints: MutableList<Int> = mutableListOf()
+            for (player in playerList.value){
+                actualPoints.add(player.scorePerRound)
+            }
+
+            hands.add(currentHand[0])
+            actualPointsList.add(actualPoints[0])
+
+        }
+
+        viewModelScope.launch {
+            var x = 0
+            for (iteration in 0..totalIterations) {
+
+                var predict = cardEvaluator.predict(hands[iteration])
+
+                if (predict != null) {
+                    if (predict >= actualPointsList[iteration]-10 && predict <= actualPointsList[iteration]+10) {
+                        x++
+                    }
+                }
+                Log.d("AI_test", "Score: ${predict} / ${actualPointsList[iteration]}")
+            }
+            Log.d("AI_test", "Matches: ${x} / ${totalIterations+1}")
+        }
+    }
+
     private fun botPlay(){
         val turner = playerList.value[0]
         getAllCardsFromPricup(turner.name)
@@ -730,7 +796,5 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 
         return score
     }
-
-
 
 }

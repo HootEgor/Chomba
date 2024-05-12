@@ -88,4 +88,6 @@ dependencies {
 
 //    implementation("org.deeplearning4j:deeplearning4j-core:0.9.1")
     implementation("org.encog:encog-core:3.4")
+
+    implementation ("com.google.code.gson:gson:2.8.8")
 }
