@@ -60,8 +60,15 @@ class GptEvaluator(private val context: Context){
             val choices = jsonObject.getJSONArray("choices")
             if (choices.length() > 0) {
                 val message = choices.getJSONObject(0).getJSONObject("message").getString("content")
-                val scoreJson = JSONObject(message)
-                return@withContext scoreJson.optInt("Score")
+                // Use regular expression to find the number after "Score:"
+                val regex = """\{Score:\s*(\d+)\}""".toRegex()
+                val matchResult = regex.find(message)
+                if (matchResult != null) {
+                    val scoreString = matchResult.groupValues[1]
+                    return@withContext scoreString.toIntOrNull()
+                } else {
+                    return@withContext null
+                }
             } else {
                 return@withContext null
             }

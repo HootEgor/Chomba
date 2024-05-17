@@ -681,7 +681,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         val ctx = getApplication<Application>().applicationContext
         val cardEvaluator = GptEvaluator(ctx)
 
-        val totalIterations = 1
+        val totalIterations = 4
         val hands = mutableListOf<List<Card>>()
         val actualPointsList = mutableListOf<Int>()
 
@@ -735,7 +735,8 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
                         x++
                     }
                 }
-                Log.d("AI_test", "Score: ${predict} / ${actualPointsList[iteration]}")
+                Log.d("AI_test", "Score: $predict / ${actualPointsList[iteration]}, " +
+                        "Difference: ${predict?.minus(actualPointsList[iteration])}")
             }
             Log.d("AI_test", "Matches: ${x} / ${totalIterations+1}")
         }
