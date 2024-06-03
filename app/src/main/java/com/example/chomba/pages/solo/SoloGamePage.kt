@@ -124,10 +124,10 @@ fun SoloGamePage(
                                     for(player in soloViewModel.playerList.value){
                                         Text(text = player.name + ": " + player.scorePerRound.toString())
                                     }
-//                                    GameCard(
-//                                        game = soloViewModel.getCurrentGame(),
-//                                        onSelect = {},
-//                                    )
+                                    GameCard(
+                                        game = soloViewModel.getCurrentGame(),
+                                        onSelect = {},
+                                    )
                                 }
                             }
                         }

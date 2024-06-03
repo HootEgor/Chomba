@@ -6,8 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.GameUiState
-//import com.example.chomba.ui.theme.composable.CardEvaluator
-import com.example.chomba.ai.CardEvaluator
+import com.example.chomba.ui.theme.composable.CardEvaluator
+//import com.example.chomba.ai.CardEvaluator
 import com.example.chomba.ai.GptEvaluator
 import com.example.chomba.data.Card
 import com.example.chomba.data.CardSuit
@@ -32,16 +32,17 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
 
     val cardEvaluator = CardEvaluator(getApplication())
     fun newGame() {
-//        val newPlayerList = mutableListOf<Player>()
-//        newPlayerList.add(Player(name = auth.currentUser?.displayName ?: "", isBot = false))
-//        newPlayerList.add(Player(name = "Bot 1", isBot = true))
-//        newPlayerList.add(Player(name = "Bot 2", isBot = true))
-//
-//        playerList.value = newPlayerList
+        val newPlayerList = mutableListOf<Player>()
+        newPlayerList.add(Player(name = auth.currentUser?.displayName ?: "", isBot = false))
+        newPlayerList.add(Player(name = "Bot 1", isBot = true))
+        newPlayerList.add(Player(name = "Bot 2", isBot = true))
+
+        playerList.value = newPlayerList
+        distributeCards()
 
 //        train()
-        gptTest()
-//        distributeCards()
+//        gptTest()
+
 //        val deck = createDeck()
 //        shuffleDeck(deck)
 //        val deal = dealCards(newPlayerList, deck, 7)
@@ -329,7 +330,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
         if(!endRound()){
             botTurn()
         }else{
-//            nextRound()
+            nextRound()
         }
 
     }
@@ -351,7 +352,7 @@ class SoloViewModel(application: Application): AndroidViewModel(application)  {
                 } else {
                     type = -1
                 }
-                score = existingPlayer.declaration
+                score = uiState.value.declaration
                 if(existingPlayer.blind)
                     score *= 2
             }
