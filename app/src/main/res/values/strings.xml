@@ -47,4 +47,6 @@
     <string name="_5">+5</string>
     <string name="pass">Pass</string>
     <string name="turn">Turn</string>
+    <string name="successfully_deleted">Game successfully deleted.</string>
+    <string name="failed_to_delete_game">Failed to delete game.</string>
 </resources>

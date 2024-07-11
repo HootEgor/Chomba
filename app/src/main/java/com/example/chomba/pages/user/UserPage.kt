@@ -119,7 +119,8 @@ fun UserProfile(
                     GameCard(
                         game = uiState.gameList[index],
                         onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
-                        selected = uiState.gameList[index].id == uiState.currentGameIndex
+                        selected = uiState.gameList[index].id == uiState.currentGameIndex,
+                        onDelete = { viewModel.deleteGame(uiState.gameList[index].id) }
                     )
                 }
             }

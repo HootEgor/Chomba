@@ -1,5 +1,6 @@
 package com.example.chomba.ui.theme.composable
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -147,7 +149,8 @@ fun GameCard(
     modifier: Modifier = Modifier,
     game: Game,
     onSelect: () -> Unit,
-    selected: Boolean = false
+    selected: Boolean = false,
+    onDelete: () -> Unit
 ){
     Surface (
         shape = Shapes.large,
@@ -162,19 +165,38 @@ fun GameCard(
             )
             .clickable(onClick = onSelect)
     ){
-        Row(
+        Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(8.dp)
         ) {
-            for(player in game.playerList){
-                PlayerGameCard(
-                    modifier = modifier
-                        .weight(1f),
-                    player = player
-                )
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+                for(player in game.playerList){
+                    PlayerGameCard(
+                        modifier = modifier
+                            .weight(1f),
+                        player = player
+                    )
+                }
             }
+
+            AnimatedVisibility(visible = selected) {
+                Divider(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp)
+                )
+
+                IconButton(icon = R.drawable.baseline_delete_24,
+                    modifier = modifier.fillMaxWidth(),
+                    action = onDelete)
+            }
+
         }
+
     }
 }
 

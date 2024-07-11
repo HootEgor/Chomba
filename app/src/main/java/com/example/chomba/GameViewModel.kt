@@ -552,6 +552,30 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     }
 
+    fun deleteGame(id: String){
+        viewModelScope.launch {
+            startProgressProfile()
+            val db = Firebase.firestore
+            val userUid = auth.currentUser?.uid
+            if (userUid != null) {
+                db.collection("users").document(userUid)
+                    .collection("gameList")
+                    .document(id)
+                    .delete()
+                    .addOnSuccessListener {
+                        profileUi.value = profileUi.value.copy(saveMsg = R.string.successfully_deleted)
+                    }
+                    .addOnFailureListener {
+                        profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_delete_game)
+                    }
+            }else{
+                profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
+            }
+        }.invokeOnCompletion {
+            loadGames()
+        }
+    }
+
     fun setCurrentGame(id: String){
         val game = profileUi.value.gameList.find { it.id == id }!!
         if(!isGameFinished(game)){

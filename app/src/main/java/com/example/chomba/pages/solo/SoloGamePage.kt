@@ -127,6 +127,7 @@ fun SoloGamePage(
                                     GameCard(
                                         game = soloViewModel.getCurrentGame(),
                                         onSelect = {},
+                                        onDelete = {},
                                     )
                                 }
                             }
