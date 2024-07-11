@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chomba.ai.VoiceRecognitionViewModel
 import com.example.chomba.data.CardSuit
 import com.example.chomba.data.Game
 import com.example.chomba.data.Player
@@ -29,6 +30,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.round
 
 class GameViewModel(application: Application): AndroidViewModel(application) {
+
+    val voiceRec = VoiceRecognitionViewModel(application)
 
     val playerList = mutableStateOf<List<Player>>(listOf())
     var uiState = mutableStateOf(GameUiState())

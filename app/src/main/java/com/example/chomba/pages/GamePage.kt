@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -30,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -60,7 +57,6 @@ import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.composable.rememberPickerState
 import com.example.chomba.ui.theme.ext.basicButton
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GamePage(
     modifier: Modifier = Modifier,
@@ -71,7 +67,6 @@ fun GamePage(
     val nextRound = remember { mutableStateOf(false) }
     val setDeclarer = remember { mutableStateOf(false) }
     val showTip = remember { mutableStateOf(false) }
-    val saveButton = remember { mutableStateOf(false) }
     val saveAlert = remember { mutableStateOf(false) }
     val isMenuExpanded = remember { mutableStateOf(false) }
     Column(
@@ -247,10 +242,39 @@ fun GamePage(
 
         val scores = remember { (100..420 step 5).map { it.toString() } }
         val scoresValue = rememberPickerState()
+        val startIndex = remember {mutableIntStateOf(0)}
 
         AlertDialog(
             onDismissRequest = { setDeclarer.value = false },
-            title = { Text(text = stringResource(R.string.set_declarer), style = MaterialTheme.typography.headlineSmall) },
+            title = { 
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = stringResource(R.string.set_declarer),
+                        style = MaterialTheme.typography.headlineSmall)
+                    VoiceRecognitionButton(
+                        modifier = Modifier.weight(1f),
+                        onRecognized = { recognizedScore ->
+                            if (recognizedScore < 100) {
+                                val currentScore = scoresValue.selectedItem.toIntOrNull() ?: 0
+                                val hundreds = (currentScore / 100) * 100
+                                val newScore = hundreds + recognizedScore
+                                val index = scores.indexOf(newScore.toString())
+                                if (index != -1) {
+                                    startIndex.intValue = index
+                                }
+                            } else {
+                                val index = scores.indexOf(recognizedScore.toString())
+                                if (index != -1) {
+                                    startIndex.intValue = index
+                                }
+                            }
+                        },
+                        viewModel = viewModel.voiceRec)
+                }},
             text = {
                 Surface(shape = RoundedCornerShape(4.dp),
                     color = MaterialTheme.colorScheme.surface,
@@ -288,7 +312,7 @@ fun GamePage(
                                 .weight(1f),
                             textModifier = Modifier.padding(4.dp),
                             textStyle = TextStyle(fontSize = 16.sp),
-                            startIndex = 0
+                            startIndex = startIndex.intValue
                         )
                     }
                 }
@@ -502,8 +526,9 @@ fun PlayerCard(
     ) {
         Column{
             Row(
-                modifier = Modifier.fillMaxSize().
-                weight(1f),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     Column(
@@ -685,7 +710,9 @@ fun PlayerCard(
             Divider(modifier = Modifier.fillMaxWidth())
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(3.dp,0.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(3.dp, 0.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -693,7 +720,9 @@ fun PlayerCard(
                     val isTaken = player.takenChombas.contains(suit)
                     IconButton(
                         icon = suitIcon(suit.ordinal),
-                        modifier = Modifier.weight(1f).padding(1.dp, 0.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(1.dp, 0.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (isTaken) MaterialTheme.colorScheme.primaryContainer
                             else MaterialTheme.colorScheme.background,
