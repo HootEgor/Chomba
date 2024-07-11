@@ -92,7 +92,7 @@ fun NewGamePage(
                     }
                 }
 
-                AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 4){
+                AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 3){
                 BasicIconButton(text = R.string.add_player,
                     icon = R.drawable.baseline_add_24,
                     modifier = modifier.basicButton(),
@@ -107,7 +107,7 @@ fun NewGamePage(
                 .padding(horizontal = 64.dp),
             contentAlignment = Alignment.Center
         ){
-            this@Column.AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() > 1){
+            this@Column.AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3){
                 BasicTextButton(text = R.string.start,
                     modifier = modifier
                         .basicButton()

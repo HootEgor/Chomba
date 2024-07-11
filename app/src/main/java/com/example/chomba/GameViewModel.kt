@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chomba.data.CardSuit
 import com.example.chomba.data.Game
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
@@ -391,6 +392,40 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             playerList.value = updatedPlayerList
         }.invokeOnCompletion {
             setCurrentPage(2)
+        }
+    }
+
+    fun takeChomba(player: Player, suit: Int) {
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer.name == player.name) {
+                existingPlayer.copy(takenChombas = existingPlayer.takenChombas + CardSuit.values()[suit],
+                    scorePerRound = existingPlayer.scorePerRound + chombaScore(suit))
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
+    }
+
+    fun undoChomba(player: Player, suit: Int) {
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer.name == player.name) {
+                existingPlayer.copy(takenChombas = existingPlayer.takenChombas.filter { it.ordinal != suit },
+                    scorePerRound = existingPlayer.scorePerRound - chombaScore(suit))
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
+    }
+
+    private fun chombaScore(suit: Int): Int{
+        return when(suit){
+            0 -> 40
+            1 -> 60
+            2 -> 80
+            3 -> 100
+            else -> 0
         }
     }
 

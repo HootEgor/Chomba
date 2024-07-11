@@ -18,6 +18,7 @@ data class Player(
     var hand: List<Card> = listOf(),
     var isBot: Boolean = false,
     var isPass: Boolean = false,
+    var takenChombas: List<CardSuit> = listOf(),
 ){
     constructor() : this(visible = true,
         name = "",
@@ -28,7 +29,8 @@ data class Player(
         blind = false,
         hand = listOf(),
         isBot = false,
-        isPass = false)
+        isPass = false,
+        takenChombas = listOf())
 }
 
 fun Player.getTotalScore(): Int {

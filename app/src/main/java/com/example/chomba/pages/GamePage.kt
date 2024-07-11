@@ -15,6 +15,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
+import com.example.chomba.data.CardSuit
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
 import com.example.chomba.data.getBarrel
@@ -123,9 +125,11 @@ fun GamePage(
                         modifier = Modifier
                             .weight(1f)
                             .padding(top = 4.dp)
-                            .aspectRatio(2.2f),
+                            .aspectRatio(1.65f),
                         player = player,
                         onSave = {viewModel.saveScorePerRound(player, it)},
+                        takeChomba = {viewModel.takeChomba(player, it)},
+                        undoChomba = {viewModel.undoChomba(player, it)},
                         declarer = uiState.declarer,
                         showScoreList = {viewModel.showScoreList(player, true)},
                         isDistributor = player.name == playerList[uiState.distributorIndex].name,
@@ -475,6 +479,8 @@ fun PlayerCard(
     modifier: Modifier,
     player: Player,
     onSave:(Int) -> Unit,
+    takeChomba: (Int) -> Unit,
+    undoChomba: (Int) -> Unit,
     declarer: Player?,
     showScoreList: () -> Unit,
     isDistributor: Boolean,
@@ -494,161 +500,215 @@ fun PlayerCard(
                 shape = Shapes.large
             ),
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-           Box(modifier = Modifier.weight(1f)) {
-               Column(modifier = Modifier.fillMaxSize(),
-                   verticalArrangement = Arrangement.SpaceBetween,
-                   horizontalAlignment = Alignment.CenterHorizontally) {
-                   Row(modifier = Modifier.weight(1f),
-                       verticalAlignment = Alignment.CenterVertically,
-                       horizontalArrangement = Arrangement.SpaceEvenly) {
-                       Icon(
-                           painter = painterResource(id = R.drawable.baseline_hail_24),
-                           contentDescription = null,
-                            modifier = Modifier.padding(start = 16.dp),
-                           tint = if(!isDistributor) Color.Transparent
-                           else MaterialTheme.colorScheme.onTertiaryContainer,
-                       )
-                       Text(text = player.name,
-                           style = MaterialTheme.typography.titleMedium,
-                           modifier = Modifier.weight(2f),
-                           textAlign = TextAlign.Center)
-                       Text(text = if(player.name == declarer?.name) player.declaration.toString()
-                       else "",
-                           style = MaterialTheme.typography.titleLarge,
-                           modifier = Modifier
-                               .weight(1f)
-                               .combinedClickable(
-                                   onClick = {},
-                                   onLongClick = { setScorePerRoundD() }
-                               ),
-                           textAlign = TextAlign.Center)
-                   }
-                   Box(modifier = Modifier
-                           .weight(2f),
-                       contentAlignment = Alignment.Center){
-                       Row{
-                           Box(modifier = Modifier.weight(1f)){
-                               Surface(
-                                   modifier = Modifier
-                                       .fillMaxSize()
-                                       .padding(4.dp)
-                                       .border(
-                                           width = 2.dp,
-                                           color = MaterialTheme.colorScheme.secondaryContainer,
-                                           shape = Shapes.large
-                                       ),
-                                   shape = RoundedCornerShape(8.dp),
-                                   color = MaterialTheme.colorScheme.background,
-                               ) {
-                                   Column(
-                                       modifier = Modifier
-                                           .fillMaxSize()
-                                           .padding(start = 8.dp)
-                                           .padding(vertical = 4.dp),
-                                       verticalArrangement = Arrangement.SpaceEvenly,
-                                       horizontalAlignment = Alignment.CenterHorizontally
-                                   ) {
-                                       Row (modifier = Modifier.weight(1f),
-                                           horizontalArrangement = Arrangement.SpaceAround,
-                                           verticalAlignment = Alignment.CenterVertically){
-                                           Icon(
-                                               painter = painterResource(
-                                                   id = R.drawable.baseline_border_color_24
-                                               ),
-                                               contentDescription = null,
-                                               modifier = Modifier.size(24.dp),
-                                           )
-                                           Text(text = player.getDissolution().toString(),
-                                               style = MaterialTheme.typography.titleMedium,
-                                               modifier = Modifier.weight(1f),
-                                               textAlign = TextAlign.Center)
+        Column{
+            Row(
+                modifier = Modifier.fillMaxSize().
+                weight(1f),
+            ) {
+                Box(modifier = Modifier.weight(1f)) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.SpaceBetween,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_hail_24),
+                                contentDescription = null,
+                                modifier = Modifier.padding(start = 16.dp),
+                                tint = if (!isDistributor) Color.Transparent
+                                else MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                            Text(
+                                text = player.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(2f),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(text = if (player.name == declarer?.name) player.declaration.toString()
+                            else "",
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .combinedClickable(
+                                        onClick = {},
+                                        onLongClick = { setScorePerRoundD() }
+                                    ),
+                                textAlign = TextAlign.Center)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(2f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(4.dp)
+                                            .border(
+                                                width = 2.dp,
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = Shapes.large
+                                            ),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.background,
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(start = 8.dp)
+                                                .padding(vertical = 4.dp),
+                                            verticalArrangement = Arrangement.SpaceEvenly,
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.weight(1f),
+                                                horizontalArrangement = Arrangement.SpaceAround,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(
+                                                        id = R.drawable.baseline_border_color_24
+                                                    ),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(24.dp),
+                                                )
+                                                Text(
+                                                    text = player.getDissolution().toString(),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    modifier = Modifier.weight(1f),
+                                                    textAlign = TextAlign.Center
+                                                )
 
-                                       }
-                                       Row (modifier = Modifier.weight(1f),
-                                           horizontalArrangement = Arrangement.SpaceAround,
-                                           verticalAlignment = Alignment.CenterVertically){
-                                           Icon(
-                                               painter = painterResource(
-                                                   id = R.drawable.baseline_horizontal_rule_24
-                                               ),
-                                               contentDescription = null,
-                                               modifier = Modifier.size(24.dp),
-                                           )
-                                           Text(text = player.getZeroNum().toString(),
-                                               style = MaterialTheme.typography.titleMedium,
-                                               modifier = Modifier.weight(1f),
-                                               textAlign = TextAlign.Center)
+                                            }
+                                            Row(
+                                                modifier = Modifier.weight(1f),
+                                                horizontalArrangement = Arrangement.SpaceAround,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    painter = painterResource(
+                                                        id = R.drawable.baseline_horizontal_rule_24
+                                                    ),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(24.dp),
+                                                )
+                                                Text(
+                                                    text = player.getZeroNum().toString(),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    modifier = Modifier.weight(1f),
+                                                    textAlign = TextAlign.Center
+                                                )
 
-                                       }
-                                       Row (modifier = Modifier.weight(1f),
-                                           horizontalArrangement = Arrangement.SpaceAround,
-                                           verticalAlignment = Alignment.CenterVertically){
-                                           Image(
-                                               painter = painterResource(
-                                                   id = R.drawable.ic_1200952
-                                               ),
-                                               contentDescription = null,
-                                               modifier = Modifier.size(24.dp),
-                                           )
-                                           Text(text = player.getBarrel().toString(),
-                                               style = MaterialTheme.typography.titleMedium,
-                                               modifier = Modifier.weight(1f),
-                                               textAlign = TextAlign.Center)
+                                            }
+                                            Row(
+                                                modifier = Modifier.weight(1f),
+                                                horizontalArrangement = Arrangement.SpaceAround,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(
+                                                        id = R.drawable.ic_1200952
+                                                    ),
+                                                    contentDescription = null,
+                                                    modifier = Modifier.size(24.dp),
+                                                )
+                                                Text(
+                                                    text = player.getBarrel().toString(),
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    modifier = Modifier.weight(1f),
+                                                    textAlign = TextAlign.Center
+                                                )
 
-                                       }
-                                   }
-                               }
-                           }
-                           Box(modifier = Modifier.weight(1f)){
-                               Surface(
-                                   modifier = Modifier
-                                       .fillMaxSize()
-                                       .padding(vertical = 4.dp)
-                                       .border(
-                                           width = 2.dp,
-                                           color = MaterialTheme.colorScheme.secondaryContainer,
-                                           shape = Shapes.large
-                                       ),
-                                   shape = RoundedCornerShape(8.dp),
-                                   color = MaterialTheme.colorScheme.background,
-                               ) {
-                                   ScorePicker(
-                                       modifier = Modifier
-                                           .fillMaxSize()
-                                           .padding(horizontal = 4.dp),
-                                       onSelect = { onSave(it)},
-                                       startScore = player.scorePerRound
-                                   )
-                               }
-                           }
-                       }
-                   }
-               }
-           }
-           Box(modifier = Modifier
-               .weight(1f)
-               .aspectRatio(1f),
-               contentAlignment = Alignment.Center) {
-               CircularChart(
-                   modifier = Modifier
-                          .fillMaxSize(0.75f),
-                   pressModifier = Modifier
-                       .combinedClickable(
-                           onClick = {},
-                           onLongClick = {
-                               showScoreList()
-                           },
-                           onDoubleClick = {setBlind()}),
-                   value = player.getTotalScore(),
-                   maxValue = 1000,
-                   color = Color(player.color.toULong()),
-                   zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
-                    else 0,
-                   blind = player.blind,
-               )
-           }
+                                            }
+                                        }
+                                    }
+                                }
+                                Box(modifier = Modifier.weight(1f)) {
+                                    Surface(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(vertical = 4.dp)
+                                            .border(
+                                                width = 2.dp,
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                shape = Shapes.large
+                                            ),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.background,
+                                    ) {
+                                        ScorePicker(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(horizontal = 4.dp),
+                                            onSelect = { onSave(it) },
+                                            startScore = player.scorePerRound
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .aspectRatio(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularChart(
+                        modifier = Modifier
+                            .fillMaxSize(0.75f),
+                        pressModifier = Modifier
+                            .combinedClickable(
+                                onClick = {},
+                                onLongClick = {
+                                    showScoreList()
+                                },
+                                onDoubleClick = { setBlind() }),
+                        value = player.getTotalScore(),
+                        maxValue = 1000,
+                        color = Color(player.color.toULong()),
+                        zeroNum = if (player.getTotalScore() == 880) player.getMissBarrel()
+                        else 0,
+                        blind = player.blind,
+                    )
+                }
+            }
+
+            Divider(modifier = Modifier.fillMaxWidth())
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(3.dp,0.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                for (suit in CardSuit.values()){
+                    val isTaken = player.takenChombas.contains(suit)
+                    IconButton(
+                        icon = suitIcon(suit.ordinal),
+                        modifier = Modifier.weight(1f).padding(1.dp, 0.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isTaken) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.background,
+                            contentColor = if (suit.ordinal > 1) Color.Red
+                            else MaterialTheme.colorScheme.onBackground
+                        ),
+                        action = {
+                            if (!isTaken) takeChomba(suit.ordinal)
+                            else undoChomba(suit.ordinal)
+                        }
+                    )
+                }
+            }
         }
+
     }
 }
 
@@ -833,6 +893,17 @@ fun typeIcon(type: Int): Int {
         2, -2, -4 -> R.drawable.ic_1200952
         3 -> R.drawable.ic_gift
         -3 -> R.drawable.baseline_border_color_24
+        else -> R.drawable.baseline_square_24
+    }
+}
+
+@DrawableRes
+fun suitIcon(suit: Int): Int {
+    return when (suit) {
+        0 -> R.drawable.ic_pica
+        1 -> R.drawable.ic_trebol
+        2 -> R.drawable.ic_diamante
+        3 -> R.drawable.ic_corazon
         else -> R.drawable.baseline_square_24
     }
 }
