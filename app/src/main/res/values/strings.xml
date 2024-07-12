@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Chomba</string>
+    <string name="app_name" translatable="false">Chomba</string>
     <string name="new_game">New game</string>
     <string name="load_games">Load games</string>
     <string name="start">Start</string>
@@ -15,7 +15,7 @@
     <string name="winner">Winner</string>
     <string name="error">error</string>
     <string name="player_score_list">Score list of</string>
-    <string name="_120">-120</string>
+    <string name="_120" translatable="false">-120</string>
     <string name="dissolution">Dissolution</string>
     <string name="make_dissolution">Make dissolution</string>
     <string name="are_you_sure">Are you sure?</string>
@@ -44,9 +44,12 @@
     <string name="failed_to_load_games">Failed to load games</string>
     <string name="solo_game">Solo Game</string>
     <string name="confirm">Confirm</string>
-    <string name="_5">+5</string>
+    <string name="_5" translatable="false">+5</string>
     <string name="pass">Pass</string>
     <string name="turn">Turn</string>
     <string name="successfully_deleted">Game successfully deleted.</string>
     <string name="failed_to_delete_game">Failed to delete game.</string>
+    <string name="speech_prompt">Speak now...</string>
+    <string name="stop_recognition">стоп</string>
+    <string name="five">пять</string>
 </resources>

@@ -225,7 +225,8 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             val newScore = Score(score, type)
 
             existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
-                scorePerRound = 0, blind = false)
+                scorePerRound = 0, blind = false,
+                takenChombas = listOf())
 
         }
 

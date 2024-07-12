@@ -243,6 +243,7 @@ fun GamePage(
         val scores = remember { (100..420 step 5).map { it.toString() } }
         val scoresValue = rememberPickerState()
         val startIndex = remember {mutableIntStateOf(0)}
+        val currentScore = remember {mutableIntStateOf(100)}
 
         AlertDialog(
             onDismissRequest = { setDeclarer.value = false },
@@ -259,14 +260,14 @@ fun GamePage(
                         modifier = Modifier.weight(1f),
                         onRecognized = { recognizedScore ->
                             if (recognizedScore < 100) {
-                                val currentScore = scoresValue.selectedItem.toIntOrNull() ?: 0
-                                val hundreds = (currentScore / 100) * 100
+                                val hundreds = (currentScore.intValue / 100) * 100
                                 val newScore = hundreds + recognizedScore
                                 val index = scores.indexOf(newScore.toString())
                                 if (index != -1) {
                                     startIndex.intValue = index
                                 }
                             } else {
+                                currentScore.intValue = recognizedScore
                                 val index = scores.indexOf(recognizedScore.toString())
                                 if (index != -1) {
                                     startIndex.intValue = index

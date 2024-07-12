@@ -9,6 +9,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import com.example.chomba.R
+import java.util.Locale
 
 class VoiceRecognitionViewModel(application: Application) : AndroidViewModel(application) {
     val recognizedText = mutableStateOf("")
@@ -22,10 +24,13 @@ class VoiceRecognitionViewModel(application: Application) : AndroidViewModel(app
     }
 
     fun startSpeechRecognition(context: Context) {
+        val systemLocale = Locale.getDefault()
+        val languageTag = systemLocale.toLanguageTag()
+
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Говорите...")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU") //TODO: change to languageTag
+            putExtra(RecognizerIntent.EXTRA_PROMPT, R.string.speech_prompt)
         }
         try {
             speechRecognizerLauncher?.launch(intent)
@@ -37,8 +42,12 @@ class VoiceRecognitionViewModel(application: Application) : AndroidViewModel(app
 
     fun processRecognizedText(recognizedText: String): Pair<Int, Boolean> {
         val score = recognizedText.filter { it.isDigit() }.toIntOrNull() ?: 0
-        val stop = recognizedText.contains("стоп", ignoreCase = true)
-        if (score == 0 && recognizedText.contains("пять", ignoreCase = true)) {
+
+        val stopWord = context.getString(R.string.stop_recognition)
+        val stop = recognizedText.contains(stopWord, ignoreCase = true)
+
+        val five = context.getString(R.string.five)
+        if (score == 0 && recognizedText.contains(five, ignoreCase = true)) {
             return Pair(5, stop)
         }
         return Pair(score, stop)
