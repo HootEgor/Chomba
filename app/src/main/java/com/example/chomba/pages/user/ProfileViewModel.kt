@@ -101,4 +101,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
         return false
     }
+
+    fun toggleSettings(){
+        profileUi.value = profileUi.value.copy(isSettings = !profileUi.value.isSettings)
+    }
 }

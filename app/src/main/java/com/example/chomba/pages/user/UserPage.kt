@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -92,9 +93,6 @@ fun UserProfile(
 ) {
     val uiState by viewModel.profileUi
 
-
-
-
     Column(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -110,64 +108,51 @@ fun UserProfile(
             signOutAction = { viewModel.profileVM.signOut() }
         )
 
-        if(uiState.gameList.isNotEmpty()){
-            LazyColumn(
+        if(uiState.isSettings){
+            SettingsScreen(
                 modifier = modifier
-                    .weight(1f)
-            ) {
-                items(uiState.gameList.size) { index ->
-                    GameCard(
-                        game = uiState.gameList[index],
-                        onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
-                        selected = uiState.gameList[index].id == uiState.currentGameIndex,
-                        onDelete = { viewModel.profileVM.deleteGame(uiState.gameList[index].id) }
-                    )
-                }
-            }
-        }else{
-            Text(
-                text = stringResource(uiState.saveMsg),
-                style = MaterialTheme.typography.titleMedium
+                    .weight(1f),
             )
-        }
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            modifier = modifier
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                BasicTextButton(
-                    text = R.string.load_games,
+        }else{
+            if(uiState.gameList.isNotEmpty()){
+                Surface(
+                    shape = Shapes.medium,
+                    //shadowElevation = 4.dp,
                     modifier = modifier
-                        .basicButton()
-                        .weight(1f),
-                    action = { viewModel.profileVM.loadGames() }
-                )
-                BasicTextButton(
-                    text = R.string.home,
-                    modifier = modifier
-                        .basicButton()
-                        .weight(1f),
-                    action = { viewModel.setCurrentPage(0) }
-                )
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .border(2.dp, MaterialTheme.colorScheme.onSurfaceVariant, Shapes.medium)
 
-            }
-            if (uiState.currentGameIndex != null) {
-                BasicTextButton(
-                    text = R.string.continue_game,
-                    modifier = modifier.basicButton(),
-                    action = { viewModel.continueGame() }
+                ) {
+                    LazyColumn(
+                        modifier = modifier
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        items(uiState.gameList.size) { index ->
+                            GameCard(
+                                modifier = modifier
+                                    .fillMaxWidth()
+                                    .padding(3.dp, 0.dp),
+                                game = uiState.gameList[index],
+                                onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
+                                selected = uiState.gameList[index].id == uiState.currentGameIndex,
+                                onDelete = { viewModel.profileVM.deleteGame(uiState.gameList[index].id) }
+                            )
+                        }
+                    }
+                }
+            }else{
+                Text(
+                    text = stringResource(uiState.saveMsg),
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
         }
+
+        BottomBar(
+            modifier = modifier.fillMaxWidth(),
+            viewModel = viewModel,
+            uiState = uiState)
 
     }
 }
@@ -226,94 +211,47 @@ fun UserNameBar(
     }
 }
 
-
-
 @Composable
-fun LoginScreen(
-    modifier: Modifier = Modifier,
+fun BottomBar(
+    modifier: Modifier,
     viewModel: GameViewModel,
-    onSignInEmail: (String) -> Unit,
-) {
-    val email = remember { mutableStateOf("") }
-    val oneTapClient: SignInClient = Identity.getSignInClient(LocalContext.current)
+    uiState: ProfileScreenUiState
+){
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult(),
-        onResult = { result ->
-            try {
-                val credentials = oneTapClient.getSignInCredentialFromIntent(result.data)
-                credentials.googleIdToken?.let { token ->
-                    viewModel.profileVM.signInWithGoogleToken(token)
-                }
-            } catch (e: Exception) {
-                Log.e("SignResult", "OneTapUI request failed; $e")
-            }
-        }
-    )
-
-    val onGoogleSignInClick = {
-        val apiKey = "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com"
-        val request = viewModel.profileVM.userRepo.getSignInRequest(apiKey)
-        oneTapClient.beginSignIn(request)
-            .addOnSuccessListener {
-                try {
-                    launcher.launch(
-                        IntentSenderRequest.Builder(
-                            it.pendingIntent.intentSender
-                        ).build()
-                    )
-                } catch (e: Exception) {
-//                    SnackbarManager.showMessage(e.toSnackbarMessage())
-                    Log.e("PRG", "OneTapUI start failed; $e")
-                }
-            }
-            .addOnFailureListener {
-//                SnackbarManager.showMessage(it.toSnackbarMessage())
-                Log.w("PRG", "Google SignIn cancelled", it)
-            }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        OutlinedTextField(
-            value = email.value,
-            onValueChange = { newValue ->
-                email.value = newValue
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-            textStyle = LocalTextStyle.current.copy(color = Color.Black),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            singleLine = true,
-            label = { Text(stringResource(R.string.email))},
+        IconButton(
+            icon = R.drawable.baseline_settings_24,
+            modifier = modifier
+                .smallButton()
+                .weight(1f),
+            action = {viewModel.profileVM.toggleSettings()}
+        )
+        IconButton(
+            icon = R.drawable.baseline_home_24,
+            modifier = modifier
+                .smallButton()
+                .weight(1f),
+            action = {viewModel.setCurrentPage(0) },
+            isEnabled = !uiState.isSettings
+        )
+        IconButton(
+            icon = R.drawable.baseline_arrow_forward_ios_24,
+            modifier = modifier
+                .smallButton()
+                .weight(1f),
+            action = {viewModel.continueGame()},
+            isEnabled = uiState.currentGameIndex != null && !uiState.isSettings
         )
 
-        TextButton(
-            onClick = {
-                // Вызов метода для регистрации через email
-                onSignInEmail(email.value)
-            },
-        ) {
-            Text(text = stringResource(R.string.sign_in_with_email))
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextButton(
-            onClick = {
-                // Вызов метода для регистрации через Google
-                onGoogleSignInClick()
-            },
-        ) {
-            Text(text = stringResource(R.string.sign_in_with_google))
-        }
     }
 }
+
+
+
+
+
 
 

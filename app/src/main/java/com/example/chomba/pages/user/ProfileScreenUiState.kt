@@ -21,6 +21,11 @@ data class ProfileScreenUiState(
 
     val saveMsg: Int = R.string.in_progress,
 
-    val voiceRecognitionLanguage: String = "ru-RU"
+    val isSettings: Boolean = false,
+
+    val voiceRecognitionLanguage: String = "ru-RU",
+
+    val languages: List<String> = listOf(
+        "uk-UA", "en-US", "ru-RU",)
 
     )

@@ -30,7 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.chomba.R
 import com.example.chomba.data.Game
 import com.example.chomba.data.Player
@@ -48,7 +50,8 @@ fun CircularChart(
     zeroNum: Int = 0,
     backgroundCircleColor: Color = Color.LightGray.copy(alpha = 0.3f),
     thicknessFraction: Float = 0.2f,
-    blind: Boolean
+    blind: Boolean,
+    fontSize: Int = 32
 ) {
     var sweepAngle = value.toFloat()/ maxValue.toFloat() * 360f
 
@@ -107,7 +110,8 @@ fun CircularChart(
             ){
                 Text(
                     text = value.toString(),
-                    style = MaterialTheme.typography.displaySmall
+                    style = MaterialTheme.typography.displaySmall,
+                    fontSize = fontSize.sp
                 )
                     if(blind && zeroNum == 0){
                         Image(
@@ -210,10 +214,15 @@ fun PlayerGameCard(
             .fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
-        Text(
+        ResizableText(
             text = player.name,
             style = MaterialTheme.typography.titleMedium
         )
+//        Text(
+//            text = player.name,
+//            style = MaterialTheme.typography.titleMedium,
+//            fontSize = TextUnit.Unspecified
+//        )
         Box(modifier = Modifier
             .fillMaxSize()
             .aspectRatio(1f),
@@ -228,7 +237,8 @@ fun PlayerGameCard(
                 color = Color(player.color.toULong()),
                 zeroNum = if(player.getTotalScore() == 880) player.getMissBarrel()
                 else 0,
-                blind = false
+                blind = false,
+                fontSize = 24
             )
         }
     }

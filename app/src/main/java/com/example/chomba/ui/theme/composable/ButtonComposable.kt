@@ -86,13 +86,15 @@ fun IconButton(
         containerColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onBackground
     ),
-    noIcon: Boolean = false
+    noIcon: Boolean = false,
+    isEnabled: Boolean = true
 ) {
     Button(
         onClick = action,
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
-        colors = colors
+        colors = colors,
+        enabled = isEnabled
     ) {
         if (noIcon) {
             Spacer(modifier = Modifier.width(24.dp))
