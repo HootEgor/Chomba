@@ -17,6 +17,8 @@ import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
 import com.example.chomba.pages.solo.SoloViewModel
 import com.example.chomba.pages.user.ProfileScreenUiState
+import com.example.chomba.pages.user.ProfileViewModel
+import com.example.chomba.repo.UserRepository
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
@@ -32,6 +34,7 @@ import kotlin.math.round
 class GameViewModel(application: Application): AndroidViewModel(application) {
 
     val voiceRec = VoiceRecognitionViewModel(application)
+    val profileVM = ProfileViewModel(application)
 
     val playerList = mutableStateOf<List<Player>>(listOf())
     var uiState = mutableStateOf(GameUiState())
@@ -42,8 +45,9 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     private val auth = FirebaseAuth.getInstance()
 
+    val userRepo = UserRepository(auth)
+
     init {
-        val auth = FirebaseAuth.getInstance()
         if (auth.currentUser != null) {
             profileUi.value = profileUi.value.copy(isAuthenticated = true,
                 displayName = auth.currentUser?.displayName ?: "",
@@ -433,79 +437,8 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun sendSignInLink(email: String) {
-        auth.sendSignInLinkToEmail(email, buildActionCodeSettings())
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.w("signIN", "sendSignInLinkToEmail:failure", task.exception)
-                } else {
-                    Log.w("signIN", "sendSignInLinkToEmail:failure", task.exception)
-                }
-            }
-    }
-
-    private fun buildActionCodeSettings(): ActionCodeSettings {
-        return ActionCodeSettings.newBuilder()
-            .setUrl("https://chomba.page.link/signup") // Используйте существующую ссылку
-            .setHandleCodeInApp(true)
-            .setAndroidPackageName("com.example.chomba", true, "12")
-            .build()
-    }
-
-    fun completeSignInWithLink(email: String, code: String) {
-        auth.signInWithEmailLink(email, code)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    val newUser = User(email = email)
-
-                    // Сохранение информации о пользователе в базу данных
-                    // Например, используя Firebase Firestore:
-                     val db = FirebaseFirestore.getInstance()
-                    user?.let { db.collection("users").document(it.uid).set(newUser) }
-
-                    // Вызов метода для автоматического входа в приложение
-                    // Например, установка статуса аутентификации в вашей ViewModel:
-                     profileUi.value = profileUi.value.copy(isAuthenticated = true)
-                } else {
-                    // Обработка ошибок
-                    Log.w("signIN", "sendSignInLinkToEmail:failure", task.exception)
-                }
-            }
-    }
-
-    fun getSignInRequest(apiKey: String): BeginSignInRequest {
-
-        return BeginSignInRequest.builder()
-            .setPasswordRequestOptions(
-                BeginSignInRequest.PasswordRequestOptions.builder()
-                    .setSupported(true)
-                    .build())
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    .setServerClientId(apiKey)
-                    .setFilterByAuthorizedAccounts(false)
-                    .build())
-            .setAutoSelectEnabled(true)
-            .build()
-
-    }
-
     fun signInWithGoogleToken(googleIdToken: String) {
-        val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
-
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    profileUi.value = profileUi.value.copy(isAuthenticated = true,
-                        displayName = user?.displayName ?: "",
-                        userPicture = user?.photoUrl ?: Uri.EMPTY)
-                } else {
-                    // Обработка ошибок
-                }
-            }
+        profileUi.value = userRepo.signInWithGoogleToken(googleIdToken, profileUi)
     }
 
     fun signOut() {
@@ -521,36 +454,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     fun saveGame() {
         viewModelScope.launch {
             startProgressGame()
-            var id = ""
-            val db = Firebase.firestore
-            val userUid = auth.currentUser?.uid
-
-            if (userUid != null) {
-                if(profileUi.value.currentGameIndex != null){
-                    id = profileUi.value.currentGameIndex!!
-                }
-                else{
-                    id = db.collection("users").document(userUid)
-                        .collection("gameList")
-                        .document().id
-                }
-                val date = System.currentTimeMillis()
-                val gameData = Game(id, date ,playerList.value, uiState.value)
-                db.collection("users").document(userUid)
-                    .collection("gameList")
-                    .document(id)
-                    .set(gameData, SetOptions.merge())
-                    .addOnSuccessListener {
-                        uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
-                        profileUi.value = profileUi.value.copy(currentGameIndex = id)
-                    }
-                    .addOnFailureListener {
-                        uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
-                    }
-            }else{
-                uiState.value = uiState.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
-            }
-
+            val savedGame = userRepo.saveGame(profileUi, playerList, uiState)
+            profileUi.value = savedGame.first
+            playerList.value = savedGame.second
+            uiState.value = savedGame.third
         }.invokeOnCompletion {
             stopProgressGame()
         }
@@ -560,30 +467,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     fun loadGames(){
         viewModelScope.launch {
             startProgressProfile()
-            val db = Firebase.firestore
-            val userUid = auth.currentUser?.uid
-            if (userUid != null) {
-                db.collection("users").document(userUid)
-                    .collection("gameList")
-                    .orderBy("date", Query.Direction.DESCENDING)
-                    .get()
-                    .addOnSuccessListener { result ->
-                        profileUi.value = profileUi.value.copy(gameList = emptyList())
-                        for (document in result) {
-                            try{
-                                val gameData = document.toObject(Game::class.java)
-                                profileUi.value = profileUi.value.copy(gameList = profileUi.value.gameList + gameData)
-                            }catch (e: Exception){
-                                Log.w("dataBase", "loadGameList:failure", e)
-                            }
-                        }
-                        profileUi.value = profileUi.value.copy(saveMsg = R.string.no_saved_games)
-                    }
-                    .addOnFailureListener { exception ->
-                        profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_load_games)
-                        Log.w("dataBase", "loadGameList:failure", exception)
-                    }
-            }
+            profileUi.value = userRepo.loadGames(profileUi)
         }.invokeOnCompletion {
             profileUi.value = profileUi.value.copy(currentGameIndex = null)
             stopProgressProfile()
@@ -594,22 +478,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     fun deleteGame(id: String){
         viewModelScope.launch {
             startProgressProfile()
-            val db = Firebase.firestore
-            val userUid = auth.currentUser?.uid
-            if (userUid != null) {
-                db.collection("users").document(userUid)
-                    .collection("gameList")
-                    .document(id)
-                    .delete()
-                    .addOnSuccessListener {
-                        profileUi.value = profileUi.value.copy(saveMsg = R.string.successfully_deleted)
-                    }
-                    .addOnFailureListener {
-                        profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_delete_game)
-                    }
-            }else{
-                profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
-            }
+            profileUi.value = userRepo.deleteGame(id, profileUi)
         }.invokeOnCompletion {
             loadGames()
         }

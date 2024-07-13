@@ -80,7 +80,7 @@ fun UserPage(
     }else{
         LoginScreen(viewModel = viewModel,
             onSignInEmail = { email ->
-                viewModel.sendSignInLink(email)})
+                viewModel.userRepo.sendSignInLink(email)})
     }
 }
 
@@ -253,7 +253,7 @@ fun LoginScreen(
 
     val onGoogleSignInClick = {
         val apiKey = "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com"
-        val request = viewModel.getSignInRequest(apiKey)
+        val request = viewModel.userRepo.getSignInRequest(apiKey)
         oneTapClient.beginSignIn(request)
             .addOnSuccessListener {
                 try {
