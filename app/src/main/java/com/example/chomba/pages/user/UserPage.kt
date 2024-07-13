@@ -80,7 +80,7 @@ fun UserPage(
     }else{
         LoginScreen(viewModel = viewModel,
             onSignInEmail = { email ->
-                viewModel.userRepo.sendSignInLink(email)})
+                viewModel.profileVM.userRepo.sendSignInLink(email)})
     }
 }
 
@@ -107,7 +107,7 @@ fun UserProfile(
         UserNameBar(
             name = uiState.displayName,
             picture = uiState.userPicture,
-            signOutAction = { viewModel.signOut() }
+            signOutAction = { viewModel.profileVM.signOut() }
         )
 
         if(uiState.gameList.isNotEmpty()){
@@ -118,9 +118,9 @@ fun UserProfile(
                 items(uiState.gameList.size) { index ->
                     GameCard(
                         game = uiState.gameList[index],
-                        onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
+                        onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
                         selected = uiState.gameList[index].id == uiState.currentGameIndex,
-                        onDelete = { viewModel.deleteGame(uiState.gameList[index].id) }
+                        onDelete = { viewModel.profileVM.deleteGame(uiState.gameList[index].id) }
                     )
                 }
             }
@@ -149,7 +149,7 @@ fun UserProfile(
                     modifier = modifier
                         .basicButton()
                         .weight(1f),
-                    action = { viewModel.loadGames() }
+                    action = { viewModel.profileVM.loadGames() }
                 )
                 BasicTextButton(
                     text = R.string.home,
@@ -243,7 +243,7 @@ fun LoginScreen(
             try {
                 val credentials = oneTapClient.getSignInCredentialFromIntent(result.data)
                 credentials.googleIdToken?.let { token ->
-                    viewModel.signInWithGoogleToken(token)
+                    viewModel.profileVM.signInWithGoogleToken(token)
                 }
             } catch (e: Exception) {
                 Log.e("SignResult", "OneTapUI request failed; $e")
@@ -253,7 +253,7 @@ fun LoginScreen(
 
     val onGoogleSignInClick = {
         val apiKey = "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com"
-        val request = viewModel.userRepo.getSignInRequest(apiKey)
+        val request = viewModel.profileVM.userRepo.getSignInRequest(apiKey)
         oneTapClient.beginSignIn(request)
             .addOnSuccessListener {
                 try {

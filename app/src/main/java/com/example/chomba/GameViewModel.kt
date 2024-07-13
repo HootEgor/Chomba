@@ -40,29 +40,9 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     var uiState = mutableStateOf(GameUiState())
         private set
 
-    var profileUi = mutableStateOf(ProfileScreenUiState())
-        private set
+    val profileUi by profileVM::profileUi
 
-    private val auth = FirebaseAuth.getInstance()
 
-    val userRepo = UserRepository(auth)
-
-    init {
-        if (auth.currentUser != null) {
-            profileUi.value = profileUi.value.copy(isAuthenticated = true,
-                displayName = auth.currentUser?.displayName ?: "",
-                userPicture = auth.currentUser?.photoUrl ?: Uri.EMPTY)
-        }
-    }
-
-    private fun startProgressProfile(){
-        profileUi.value = profileUi.value.copy(inProgress = true,
-            saveMsg = R.string.in_progress)
-    }
-
-    private fun stopProgressProfile(){
-        profileUi.value = profileUi.value.copy(inProgress = false)
-    }
 
     private fun startProgressGame(){
         uiState.value = uiState.value.copy(inProgress = true,
@@ -437,24 +417,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun signInWithGoogleToken(googleIdToken: String) {
-        profileUi.value = userRepo.signInWithGoogleToken(googleIdToken, profileUi)
-    }
-
-    fun signOut() {
-        viewModelScope.launch {
-            auth.signOut()
-        }.invokeOnCompletion {
-            profileUi.value = profileUi.value.copy(isAuthenticated = false,
-                displayName = "",
-                userPicture = Uri.EMPTY)
-        }
-    }
-
     fun saveGame() {
         viewModelScope.launch {
             startProgressGame()
-            val savedGame = userRepo.saveGame(profileUi, playerList, uiState)
+            val savedGame = profileVM.saveGame(profileUi, playerList, uiState)
             profileUi.value = savedGame.first
             playerList.value = savedGame.second
             uiState.value = savedGame.third
@@ -462,33 +428,6 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             stopProgressGame()
         }
 
-    }
-
-    fun loadGames(){
-        viewModelScope.launch {
-            startProgressProfile()
-            profileUi.value = userRepo.loadGames(profileUi)
-        }.invokeOnCompletion {
-            profileUi.value = profileUi.value.copy(currentGameIndex = null)
-            stopProgressProfile()
-        }
-
-    }
-
-    fun deleteGame(id: String){
-        viewModelScope.launch {
-            startProgressProfile()
-            profileUi.value = userRepo.deleteGame(id, profileUi)
-        }.invokeOnCompletion {
-            loadGames()
-        }
-    }
-
-    fun setCurrentGame(id: String){
-        val game = profileUi.value.gameList.find { it.id == id }!!
-        if(!isGameFinished(game)){
-            profileUi.value = profileUi.value.copy(currentGameIndex = id)
-        }
     }
 
     fun continueGame(){
@@ -499,15 +438,6 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         }.invokeOnCompletion {
             setCurrentPage(2)
         }
-    }
-
-    fun isGameFinished(game: Game): Boolean {
-        for (player in game.playerList){
-            if (player.getTotalScore() == 1000){
-                return true
-            }
-        }
-        return false
     }
 
     fun isCurrentGameFinished(): Boolean {

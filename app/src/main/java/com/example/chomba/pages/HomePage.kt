@@ -30,7 +30,7 @@ fun HomePage(
             title = stringResource(R.string.app_name),
             firstButtonIcon = R.drawable.baseline_account_circle_24,
             onFirstActionClick = { viewModel.setCurrentPage(3)
-                viewModel.loadGames()},
+                viewModel.profileVM.loadGames()},
         )
         Column(
             modifier = modifier.fillMaxSize(),
@@ -55,7 +55,7 @@ fun HomePage(
             BasicTextButton(text = R.string.load_games,
                 modifier = modifier.smallButton(),
                 action = {viewModel.setCurrentPage(3)
-                    viewModel.loadGames()})
+                    viewModel.profileVM.loadGames()})
         }
     }
 
