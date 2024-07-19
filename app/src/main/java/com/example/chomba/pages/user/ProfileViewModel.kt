@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.chomba.GameUiState
 import com.example.chomba.R
 import com.example.chomba.data.Game
+import com.example.chomba.data.Language
 import com.example.chomba.data.Player
 import com.example.chomba.data.getTotalScore
 import com.example.chomba.repo.UserRepository
@@ -25,9 +26,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         if (auth.currentUser != null) {
-            profileUi.value = profileUi.value.copy(isAuthenticated = true,
-                displayName = auth.currentUser?.displayName ?: "",
-                userPicture = auth.currentUser?.photoUrl ?: Uri.EMPTY)
+            viewModelScope.launch {
+                profileUi.value = profileUi.value.copy(isAuthenticated = true,
+                    displayName = auth.currentUser?.displayName ?: "",
+                    userPicture = auth.currentUser?.photoUrl ?: Uri.EMPTY )
+                userRepo.loadVoiceRecLanguage(profileUi)
+            }
         }
     }
 
@@ -43,7 +47,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun loadGames(){
         viewModelScope.launch {
             startProgressProfile()
-            profileUi.value = userRepo.loadGames(profileUi)
+            userRepo.loadGames(profileUi)
         }.invokeOnCompletion {
             profileUi.value = profileUi.value.copy(currentGameIndex = null)
             stopProgressProfile()
@@ -75,7 +79,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun deleteGame(id: String){
         viewModelScope.launch {
             startProgressProfile()
-            profileUi.value = userRepo.deleteGame(id, profileUi)
+            userRepo.deleteGame(id, profileUi)
         }.invokeOnCompletion {
             loadGames()
         }
@@ -104,5 +108,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun toggleSettings(){
         profileUi.value = profileUi.value.copy(isSettings = !profileUi.value.isSettings)
+        if(!profileUi.value.isSettings){
+            userRepo.saveVoiceRecLanguage(profileUi.value.selectedLanguage)
+        }
+    }
+
+    fun SelectSpeechRecLanguage(lang: Language){
+        profileUi.value = profileUi.value.copy(selectedLanguage = lang)
     }
 }

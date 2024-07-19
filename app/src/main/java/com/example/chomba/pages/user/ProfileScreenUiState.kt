@@ -3,6 +3,7 @@ package com.example.chomba.pages.user
 import android.net.Uri
 import com.example.chomba.R
 import com.example.chomba.data.Game
+import com.example.chomba.data.Language
 
 data class ProfileScreenUiState(
     val email: String = "",
@@ -23,9 +24,6 @@ data class ProfileScreenUiState(
 
     val isSettings: Boolean = false,
 
-    val voiceRecognitionLanguage: String = "ru-RU",
-
-    val languages: List<String> = listOf(
-        "uk-UA", "en-US", "ru-RU",)
+    val selectedLanguage: Language = Language(R.drawable.flag_ua, R.string.tag_ua)
 
     )

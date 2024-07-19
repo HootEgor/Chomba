@@ -52,4 +52,8 @@
     <string name="speech_prompt">Speak now...</string>
     <string name="stop_recognition">стоп</string>
     <string name="five">пять</string>
+    <string name="speech_rec_idioma">Speech recognition language:</string>
+    <string name="tag_ua">uk-UA</string>
+    <string name="tag_ru">ru-RU</string>
+    <string name="tag_uk">en-GB</string>
 </resources>

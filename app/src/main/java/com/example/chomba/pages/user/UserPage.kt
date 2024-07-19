@@ -69,6 +69,7 @@ import com.example.chomba.ui.theme.ext.smallButton
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.example.chomba.ui.theme.composable.GameCard
+import com.example.chomba.ui.theme.composable.UserNameBar
 
 @Composable
 fun UserPage(
@@ -112,6 +113,7 @@ fun UserProfile(
             SettingsScreen(
                 modifier = modifier
                     .weight(1f),
+                profileViewModel = viewModel.profileVM
             )
         }else{
             if(uiState.gameList.isNotEmpty()){
@@ -121,7 +123,6 @@ fun UserProfile(
                     modifier = modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .border(2.dp, MaterialTheme.colorScheme.onSurfaceVariant, Shapes.medium)
 
                 ) {
                     LazyColumn(
@@ -131,8 +132,7 @@ fun UserProfile(
                         items(uiState.gameList.size) { index ->
                             GameCard(
                                 modifier = modifier
-                                    .fillMaxWidth()
-                                    .padding(3.dp, 0.dp),
+                                    .fillMaxWidth(),
                                 game = uiState.gameList[index],
                                 onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
                                 selected = uiState.gameList[index].id == uiState.currentGameIndex,
@@ -157,59 +157,7 @@ fun UserProfile(
     }
 }
 
-@Composable
-fun UserNameBar(
-    name: String,
-    picture: Uri?,
-    signOutAction: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = Shapes.medium,
-        //shadowElevation = 4.dp,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Row(
-            modifier = modifier.height(56.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (picture != null) {
-                AsyncImage(
-                    model = picture,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
 
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                modifier = modifier.weight(1f)
-            )
-            IconButton(
-                icon = R.drawable.baseline_logout_24,
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(2.dp),
-                action = signOutAction,
-            )
-
-        }
-    }
-}
 
 @Composable
 fun BottomBar(

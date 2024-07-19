@@ -7,8 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.chomba.GameUiState
 import com.example.chomba.R
 import com.example.chomba.data.Game
+import com.example.chomba.data.Language
+import com.example.chomba.data.LanguageId
 import com.example.chomba.data.Player
 import com.example.chomba.data.User
+import com.example.chomba.data.toId
 import com.example.chomba.pages.user.ProfileScreenUiState
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.firebase.auth.ActionCodeSettings
@@ -141,7 +144,7 @@ class UserRepository(auth: FirebaseAuth) {
 
     }
 
-    fun loadGames(profileUi: MutableState<ProfileScreenUiState>): ProfileScreenUiState{
+    fun loadGames(profileUi: MutableState<ProfileScreenUiState>){
         val db = Firebase.firestore
         val userUid = auth.currentUser?.uid
         if (userUid != null) {
@@ -167,10 +170,9 @@ class UserRepository(auth: FirebaseAuth) {
                 }
         }
 
-        return profileUi.value
     }
 
-    fun deleteGame(id: String, profileUi: MutableState<ProfileScreenUiState>): ProfileScreenUiState{
+    fun deleteGame(id: String, profileUi: MutableState<ProfileScreenUiState>){
         val db = Firebase.firestore
         val userUid = auth.currentUser?.uid
         if (userUid != null) {
@@ -187,8 +189,47 @@ class UserRepository(auth: FirebaseAuth) {
         }else{
             profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
         }
+    }
 
-        return profileUi.value
+    fun saveVoiceRecLanguage(language: Language){
+        val db = Firebase.firestore
+        val userUid = auth.currentUser?.uid
+        if (userUid != null) {
+            db.collection("users").document(userUid)
+                .collection("settings")
+                .document("voiceRecLanguage")
+                .set(LanguageId(language))
+                .addOnSuccessListener {
+                    Log.d("dataBase", "DocumentSnapshot successfully written!")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("dataBase", "Error writing document", e)
+                }
+        }
+    }
+
+    fun loadVoiceRecLanguage(profileUi: MutableState<ProfileScreenUiState>){
+        val db = Firebase.firestore
+        val userUid = auth.currentUser?.uid
+        var language = Language(R.drawable.flag_ua, R.string.tag_ua)
+        if (userUid != null) {
+            db.collection("users").document(userUid)
+                .collection("settings")
+                .document("voiceRecLanguage")
+                .get()
+                .addOnSuccessListener { document ->
+                    try{
+                        language = Language(document.data?.get("id").toString())
+                        profileUi.value = profileUi.value.copy(selectedLanguage = language)
+                        Log.w("dataBase", "loadVoiceRecLanguage: success")
+                    }catch (e: Exception){
+                        Log.w("dataBase", "loadVoiceRecLanguage:failure", e)
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("dataBase", "get failed with ", exception)
+                }
+        }
     }
 
 }

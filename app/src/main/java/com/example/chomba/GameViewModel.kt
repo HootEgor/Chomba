@@ -1,39 +1,22 @@
 package com.example.chomba
 
 import android.app.Application
-import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chomba.ai.VoiceRecognitionViewModel
 import com.example.chomba.data.CardSuit
-import com.example.chomba.data.Game
 import com.example.chomba.data.Player
 import com.example.chomba.data.Score
-import com.example.chomba.data.User
 import com.example.chomba.data.getMissBarrel
 import com.example.chomba.data.getTotalScore
-import com.example.chomba.pages.solo.SoloViewModel
-import com.example.chomba.pages.user.ProfileScreenUiState
 import com.example.chomba.pages.user.ProfileViewModel
-import com.example.chomba.repo.UserRepository
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.firebase.auth.ActionCodeSettings
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.SetOptions
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import kotlin.math.round
 
 class GameViewModel(application: Application): AndroidViewModel(application) {
 
-    val voiceRec = VoiceRecognitionViewModel(application)
+
     val profileVM = ProfileViewModel(application)
 
     val playerList = mutableStateOf<List<Player>>(listOf())
@@ -42,6 +25,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     val profileUi by profileVM::profileUi
 
+    val voiceRec = VoiceRecognitionViewModel(application,profileUi.value.selectedLanguage)
 
 
     private fun startProgressGame(){
@@ -62,6 +46,9 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun setCurrentPage(page: Int) {
         uiState.value = uiState.value.copy(currentPage = page)
+        if(page == 2){
+            voiceRec.setLanguage(profileUi.value.selectedLanguage)
+        }
     }
 
     fun addPlayer() {

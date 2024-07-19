@@ -8,11 +8,13 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.AndroidViewModel
 import com.example.chomba.R
+import com.example.chomba.data.Language
 import java.util.Locale
 
-class VoiceRecognitionViewModel(application: Application) : AndroidViewModel(application) {
+class VoiceRecognitionViewModel(application: Application, private var language: Language) : AndroidViewModel(application) {
     val recognizedText = mutableStateOf("")
     val score = mutableStateOf(0)
     val stop = mutableStateOf(false)
@@ -23,13 +25,17 @@ class VoiceRecognitionViewModel(application: Application) : AndroidViewModel(app
         speechRecognizerLauncher = launcher
     }
 
+    fun setLanguage(language: Language) {
+        this.language = language
+    }
+
     fun startSpeechRecognition(context: Context) {
         val systemLocale = Locale.getDefault()
         val languageTag = systemLocale.toLanguageTag()
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU") //TODO: change to languageTag
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, context.getString(language.languageTag)) //TODO: change to languageTag
             putExtra(RecognizerIntent.EXTRA_PROMPT, R.string.speech_prompt)
         }
         try {
