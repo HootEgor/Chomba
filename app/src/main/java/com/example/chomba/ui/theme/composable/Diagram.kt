@@ -154,6 +154,7 @@ fun GameCard(
     game: Game,
     onSelect: () -> Unit,
     selected: Boolean = false,
+    finished: Boolean = false,
     onDelete: () -> Unit
 ){
     Surface (
@@ -188,16 +189,19 @@ fun GameCard(
             }
 
             AnimatedVisibility(visible = selected) {
-                Divider(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 2.dp)
-                )
+                Chart(modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp, 0.dp, 4.dp, 4.dp)
+                    .aspectRatio(2.2f),
+                    playerList = game.playerList)
+            }
 
+            AnimatedVisibility(visible = selected && !finished){
                 IconButton(icon = R.drawable.baseline_delete_24,
                     modifier = modifier.fillMaxWidth(),
                     action = onDelete)
             }
+
 
         }
 

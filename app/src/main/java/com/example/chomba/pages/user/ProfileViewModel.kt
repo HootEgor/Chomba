@@ -90,9 +90,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             profileUi.value = profileUi.value.copy(currentGameIndex = null)
         }else{
             val game = profileUi.value.gameList.find { it.id == id }!!
-            if(!isGameFinished(game)){
-                profileUi.value = profileUi.value.copy(currentGameIndex = id)
-            }
+            profileUi.value = profileUi.value.copy(currentGameIndex = id)
         }
 
     }
@@ -102,6 +100,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             if (player.getTotalScore() == 1000){
                 return true
             }
+        }
+        return false
+    }
+
+    fun isCurrentGameFinished(): Boolean {
+        if(profileUi.value.currentGameIndex != null){
+            val game = profileUi.value.gameList.find { it.id == profileUi.value.currentGameIndex }!!
+            return isGameFinished(game)
         }
         return false
     }

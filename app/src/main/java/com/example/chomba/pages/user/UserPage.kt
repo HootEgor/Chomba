@@ -136,6 +136,7 @@ fun UserProfile(
                                 game = uiState.gameList[index],
                                 onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
                                 selected = uiState.gameList[index].id == uiState.currentGameIndex,
+                                finished = viewModel.profileVM.isCurrentGameFinished(),
                                 onDelete = { viewModel.profileVM.deleteGame(uiState.gameList[index].id) }
                             )
                         }
@@ -191,7 +192,7 @@ fun BottomBar(
                 .smallButton()
                 .weight(1f),
             action = {viewModel.continueGame()},
-            isEnabled = uiState.currentGameIndex != null && !uiState.isSettings
+            isEnabled = uiState.currentGameIndex != null && !uiState.isSettings && !viewModel.profileVM.isCurrentGameFinished()
         )
 
     }

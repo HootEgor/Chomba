@@ -74,10 +74,22 @@ fun CurvedLineChart(
 ) {
     Canvas(modifier = modifier) {
         drawGridLines(gridLineColor, gridLineThickness, gridLineSpacing)
+
+        var min = -200
+        for (player in data) {
+            for (i in 1 .. player.scoreList.size) {
+                if (player.getTotalScore(i) < min) {
+                    min = player.getTotalScore(i)
+                }
+            }
+        }
+
+        drawMinusZone(listOf(Color.Red.copy(alpha = 0.25f), Color.Red.copy(alpha = 0f)), min)
+
         for (player in data) {
             val color = Color(player.color.toULong())
-            val gradientColors = listOf(color.copy(alpha = gradientFromAlpha), color.copy(alpha = gradientToAlpha))
-            drawCurvedLine(player, color, lineWidth)
+//            val gradientColors = listOf(color.copy(alpha = gradientFromAlpha), color.copy(alpha = gradientToAlpha))
+            drawCurvedLine(player, color, lineWidth, min)
 //            drawGradientUnderCurve(player, gradientColors)
         }
     }
@@ -97,20 +109,36 @@ private fun DrawScope.drawGridLines(gridLineColor: Color, gridLineThickness: Flo
     }
 }
 
-private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, lineWidth: Float) {
+private fun DrawScope.drawMinusZone(gradientColors: List<Color>, min: Int) {
+    val zeroY = size.height - (normalizeData(0, min) * size.height)
+    val path = Path().apply {
+        moveTo(0f, zeroY)
+        lineTo(size.width, zeroY)
+        lineTo(size.width, size.height)
+        lineTo(0f, size.height)
+        close()
+    }
+
+    drawPath(
+        path = path,
+        brush = Brush.verticalGradient(
+            colors = gradientColors,
+            startY = zeroY,
+            endY = size.height
+        )
+    )
+}
+
+private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, lineWidth: Float, min: Int) {
     if (player.scoreList.isEmpty()) return
 
     val path = Path().apply {
         val stepX = size.width / if(player.scoreList.size > 20) player.scoreList.size else 20
         var currentX = 0f
-        var min = -200
 
         moveTo(currentX, size.height - (normalizeData(player.getTotalScore(0), min) * size.height))
         for (i in 1 .. player.scoreList.size) {
             val nextX = currentX + stepX
-            if (player.getTotalScore(i) < min) {
-                min = player.getTotalScore(i)-50
-            }
             val data = normalizeData(player.getTotalScore(i), min)
             val controlPoint1 = Offset(currentX + stepX / 2, size.height - (data * size.height))
             val controlPoint2 = Offset(currentX + stepX / 2, size.height - (data * size.height))
@@ -134,21 +162,17 @@ private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, lineWidth
     )
 }
 
-private fun DrawScope.drawGradientUnderCurve(player: Player, gradientColors: List<Color>) {
+private fun DrawScope.drawGradientUnderCurve(player: Player, gradientColors: List<Color>, min: Int) {
     if (player.scoreList.isEmpty()) return
 
     val path = Path().apply {
         val stepX = size.width / if(player.scoreList.size > 20) player.scoreList.size else 20
         var currentX = 0f
-        var min = -200
 
         moveTo(currentX, size.height)
         moveTo(currentX, size.height - (normalizeData(player.getTotalScore(0), min) * size.height))
         for (i in 1 .. player.scoreList.size) {
             val nextX = currentX + stepX
-            if (player.getTotalScore(i) < min) {
-                min = player.getTotalScore(i)
-            }
             val data = normalizeData(player.getTotalScore(i), min)
             val controlPoint1 = Offset(currentX + stepX / 2, size.height - (data * size.height))
             val controlPoint2 = Offset(currentX + stepX / 2, size.height - (data * size.height))
