@@ -33,11 +33,15 @@ data class Player(
         takenChombas = listOf())
 }
 
-fun Player.getTotalScore(): Int {
+fun Player.getTotalScore(round: Int = -1): Int {
     var totalScore = 0
     var zeroNum = 0
     var dissolutionNum = 0
-    for (score in scoreList) {
+    var until = scoreList.size
+    if (round > -1 && round < scoreList.size) {
+        until = round
+    }
+    for (score in scoreList.subList(0, until)) {
         if(score.type == 0) {
             totalScore -= score.value
             zeroNum++

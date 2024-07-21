@@ -48,6 +48,7 @@ import com.example.chomba.data.getTotalScore
 import com.example.chomba.data.getZeroNum
 import com.example.chomba.ui.theme.Shapes
 import com.example.chomba.ui.theme.composable.BasicIconButton
+import com.example.chomba.ui.theme.composable.Chart
 import com.example.chomba.ui.theme.composable.CircularChart
 import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.Picker
@@ -108,19 +109,20 @@ fun GamePage(
 
         Surface(
             modifier = modifier
-                .fillMaxSize(0.9f),
+                .fillMaxWidth(0.9f)
+                .wrapContentHeight()
+                .weight(1f),
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
+            Column(
+                modifier = Modifier.wrapContentSize(),
             ) {
-                items(playerList) { player ->
+                for(i in 0 until 3){
+                    val player = playerList[i]
                     PlayerCard(
                         modifier = Modifier
                             .weight(1f)
                             .padding(top = 4.dp)
-                            .aspectRatio(1.65f),
+                            .aspectRatio(if (uiState.declarer == null) 2.2f else 1.65f),
                         player = player,
                         onSave = {viewModel.saveScorePerRound(player, it)},
                         takeChomba = {viewModel.takeChomba(player, it)},
@@ -132,8 +134,17 @@ fun GamePage(
                         setBlind = {viewModel.setBlind(player)}
                     )
                 }
+                if(uiState.declarer == null){
+                    Chart(modifier = Modifier
+                        .weight(1f)
+                        .padding(top = 4.dp)
+                        .aspectRatio(2.2f),
+                        playerList = viewModel.playerList.value)
+                }
             }
         }
+
+
 
         if(viewModel.isCurrentGameFinished()){
             BasicIconButton(text = R.string.save_and_exit,
@@ -708,35 +719,38 @@ fun PlayerCard(
                 }
             }
 
-            Divider(modifier = Modifier.fillMaxWidth())
+            AnimatedVisibility(visible = declarer != null) {
+                Divider(modifier = Modifier.fillMaxWidth())
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(3.dp, 0.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                for (suit in CardSuit.values()){
-                    val isTaken = player.takenChombas.contains(suit)
-                    IconButton(
-                        icon = suitIcon(suit.ordinal),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(1.dp, 0.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isTaken) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.background,
-                            contentColor = if (suit.ordinal > 1) Color.Red
-                            else MaterialTheme.colorScheme.onBackground
-                        ),
-                        action = {
-                            if (!isTaken) takeChomba(suit.ordinal)
-                            else undoChomba(suit.ordinal)
-                        }
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(3.dp, 0.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    for (suit in CardSuit.values()){
+                        val isTaken = player.takenChombas.contains(suit)
+                        IconButton(
+                            icon = suitIcon(suit.ordinal),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(1.dp, 0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isTaken) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.background,
+                                contentColor = if (suit.ordinal > 1) Color.Red
+                                else MaterialTheme.colorScheme.onBackground
+                            ),
+                            action = {
+                                if (!isTaken) takeChomba(suit.ordinal)
+                                else undoChomba(suit.ordinal)
+                            }
+                        )
+                    }
                 }
             }
+
         }
 
     }
