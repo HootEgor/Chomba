@@ -6,11 +6,12 @@ import com.github.skydoves.colorpicker.compose.ColorPickerController
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.google.firebase.firestore.DocumentSnapshot
 import java.lang.reflect.GenericDeclaration
+import kotlin.random.Random
 
 data class Player(
     var visible: Boolean = true,
     var name: String = "",
-    var color: String = Color.Magenta.value.toString(),
+    var color: String = generateRandomColor().toString(),
     var scoreList: List<Score> = listOf(),
     var scorePerRound: Int = 0,
     var declaration: Int = 0,
@@ -22,7 +23,7 @@ data class Player(
 ){
     constructor() : this(visible = true,
         name = "",
-        color = Color.Magenta.value.toString(),
+        color = generateRandomColor().toString(),
         scoreList = listOf(),
         scorePerRound = 0,
         declaration = 0,
@@ -31,6 +32,13 @@ data class Player(
         isBot = false,
         isPass = false,
         takenChombas = listOf())
+}
+
+fun generateRandomColor(): ULong {
+    val red = Random.nextInt(256)
+    val green = Random.nextInt(256)
+    val blue = Random.nextInt(256)
+    return Color(red, green, blue).value
 }
 
 fun Player.getTotalScore(round: Int = -1): Int {

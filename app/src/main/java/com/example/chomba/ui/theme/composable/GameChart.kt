@@ -1,5 +1,6 @@
 package com.example.chomba.ui.theme.composable
 
+import android.text.TextPaint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +30,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.chomba.data.Player
 import com.example.chomba.data.getTotalScore
 import com.example.chomba.ui.theme.Shapes
@@ -73,8 +77,7 @@ fun CurvedLineChart(
     gridLineSpacing: Float = 50f
 ) {
     Canvas(modifier = modifier) {
-        drawGridLines(gridLineColor, gridLineThickness, gridLineSpacing)
-
+//        drawGridLines(gridLineColor, gridLineThickness, gridLineSpacing)
         var min = -200
         for (player in data) {
             for (i in 1 .. player.scoreList.size) {
@@ -82,6 +85,10 @@ fun CurvedLineChart(
                     min = player.getTotalScore(i)
                 }
             }
+        }
+
+        for (i in 800 downTo min+50 step 200) {
+            drawScoreLines(Color.Gray, i, 1f, min)
         }
 
         drawMinusZone(listOf(Color.Red.copy(alpha = 0.25f), Color.Red.copy(alpha = 0f)), min)
@@ -126,6 +133,41 @@ private fun DrawScope.drawMinusZone(gradientColors: List<Color>, min: Int) {
             startY = zeroY,
             endY = size.height
         )
+    )
+}
+
+private fun DrawScope.drawScoreLines(lineColor: Color, value: Int, thickness: Float, min: Int) {
+    val y = size.height - (normalizeData(value, min) * size.height)
+
+    drawLine(
+        color = lineColor,
+        start = Offset(0f, y),
+        end = Offset(size.width/2 - 30f, y),
+        strokeWidth = thickness,
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+    )
+
+    drawLine(
+        color = lineColor,
+        start = Offset(size.width/2 + 30f, y),
+        end = Offset(size.width, y),
+        strokeWidth = thickness,
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+    )
+
+    val textPaint = TextPaint().apply {
+        color = lineColor.toArgb()
+        textSize = 8.sp.toPx()
+        textAlign = android.graphics.Paint.Align.CENTER
+    }
+
+    val centerX = size.width / 2
+
+    drawContext.canvas.nativeCanvas.drawText(
+        value.toString(),
+        centerX,
+        y - (textPaint.descent() + textPaint.ascent()) / 2,
+        textPaint
     )
 }
 
