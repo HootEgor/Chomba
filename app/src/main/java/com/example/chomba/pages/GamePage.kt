@@ -52,6 +52,7 @@ import com.example.chomba.ui.theme.composable.Chart
 import com.example.chomba.ui.theme.composable.CircularChart
 import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.Picker
+import com.example.chomba.ui.theme.composable.ResizableText
 import com.example.chomba.ui.theme.composable.SaveGame
 import com.example.chomba.ui.theme.composable.Tips
 import com.example.chomba.ui.theme.composable.TopBar
@@ -560,11 +561,10 @@ fun PlayerCard(
                                 tint = if (!isDistributor) Color.Transparent
                                 else MaterialTheme.colorScheme.onTertiaryContainer,
                             )
-                            Text(
+                            ResizableText(
                                 text = player.name,
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.weight(2f),
-                                textAlign = TextAlign.Center
                             )
                             Text(text = if (player.name == declarer?.name) player.declaration.toString()
                             else "",
