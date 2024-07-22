@@ -40,7 +40,7 @@ fun HomePage(
             if(viewModel.playerList.value.isNotEmpty()) {
                 BasicTextButton(text = R.string.continue_game,
                     modifier = modifier.smallButton(),
-                    action = {viewModel.setCurrentPage(1)})
+                    action = {viewModel.setCurrentPage(2)})
             }
 
             BasicTextButton(text = R.string.solo_game,
