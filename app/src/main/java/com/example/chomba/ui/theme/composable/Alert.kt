@@ -124,7 +124,8 @@ fun Tips(
                                     text = "200")
                             }
 
-                        }else if(page == 2){
+                        }
+                        else if(page == 2){
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()

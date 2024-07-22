@@ -468,7 +468,7 @@ fun ChombaCard(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
+        Icon(
             painter = painter,
             contentDescription = null,
             modifier = Modifier
@@ -498,7 +498,7 @@ fun RepeatIcon(
     ) {
         Spacer(modifier = Modifier.weight(1f))
         for(i in 0 until number){
-            Image(
+            Icon(
                 painter = painter,
                 contentDescription = null,
                 modifier = Modifier
@@ -649,7 +649,7 @@ fun PlayerCard(
                                                 horizontalArrangement = Arrangement.SpaceAround,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Image(
+                                                Icon(
                                                     painter = painterResource(
                                                         id = R.drawable.ic_1200952
                                                     ),
