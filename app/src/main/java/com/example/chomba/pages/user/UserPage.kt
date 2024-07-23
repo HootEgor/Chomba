@@ -69,6 +69,7 @@ import com.example.chomba.ui.theme.ext.smallButton
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.example.chomba.ui.theme.composable.GameCard
+import com.example.chomba.ui.theme.composable.ShowAlert
 import com.example.chomba.ui.theme.composable.UserNameBar
 
 @Composable

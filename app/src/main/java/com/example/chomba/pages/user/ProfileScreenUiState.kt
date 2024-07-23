@@ -24,6 +24,12 @@ data class ProfileScreenUiState(
 
     val isSettings: Boolean = false,
 
-    val selectedLanguage: Language = Language(R.drawable.flag_ua, R.string.tag_ua)
+    val selectedLanguage: Language = Language(R.drawable.flag_ua, R.string.tag_ua),
+
+    val showAlert: Boolean = false,
+    val alertTitle: Int = R.string.in_progress,
+    val alertMsg: String = "",
+    val alertAction: () -> Unit = {},
+    val alertDismiss: () -> Unit = {},
 
     )

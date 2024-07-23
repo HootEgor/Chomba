@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,7 +34,8 @@ fun TopBar(
         modifier = modifier
             .height(56.dp),
     ) {
-        Surface(shape = Shapes.medium) {
+        Surface(shape = Shapes.medium,
+            color = MaterialTheme.colorScheme.primaryContainer,) {
             Row(modifier = modifier.height(56.dp),
                 verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
@@ -59,6 +61,10 @@ fun TopBar(
                         modifier = Modifier
                             .fillMaxHeight()
                             .padding(2.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
+                        isEnabled = secondIconEnabled,
                         action = onSecondActionClick,
                         noIcon = !secondIconEnabled
                     )

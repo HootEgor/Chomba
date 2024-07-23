@@ -44,6 +44,7 @@ import com.example.chomba.data.Player
 import com.example.chomba.ui.theme.composable.BasicIconButton
 import com.example.chomba.ui.theme.composable.BasicTextButton
 import com.example.chomba.ui.theme.composable.IconButton
+import com.example.chomba.ui.theme.composable.ShowAlert
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.ext.basicButton
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
@@ -86,7 +87,8 @@ fun NewGamePage(
                                 onDelete = { viewModel.removePlayer(item)},
                                 onSave = { name, color ->
                                     viewModel.updatePlayer(item, name, color.toString())
-                                }
+                                },
+                                isLast = playerList.indexOf(item) == playerList.size - 1
                             )
                         }
                     }
@@ -125,7 +127,8 @@ fun PlayerItem(
     modifier: Modifier = Modifier,
     player: Player,
     onDelete: () -> Unit,
-    onSave: (String, String) -> Unit
+    onSave: (String, String) -> Unit,
+    isLast: Boolean = false
 ){
     val userName = remember { mutableStateOf(player.name) }
     userName.value = player.name
@@ -145,8 +148,8 @@ fun PlayerItem(
             },
             label = { Text(stringResource(R.string.player))},
             keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Text
+                imeAction = if(isLast) ImeAction.Done else ImeAction.Next,
+                keyboardType = KeyboardType.Text,
             ),
             modifier = Modifier
                 .fillMaxWidth(0.7f)
@@ -165,7 +168,9 @@ fun PlayerItem(
         )
 
         IconButton(icon = R.drawable.baseline_delete_24,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
             action = { onDelete() })
     }
 }

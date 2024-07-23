@@ -196,9 +196,9 @@ fun GameCard(
                     playerList = game.playerList)
             }
 
-            AnimatedVisibility(visible = selected && !finished){
+            AnimatedVisibility(visible = selected){
                 IconButton(icon = R.drawable.baseline_delete_24,
-                    modifier = modifier.fillMaxWidth(),
+                    modifier = modifier.fillMaxWidth().padding(8.dp, 0.dp, 8.dp, 4.dp),
                     action = onDelete)
             }
 

@@ -77,6 +77,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun deleteGame(id: String){
+        val context = getApplication<Application>()
+        showAlert(R.string.are_you_sure, context.getString(R.string.delete_game),
+            {onDeleteGame(id)
+            dismissAlert()},
+            {dismissAlert()})
+    }
+
+    fun onDeleteGame(id: String){
         viewModelScope.launch {
             startProgressProfile()
             userRepo.deleteGame(id, profileUi)
@@ -121,5 +129,17 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun SelectSpeechRecLanguage(lang: Language){
         profileUi.value = profileUi.value.copy(selectedLanguage = lang)
+    }
+
+    fun showAlert(title: Int, msg: String, action: () -> Unit, dismiss: () -> Unit){
+        profileUi.value = profileUi.value.copy(showAlert = true,
+            alertTitle = title,
+            alertMsg = msg,
+            alertAction = action,
+            alertDismiss = dismiss)
+    }
+
+    fun dismissAlert(){
+        profileUi.value = profileUi.value.copy(showAlert = false)
     }
 }

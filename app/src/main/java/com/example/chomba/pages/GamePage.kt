@@ -54,6 +54,7 @@ import com.example.chomba.ui.theme.composable.IconButton
 import com.example.chomba.ui.theme.composable.Picker
 import com.example.chomba.ui.theme.composable.ResizableText
 import com.example.chomba.ui.theme.composable.SaveGame
+import com.example.chomba.ui.theme.composable.ShowAlert
 import com.example.chomba.ui.theme.composable.Tips
 import com.example.chomba.ui.theme.composable.TopBar
 import com.example.chomba.ui.theme.composable.rememberPickerState
@@ -151,8 +152,7 @@ fun GamePage(
             BasicIconButton(text = R.string.save_and_exit,
                 icon = R.drawable.baseline_home_24,
                 modifier = Modifier.basicButton(),
-                action = {viewModel.setCurrentPage(0)
-                    viewModel.saveGame()})
+                action = {viewModel.saveGame(true)})
         }
         else if(uiState.declarer != null){
             Row{
@@ -224,22 +224,6 @@ fun GamePage(
     if(saveAlert.value){
         SaveGame(onDismissRequest = {saveAlert.value = false},
             msg = uiState.saveMsg)
-    }
-
-    if(uiState.winner != null){
-        AlertDialog(
-            onDismissRequest = {viewModel.setWinner(null)},
-            title = { Text(text = stringResource(R.string.winner), style = MaterialTheme.typography.headlineSmall) },
-            text = {
-                Text(text = uiState.winner?.name ?: stringResource(R.string.error),
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center)
-            },
-            confirmButton = {
-            },
-            dismissButton = {
-            }
-        )
     }
 
     if(showTip.value){

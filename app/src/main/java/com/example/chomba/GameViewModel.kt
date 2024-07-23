@@ -53,7 +53,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun addPlayer() {
         val player = Player()
-        player.name = "Player ${playerList.value.size + 1}"
+        player.name = ""
         playerList.value = playerList.value + player
     }
 
@@ -359,13 +359,29 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun setWinner(player: Player?) {
         uiState.value = uiState.value.copy(winner = player)
+        profileVM.showAlert(R.string.winner, "${player?.name}",
+            {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
     }
 
     fun startGame() {
         viewModelScope.launch {
+            val context = getApplication<Application>()
             val updatedPlayerList = playerList.value.filter { it.visible }
             playerList.value = updatedPlayerList
-        }.invokeOnCompletion {
+            for (player in playerList.value){
+                if (player.name.trim() == ""){
+                    profileVM.showAlert(R.string.error, context.getString(R.string.player_name_empty),
+                        {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
+                    return@launch
+                }
+            }
+
+            val names = playerList.value.map { it.name }
+            if (names.size != names.toSet().size){
+                profileVM.showAlert(R.string.error, context.getString(R.string.duplicate_names),
+                    {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
+                return@launch
+            }
             setCurrentPage(2)
         }
     }
@@ -404,7 +420,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         }
     }
 
-    fun saveGame() {
+    fun saveGame(exit: Boolean = false) {
         viewModelScope.launch {
             startProgressGame()
             val savedGame = profileVM.saveGame(profileUi, playerList, uiState)
@@ -413,6 +429,8 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             uiState.value = savedGame.third
         }.invokeOnCompletion {
             stopProgressGame()
+            if (exit)
+                setCurrentPage(0)
         }
 
     }

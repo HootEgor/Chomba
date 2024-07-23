@@ -9,6 +9,7 @@ import com.example.chomba.pages.GamePage
 import com.example.chomba.pages.user.UserPage
 import com.example.chomba.pages.solo.SoloGamePage
 import com.example.chomba.pages.solo.SoloViewModel
+import com.example.chomba.ui.theme.composable.ShowAlert
 
 @Composable
 fun GameScreen(
@@ -40,4 +41,6 @@ fun GameScreen(
                 soloViewModel = soloViewModel)
         }
     }
+    
+    ShowAlert(uiState = viewModel.profileUi.value)
 }

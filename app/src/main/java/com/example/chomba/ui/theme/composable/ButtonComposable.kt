@@ -83,8 +83,8 @@ fun IconButton(
     modifier: Modifier,
     action: () -> Unit,
     colors: ButtonColors = ButtonDefaults.buttonColors(
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
     ),
     noIcon: Boolean = false,
     isEnabled: Boolean = true

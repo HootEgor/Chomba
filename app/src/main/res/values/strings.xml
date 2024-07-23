@@ -13,7 +13,7 @@
     <string name="score_per_round">Score per round</string>
     <string name="set_declarer">Set declarer</string>
     <string name="winner">Winner</string>
-    <string name="error">error</string>
+    <string name="error">Error</string>
     <string name="player_score_list">Score list of</string>
     <string name="_120" translatable="false">-120</string>
     <string name="dissolution">Dissolution</string>
@@ -56,4 +56,7 @@
     <string name="tag_ua">uk-UA</string>
     <string name="tag_ru">ru-RU</string>
     <string name="tag_uk">en-GB</string>
+    <string name="player_name_empty">Please enter a name for all players.</string>
+    <string name="duplicate_names">Duplicated names.</string>
+    <string name="delete_game">Delete game</string>
 </resources>
