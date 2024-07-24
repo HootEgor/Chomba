@@ -73,7 +73,7 @@ fun GamePage(
     val saveAlert = remember { mutableStateOf(false) }
     val isMenuExpanded = remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -109,14 +109,8 @@ fun GamePage(
             }
         )
 
-        Surface(
-            modifier = modifier
-                .fillMaxWidth(0.9f)
-                .wrapContentHeight()
-                .weight(1f),
-        ) {
             Column(
-                modifier = Modifier.wrapContentSize(),
+                modifier = Modifier.wrapContentSize().weight(1f),
             ) {
                 for(i in 0 until 3){
                     val player = playerList[i]
@@ -144,7 +138,6 @@ fun GamePage(
                         playerList = viewModel.playerList.value)
                 }
             }
-        }
 
 
 
