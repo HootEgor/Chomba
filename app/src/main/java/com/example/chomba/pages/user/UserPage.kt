@@ -107,7 +107,7 @@ fun UserProfile(
         UserNameBar(
             name = uiState.displayName,
             picture = uiState.userPicture,
-            signOutAction = { viewModel.profileVM.signOut() }
+            signOutAction = { viewModel.profileVM.onSignOut() }
         )
 
         if(uiState.isSettings){
@@ -138,7 +138,7 @@ fun UserProfile(
                                 onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
                                 selected = uiState.gameList[index].id == uiState.currentGameIndex,
                                 finished = viewModel.profileVM.isCurrentGameFinished(),
-                                onDelete = { viewModel.profileVM.deleteGame(uiState.gameList[index].id) }
+                                onDelete = { viewModel.profileVM.onDeleteGame(uiState.gameList[index].id) }
                             )
                         }
                     }

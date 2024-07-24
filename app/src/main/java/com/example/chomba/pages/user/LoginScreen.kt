@@ -7,15 +7,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,9 +33,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.chomba.GameViewModel
 import com.example.chomba.R
+import com.example.chomba.ui.theme.composable.BasicIconButton
+import com.example.chomba.ui.theme.composable.IconButton
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
@@ -65,6 +73,7 @@ fun LoginScreen(
                             it.pendingIntent.intentSender
                         ).build()
                     )
+                    viewModel.profileVM.loadGames()
                 } catch (e: Exception) {
 //                    SnackbarManager.showMessage(e.toSnackbarMessage())
                     Log.e("PRG", "OneTapUI start failed; $e")
@@ -83,6 +92,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.fillMaxHeight(0.3f))
         OutlinedTextField(
             value = email.value,
             onValueChange = { newValue ->
@@ -94,7 +104,10 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .padding(8.dp),
             singleLine = true,
-            label = { Text(stringResource(R.string.email)) },
+            placeholder = { Text(stringResource(R.string.email)) },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = MaterialTheme.colorScheme.background,
+            ),
         )
 
         TextButton(
@@ -116,5 +129,13 @@ fun LoginScreen(
         ) {
             Text(text = stringResource(R.string.sign_in_with_google))
         }
+
+        Spacer(modifier = Modifier.fillMaxHeight(0.7f))
+
+        IconButton(icon = R.drawable.baseline_home_24,
+            modifier = Modifier
+                .padding(8.dp)
+                .height(48.dp),
+            action = { viewModel.setCurrentPage(0) })
     }
 }

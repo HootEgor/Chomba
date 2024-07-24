@@ -73,7 +73,7 @@ fun GamePage(
     val saveAlert = remember { mutableStateOf(false) }
     val isMenuExpanded = remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
+        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -246,7 +246,7 @@ fun GamePage(
                         text = stringResource(R.string.set_declarer),
                         style = MaterialTheme.typography.headlineSmall)
                     VoiceRecognitionButton(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).wrapContentWidth(),
                         onRecognized = { recognizedScore ->
                             if (recognizedScore < 100) {
                                 val hundreds = (currentScore.intValue / 100) * 100

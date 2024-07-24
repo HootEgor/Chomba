@@ -2,6 +2,7 @@ package com.example.chomba.pages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -146,7 +148,6 @@ fun PlayerItem(
                 userName.value = newValue
                 onSave(userName.value, color.value)
             },
-            label = { Text(stringResource(R.string.player))},
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = if(isLast) ImeAction.Done else ImeAction.Next,
                 keyboardType = KeyboardType.Text,
@@ -164,7 +165,11 @@ fun PlayerItem(
                         color.value = it.value.toString()},
                     saveColor = { onSave(userName.value, color.value)}
                 )
-            }
+            },
+            placeholder = { Text(stringResource(R.string.player)) },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                containerColor = MaterialTheme.colorScheme.background,
+            ),
         )
 
         IconButton(icon = R.drawable.baseline_delete_24,

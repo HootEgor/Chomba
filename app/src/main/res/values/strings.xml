@@ -59,4 +59,5 @@
     <string name="player_name_empty">Please enter a name for all players.</string>
     <string name="duplicate_names">Duplicated names.</string>
     <string name="delete_game">Delete game</string>
+    <string name="sign_out">Sign out</string>
 </resources>

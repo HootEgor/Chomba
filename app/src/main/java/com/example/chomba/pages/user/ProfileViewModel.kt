@@ -59,7 +59,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         profileUi.value = userRepo.signInWithGoogleToken(googleIdToken, profileUi)
     }
 
-    fun signOut() {
+    private fun signOut() {
         viewModelScope.launch {
             auth.signOut()
         }.invokeOnCompletion {
@@ -69,6 +69,13 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun onSignOut(){
+        showAlert(R.string.sign_out, getApplication<Application>().getString(R.string.are_you_sure),
+            {signOut()
+            dismissAlert()},
+            {dismissAlert()})
+    }
+
     fun saveGame(profileUi: MutableState<ProfileScreenUiState>,
                  playerList: MutableState<List<Player>>,
                  uiState: MutableState<GameUiState>
@@ -76,15 +83,15 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         return userRepo.saveGame(profileUi, playerList, uiState)
     }
 
-    fun deleteGame(id: String){
+    fun onDeleteGame(id: String){
         val context = getApplication<Application>()
-        showAlert(R.string.are_you_sure, context.getString(R.string.delete_game),
-            {onDeleteGame(id)
+        showAlert(R.string.delete_game, context.getString(R.string.are_you_sure),
+            {deleteGame(id)
             dismissAlert()},
             {dismissAlert()})
     }
 
-    fun onDeleteGame(id: String){
+    private fun deleteGame(id: String){
         viewModelScope.launch {
             startProgressProfile()
             userRepo.deleteGame(id, profileUi)
