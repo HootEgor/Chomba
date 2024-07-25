@@ -60,4 +60,6 @@
     <string name="duplicate_names">Duplicated names.</string>
     <string name="delete_game">Delete game</string>
     <string name="sign_out">Sign out</string>
+    <string name="undo">Undo</string>
+    <string name="undo_last_round">Undo last round</string>
 </resources>

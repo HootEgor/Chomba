@@ -90,6 +90,7 @@ fun GamePage(
                     R.drawable.baseline_lightbulb_24 to stringResource(R.string.tips),
                     R.drawable.baseline_save_24 to stringResource(R.string.save_game),
                     R.drawable.baseline_blind_24 to stringResource(R.string.set_declarer),
+                    R.drawable.baseline_undo_24 to stringResource(R.string.undo),
                 )
 
                 Dropdown(
@@ -102,6 +103,7 @@ fun GamePage(
                                 saveAlert.value = true
                             }
                             buttonsWithIcons[2].second -> setDeclarer.value = true
+                            buttonsWithIcons[3].second -> viewModel.onUndoLastRound()
                         }
                     },
                     icon = R.drawable.baseline_more_vert_24

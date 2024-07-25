@@ -454,5 +454,33 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         return false
     }
 
+    fun onUndoLastRound(){
+        profileVM.showAlert(R.string.undo_last_round, getApplication<Application>().getString(R.string.are_you_sure),
+            {undoLastRound()
+            profileVM.dismissAlert()},
+            {profileVM.dismissAlert()})
+    }
+
+    private fun undoLastRound(){
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            val scoreList = existingPlayer.scoreList
+            if (scoreList.isNotEmpty()) {
+                val lastScore = scoreList.last()
+                if (lastScore.type == 1 && lastScore.value == -120) {
+                    existingPlayer.copy(scoreList = scoreList.dropLast(2) + Score(-120, 1),
+                        scorePerRound = 0)
+                } else {
+                    existingPlayer.copy(scoreList = scoreList.dropLast(1),
+                        scorePerRound = 0)
+                }
+            } else {
+                existingPlayer
+            }
+        }
+
+
+        playerList.value = updatedPlayerList
+    }
+
 
 }
