@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -5,15 +8,27 @@ plugins {
 }
 
 android {
-    namespace = "com.example.chomba"
+    namespace = "com.egorhoot.chomba"
     compileSdk = 34
+    val _patch: Int
+    val versionPropsFile = file("version.properties")
+    if (versionPropsFile.canRead()) {
+        val versionProps = Properties()
+        versionProps.load(FileInputStream(versionPropsFile))
+        _patch = versionProps.getProperty("PATCH").toInt()+1
+        versionProps.setProperty("PATCH", _patch.toString())
+        versionProps.store(versionPropsFile.writer(), null)
+    } else {
+        throw Exception("Could not read version.properties!")
+    }
+    val _versionName = "0.0.$_patch"
 
     defaultConfig {
-        applicationId = "com.example.chomba"
+        applicationId = "com.egorhoot.chomba"
         minSdk = 26
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 34
+        versionCode = _patch
+        versionName = _versionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -28,6 +43,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

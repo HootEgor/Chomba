@@ -7,6 +7,43 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:356192759763:android:cadf2b6221742d35390926",
+        "android_client_info": {
+          "package_name": "com.egorhoot.chomba"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "356192759763-i14dt765dqtg5eu5pg0rpcpj9g37076r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.egorhoot.chomba",
+            "certificate_hash": "ba28838eaece00b52055737e6c54a9a690a9101d"
+          }
+        },
+        {
+          "client_id": "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPq2CPz9S2BvofSS-BTo8NHdgRlWkK9Ms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "356192759763-d2j0tvbnrg05htmk1g082k10uqssfjvh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:356192759763:android:a87ed6627c777251390926",
         "android_client_info": {
           "package_name": "com.example.chomba"
@@ -14,7 +51,23 @@
       },
       "oauth_client": [
         {
-          "client_id": "356192759763-d2j0tvbnrg05htmk1g082k10uqssfjvh.apps.googleusercontent.com",
+          "client_id": "356192759763-9o7iqofgto4ufcn9v71k5b4ate1gb1g5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chomba",
+            "certificate_hash": "ba28838eaece00b52055737e6c54a9a690a9101d"
+          }
+        },
+        {
+          "client_id": "356192759763-sn0f6d9288d1he530nq620rokbhlhg1u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chomba",
+            "certificate_hash": "d98fdb1f67c515d4bffb0720cc97f14d144d5367"
+          }
+        },
+        {
+          "client_id": "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
