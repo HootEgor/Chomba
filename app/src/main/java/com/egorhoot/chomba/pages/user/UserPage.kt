@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.egorhoot.chomba.GameViewModel
 import com.egorhoot.chomba.R
+import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoard
+import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.ext.smallButton
@@ -63,14 +65,8 @@ fun UserProfile(
             signOutAction = { viewModel.profileVM.onSignOut() }
         )
 
-        if(uiState.isSettings){
-            SettingsScreen(
-                modifier = modifier
-                    .weight(1f),
-                profileViewModel = viewModel.profileVM
-            )
-        }else{
-            if(uiState.gameList.isNotEmpty()){
+        when(uiState.currentScreen){
+            0 -> if(uiState.gameList.isNotEmpty()){
                 Surface(
                     shape = Shapes.medium,
                     //shadowElevation = 4.dp,
@@ -102,6 +98,16 @@ fun UserProfile(
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+            1 -> SettingsScreen(
+                modifier = modifier
+                    .weight(1f),
+                profileViewModel = viewModel.profileVM
+            )
+            2 -> LeaderBoard(
+                modifier = modifier
+                    .weight(1f),
+                viewModel = viewModel.profileVM.leaderBoardViewModel
+            )
         }
 
         BottomBar(
@@ -133,12 +139,20 @@ fun BottomBar(
             action = {viewModel.profileVM.toggleSettings()}
         )
         IconButton(
+            icon = R.drawable.baseline_leaderboard_24,
+            modifier = modifier
+                .smallButton()
+                .weight(1f),
+            action = {viewModel.profileVM.toggleLeaderBoard() },
+            isEnabled = uiState.currentScreen != 1
+        )
+        IconButton(
             icon = R.drawable.baseline_home_24,
             modifier = modifier
                 .smallButton()
                 .weight(1f),
             action = {viewModel.setCurrentPage(0) },
-            isEnabled = !uiState.isSettings
+            isEnabled = uiState.currentScreen != 1
         )
         IconButton(
             icon = R.drawable.baseline_arrow_forward_ios_24,
@@ -146,7 +160,7 @@ fun BottomBar(
                 .smallButton()
                 .weight(1f),
             action = {viewModel.continueGame()},
-            isEnabled = uiState.currentGameIndex != null && !uiState.isSettings && !viewModel.profileVM.isCurrentGameFinished()
+            isEnabled = uiState.currentGameIndex != null && uiState.currentScreen == 0 && !viewModel.profileVM.isCurrentGameFinished()
         )
 
     }

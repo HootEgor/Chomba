@@ -62,11 +62,9 @@ fun CurvedLineChart(
     gradientFromAlpha: Float = 0.5f,
     gradientToAlpha: Float = 0f,
     gridLineColor: Color = Color.Gray,
-    gridLineThickness: Float = 1f,
-    gridLineSpacing: Float = 50f
+    gridLineThickness: Float = 1f
 ) {
     Canvas(modifier = modifier) {
-//        drawGridLines(gridLineColor, gridLineThickness, gridLineSpacing)
         var min = -200
         for (player in data) {
             for (i in 1 .. player.getMaxRound()) {
@@ -77,7 +75,7 @@ fun CurvedLineChart(
         }
 
         for (i in 800 downTo min+50 step 200) {
-            drawScoreLines(Color.Gray, i, 1f, min)
+            drawScoreLines(gridLineColor, i, gridLineThickness, min)
         }
 
         drawMinusZone(listOf(Color.Red.copy(alpha = 0.25f), Color.Red.copy(alpha = 0f)), min)
@@ -89,20 +87,6 @@ fun CurvedLineChart(
             drawCurvedLine(player, color, lineWidth, min)
             drawGradientUnderCurve(player, gradientColors, min)
         }
-    }
-}
-
-private fun DrawScope.drawGridLines(gridLineColor: Color, gridLineThickness: Float, gridLineSpacing: Float) {
-    val horizontalLinesCount = (size.height / gridLineSpacing).toInt()
-    for (i in 0..horizontalLinesCount) {
-        val y = i * gridLineSpacing
-        drawLine(
-            color = gridLineColor,
-            start = Offset(0f, y),
-            end = Offset(size.width, y),
-            strokeWidth = gridLineThickness,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-        )
     }
 }
 

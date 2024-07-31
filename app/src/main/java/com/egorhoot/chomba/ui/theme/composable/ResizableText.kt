@@ -17,7 +17,8 @@ import androidx.compose.ui.text.style.TextOverflow
 fun ResizableText(
     modifier: Modifier = Modifier,
     text: String,
-    style: TextStyle = MaterialTheme.typography.titleMedium
+    style: TextStyle = MaterialTheme.typography.titleMedium,
+    contentAlignment: Alignment = Alignment.Center
 ) {
     var scale by remember { mutableStateOf(1f) }
     var containerWidth by remember { mutableStateOf(0) }
@@ -38,7 +39,7 @@ fun ResizableText(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .align(Alignment.Center)
+                .align(contentAlignment)
                 .onGloballyPositioned { coordinates ->
                     textWidth = coordinates.size.width
                     scale = if (containerWidth > 0 && textWidth > containerWidth) {

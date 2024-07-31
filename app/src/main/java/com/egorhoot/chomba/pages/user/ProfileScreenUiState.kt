@@ -4,6 +4,7 @@ import android.net.Uri
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
+import com.egorhoot.chomba.data.LeaderBoardPlayer
 
 data class ProfileScreenUiState(
     val email: String = "",
@@ -22,7 +23,7 @@ data class ProfileScreenUiState(
 
     val saveMsg: Int = R.string.in_progress,
 
-    val isSettings: Boolean = false,
+    val currentScreen: Int = 0,
 
     val selectedLanguage: Language = Language(R.drawable.flag_ua, R.string.tag_ua),
 

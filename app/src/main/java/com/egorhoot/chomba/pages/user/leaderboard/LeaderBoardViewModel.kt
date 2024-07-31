@@ -1,0 +1,60 @@
+package com.egorhoot.chomba.pages.user.leaderboard
+
+import android.app.Application
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
+import com.egorhoot.chomba.data.Game
+import com.egorhoot.chomba.data.LeaderBoardPlayer
+import com.egorhoot.chomba.data.Player
+import com.egorhoot.chomba.data.getScoreSum
+import com.egorhoot.chomba.data.getTotalScore
+import com.egorhoot.chomba.data.isWinner
+import com.egorhoot.chomba.data.sortedByTotalScore
+import com.egorhoot.chomba.data.sortedByWins
+
+class LeaderBoardViewModel(application: Application): AndroidViewModel(application) {
+
+    var uiState = mutableStateOf(LeaderBoardUiState())
+        private set
+
+    fun getLeaderBoardPlayers(gameList: List<Game>){
+        val playersName = mutableListOf<String>()
+        for (game in gameList) {
+            for (player in game.playerList) {
+                if(!playersName.contains(player.name)) {
+                    playersName.add(player.name)
+                }
+            }
+        }
+
+        val players = mutableListOf<LeaderBoardPlayer>()
+        for (playerName in playersName) {
+            var wins = 0
+            var totalScore = 0
+            var winStreak = 0
+            for (game in gameList) {
+                for (player in game.playerList) {
+                    if (player.name == playerName) {
+                        if(game.isWinner(player)) {
+                            wins += 1
+                        }
+                        totalScore += player.getTotalScore()
+                        winStreak = if (game.isWinner(player)) winStreak + 1 else 0
+                    }
+                }
+            }
+            players.add(LeaderBoardPlayer(playerName, wins, totalScore, winStreak))
+        }
+
+        uiState.value = uiState.value.copy(players = players.sortedByWins())
+    }
+
+    fun sortPlayersByWins() {
+        uiState.value = uiState.value.copy(players = uiState.value.players.sortedByWins())
+    }
+
+    fun sortPlayersByTotalScore() {
+        uiState.value = uiState.value.copy(players = uiState.value.players.sortedByTotalScore())
+    }
+}

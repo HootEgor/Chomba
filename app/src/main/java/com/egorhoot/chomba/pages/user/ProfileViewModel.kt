@@ -10,8 +10,11 @@ import com.egorhoot.chomba.GameUiState
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
+import com.egorhoot.chomba.data.LeaderBoardPlayer
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.getTotalScore
+import com.egorhoot.chomba.data.isWinner
+import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.repo.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
@@ -19,6 +22,8 @@ import kotlinx.coroutines.launch
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     var profileUi = mutableStateOf(ProfileScreenUiState())
         private set
+
+    val leaderBoardViewModel = LeaderBoardViewModel(application)
 
     private val auth = FirebaseAuth.getInstance()
 
@@ -128,9 +133,19 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun toggleSettings(){
-        profileUi.value = profileUi.value.copy(isSettings = !profileUi.value.isSettings)
-        if(!profileUi.value.isSettings){
-            userRepo.saveVoiceRecLanguage(profileUi.value.selectedLanguage)
+        if(profileUi.value.currentScreen == 1){
+            profileUi.value = profileUi.value.copy(currentScreen = 0)
+        }else{
+            profileUi.value = profileUi.value.copy(currentScreen = 1)
+        }
+    }
+
+    fun toggleLeaderBoard(){
+        if(profileUi.value.currentScreen == 2){
+            profileUi.value = profileUi.value.copy(currentScreen = 0)
+        }else{
+            profileUi.value = profileUi.value.copy(currentScreen = 2)
+            leaderBoardViewModel.getLeaderBoardPlayers(profileUi.value.gameList)
         }
     }
 

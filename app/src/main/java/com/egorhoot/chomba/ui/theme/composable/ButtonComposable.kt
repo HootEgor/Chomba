@@ -54,21 +54,27 @@ fun BasicIconButton(@StringRes text: Int, @DrawableRes icon: Int, modifier: Modi
 }
 
 @Composable
-fun BasicTextButton(@StringRes text: Int, modifier: Modifier, action: () -> Unit) {
+fun BasicTextButton(
+    @StringRes text: Int,
+    modifier: Modifier,
+    action: () -> Unit,
+    colors: ButtonColors = ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ),
+    elevation: Int = 4,
+) {
     Button(
         onClick = action,
         modifier = modifier,
         shape = MaterialTheme.shapes.extraLarge,
         elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp,
+            defaultElevation = elevation.dp,
             pressedElevation = 0.dp,
             disabledElevation = 0.dp
-        ),
-        colors =
-        ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
+            ,
+        colors = colors
     ) {
         Text(
             text = stringResource(text),

@@ -54,7 +54,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun addPlayer() {
         val player = Player()
-        playerList.value = playerList.value + player
+        playerList.value += player
     }
 
     fun getNumberOfVisiblePlayers(): Int {
@@ -158,10 +158,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             if(uiState.value.declarer?.name == existingPlayer.name
                 || uiState.value.playerOnBarrel?.name == existingPlayer.name) {
 
-                if(existingPlayer.scorePerRound >= existingPlayer.declaration) {
-                    type = 1
+                type = if(existingPlayer.scorePerRound >= existingPlayer.declaration) {
+                    1
                 } else {
-                    type = -1
+                    -1
                 }
                 score = existingPlayer.declaration
                 if(existingPlayer.blind)
@@ -357,7 +357,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         uiState.value = uiState.value.copy(showScoreList = show, showPlayer = player)
     }
 
-    fun setWinner(player: Player?) {
+    private fun setWinner(player: Player?) {
         uiState.value = uiState.value.copy(winner = player)
         profileVM.showAlert(R.string.winner, "${player?.name}",
             {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
