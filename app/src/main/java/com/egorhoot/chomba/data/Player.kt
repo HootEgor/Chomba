@@ -17,7 +17,7 @@ data class Player(
     var takenChombas: List<CardSuit> = listOf(),
 ){
     constructor() : this(visible = true,
-        name = "",
+        name = generateRandomName(),
         color = generateRandomColor().toString(),
         scoreList = listOf(),
         scorePerRound = 0,
@@ -29,6 +29,18 @@ data class Player(
         takenChombas = listOf())
 }
 
+fun generateRandomName(): String {
+    val animals = listOf(
+        "Tiger", "Panda", "Koala", "Eagle", "Owl", "Lion", "Kangaroo", "Penguin", "Dolphin",
+        "Fox", "Rabbit", "Bear", "Wolf", "Hawk", "Elephant", "Giraffe", "Monkey", "Zebra",
+        "Whale", "Turtle"
+    )
+
+    val randomAnimal = animals.random()
+
+    return randomAnimal
+}
+
 fun generateRandomColor(): ULong {
     val red = Random.nextInt(256)
     val green = Random.nextInt(256)
@@ -36,41 +48,54 @@ fun generateRandomColor(): ULong {
     return Color(red, green, blue).value
 }
 
-fun Player.getTotalScore(round: Int = -1): Int {
+fun Player.getMaxRound(): Int {
+    val useIndex = scoreList.all { it.round == 0 }
+    return if (useIndex) {
+        scoreList.size
+    } else {
+        scoreList.maxOf { it.round }
+    }
+}
+
+fun Player.getTotalScore(roundLimit: Int = -1): Int {
     var totalScore = 0
     var zeroNum = 0
     var dissolutionNum = 0
-    var until = scoreList.size
-    if (round > -1 && round < scoreList.size) {
-        until = round
+
+    val useIndex = scoreList.all { it.round == 0 }
+
+    val scoresToProcess = if (useIndex) {
+        if (roundLimit > -1 && roundLimit < scoreList.size) {
+            scoreList.subList(0, roundLimit)
+        } else {
+            scoreList
+        }
+    } else {
+        if (roundLimit > -1) {
+            scoreList.filter { it.round <= roundLimit }
+        } else {
+            scoreList
+        }
     }
-    for (score in scoreList.subList(0, until)) {
-        if(score.type == 0) {
-            totalScore -= score.value
-            zeroNum++
-        }
-        else if(score.type == 1 || score.type == 3) {
-            totalScore += score.value
+
+    for (score in scoresToProcess) {
+        when (score.type) {
+            0 -> {
+                totalScore -= score.value
+                zeroNum++
+            }
+            1, 3 -> totalScore += score.value
+            2 -> if (score.value == 120) totalScore += score.value
+            -1, -4 -> totalScore -= score.value
+            -3 -> dissolutionNum++
         }
 
-        if (score.type == 2 && score.value == 120) {
-            totalScore += score.value
-        }
-
-        if (score.type == -1 || score.type == -4) {
-            totalScore -= score.value
-        }
-
-        if (score.type == -3) {
-            dissolutionNum++
-        }
-
-        if(dissolutionNum == 3) {
+        if (dissolutionNum == 3) {
             dissolutionNum = 0
             totalScore = 0
         }
 
-        if(zeroNum == 3) {
+        if (zeroNum == 3) {
             zeroNum = 0
             totalScore = 0
         }
@@ -82,6 +107,15 @@ fun Player.getTotalScore(round: Int = -1): Int {
 
     return totalScore
 }
+
+fun Player.getScoreSum(): Int {
+    var sum = 0
+    for (i in 0 .. getMaxRound()) {
+        sum += getTotalScore(i)
+    }
+    return sum
+}
+
 
 fun Player.getZeroNum(): Int {
     var zeroNum = 0

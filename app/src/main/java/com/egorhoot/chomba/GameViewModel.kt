@@ -8,6 +8,7 @@ import com.egorhoot.chomba.ai.VoiceRecognitionViewModel
 import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
+import com.egorhoot.chomba.data.chombaScore
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.pages.user.ProfileViewModel
@@ -53,7 +54,6 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun addPlayer() {
         val player = Player()
-        player.name = ""
         playerList.value = playerList.value + player
     }
 
@@ -193,7 +193,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 type = 2
             }
 
-            val newScore = Score(score, type)
+            val newScore = Score(score, type, uiState.value.round)
 
             existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
                 scorePerRound = 0, blind = false,
@@ -247,7 +247,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 }
             }
 
-            val newScore = Score(score, type)
+            val newScore = Score(score, type, uiState.value.round)
 
             existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
                 scorePerRound = 0)
@@ -283,7 +283,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
                 score = -120
             }
 
-            val newScore = Score(score, 1)
+            val newScore = Score(score, 1, uiState.value.round-1)
 
             if (score != 0){
                 existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
@@ -408,16 +408,6 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
             }
         }
         playerList.value = updatedPlayerList
-    }
-
-    private fun chombaScore(suit: Int): Int{
-        return when(suit){
-            0 -> 40
-            1 -> 60
-            2 -> 80
-            3 -> 100
-            else -> 0
-        }
     }
 
     fun saveGame(exit: Boolean = false) {

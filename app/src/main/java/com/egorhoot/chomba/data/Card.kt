@@ -22,3 +22,13 @@ enum class CardValue(val customValue: Int) {
 enum class CardSuit {
     CORAZON, DIAMANTE, TREBOL, PICA
 }
+
+fun chombaScore(suit: Int): Int{
+    return when(suit){
+        0 -> 40
+        1 -> 60
+        2 -> 80
+        3 -> 100
+        else -> 0
+    }
+}
