@@ -139,7 +139,7 @@ fun BottomBar(
             action = {viewModel.profileVM.toggleSettings()}
         )
         IconButton(
-            icon = R.drawable.baseline_leaderboard_24,
+            icon = if(uiState.currentScreen == 2) R.drawable.baseline_videogame_asset_24 else R.drawable.baseline_leaderboard_24,
             modifier = modifier
                 .smallButton()
                 .weight(1f),

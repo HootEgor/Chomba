@@ -19,5 +19,5 @@ fun Game.isFinished(): Boolean {
 }
 
 fun Game.isWinner(player: Player): Boolean {
-    return player.getTotalScore() == 1000
+    return player.getTotalScore() >= 1000
 }

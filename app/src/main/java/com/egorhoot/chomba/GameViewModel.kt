@@ -50,6 +50,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
         if(page == 2){
             voiceRec.setLanguage(profileUi.value.selectedLanguage)
         }
+
+        if(page == 3){
+            profileUi.value = profileUi.value.copy(currentScreen = 0)
+        }
     }
 
     fun addPlayer() {

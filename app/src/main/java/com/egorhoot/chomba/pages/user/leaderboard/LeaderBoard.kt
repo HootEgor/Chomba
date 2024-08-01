@@ -35,6 +35,7 @@ import com.egorhoot.chomba.data.getScoreText
 import com.egorhoot.chomba.pages.user.ProfileViewModel
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
+import com.egorhoot.chomba.ui.theme.composable.FullIconButton
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.ResizableText
 import com.egorhoot.chomba.ui.theme.ext.smallButton
@@ -77,25 +78,26 @@ fun LeaderBoard(
                         modifier = modifier.weight(1f),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        BasicTextButton(
-                            text = R.string.wins,
+                        FullIconButton(
+                            icon = R.drawable.first,
                             modifier = modifier.weight(1f),
                             action = { viewModel.sortPlayersByWins() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                            ),
-                            elevation = 0
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
-                        BasicTextButton(
-                            text = R.string.score,
+                        FullIconButton(
+                            icon = R.drawable.win_streak,
+                            modifier = modifier.weight(1f),
+                            action = { viewModel.sortPlayersByWinStreak() },
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        )
+                        FullIconButton(
+                            icon = R.drawable.baseline_score_24,
                             modifier = modifier.weight(1f),
                             action = { viewModel.sortPlayersByTotalScore() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                            ),
-                            elevation = 0
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
                     }
                 }
@@ -160,6 +162,13 @@ fun LeaderBoardItem(
             ) {
                 Text(
                     text = player.wins.toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    modifier = modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = player.winStreak.toString(),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     modifier = modifier.weight(1f),
