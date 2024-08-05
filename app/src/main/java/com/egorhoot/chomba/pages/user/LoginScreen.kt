@@ -33,6 +33,7 @@ import com.google.android.gms.auth.api.identity.SignInClient
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: GameViewModel,
+    profileViewModel: ProfileViewModel,
     onSignInEmail: (String) -> Unit,
 ) {
     val email = remember { mutableStateOf("") }
@@ -44,7 +45,7 @@ fun LoginScreen(
             try {
                 val credentials = oneTapClient.getSignInCredentialFromIntent(result.data)
                 credentials.googleIdToken?.let { token ->
-                    viewModel.profileVM.signInWithGoogleToken(token)
+                    profileViewModel.signInWithGoogleToken(token)
                 }
             } catch (e: Exception) {
                 Log.e("SignResult", "OneTapUI request failed; $e")
@@ -54,7 +55,7 @@ fun LoginScreen(
 
     val onGoogleSignInClick = {
         val apiKey = "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com"
-        val request = viewModel.profileVM.userRepo.getSignInRequest(apiKey)
+        val request = viewModel.userRepo.getSignInRequest(apiKey)
         oneTapClient.beginSignIn(request)
             .addOnSuccessListener {
                 try {
@@ -63,7 +64,7 @@ fun LoginScreen(
                             it.pendingIntent.intentSender
                         ).build()
                     )
-                    viewModel.profileVM.loadGames()
+                    profileViewModel.loadGames()
                 } catch (e: Exception) {
 //                    SnackbarManager.showMessage(e.toSnackbarMessage())
                     Log.e("PRG", "OneTapUI start failed; $e")

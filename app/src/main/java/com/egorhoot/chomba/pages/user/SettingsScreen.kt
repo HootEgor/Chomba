@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.ui.theme.Shapes
@@ -26,7 +27,7 @@ import com.egorhoot.chomba.ui.theme.Shapes
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     Surface(
         shape = Shapes.medium,
@@ -43,7 +44,7 @@ fun SettingsScreen(
             RadioButtonSample(
                 modifier = Modifier.padding(top = 16.dp),
                 onSelected = { language ->
-                    profileViewModel.SelectSpeechRecLanguage(language)
+                    profileViewModel.selectSpeechRecLanguage(profileViewModel.profileUi, language)
                 },
                 selectedOption = profileViewModel.profileUi.value.selectedLanguage
             )

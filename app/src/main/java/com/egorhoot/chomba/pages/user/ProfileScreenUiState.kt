@@ -5,6 +5,7 @@ import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.data.LeaderBoardPlayer
+import javax.inject.Inject
 
 data class ProfileScreenUiState(
     val email: String = "",
@@ -26,11 +27,10 @@ data class ProfileScreenUiState(
     val currentScreen: Int = 0,
 
     val selectedLanguage: Language = Language(R.drawable.flag_ua, R.string.tag_ua),
-
     val showAlert: Boolean = false,
     val alertTitle: Int = R.string.in_progress,
     val alertMsg: String = "",
     val alertAction: () -> Unit = {},
-    val alertDismiss: () -> Unit = {},
+    val alertDismiss: () -> Unit = {}
 
     )

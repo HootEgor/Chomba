@@ -262,8 +262,7 @@ fun GamePage(
                                     startIndex.intValue = index
                                 }
                             }
-                        },
-                        viewModel = viewModel.voiceRec)
+                        },)
                 }},
             text = {
                 Surface(shape = RoundedCornerShape(4.dp),

@@ -30,23 +30,27 @@ import com.egorhoot.chomba.ui.theme.composable.UserNameBar
 @Composable
 fun UserPage(
     modifier: Modifier = Modifier,
-    viewModel: GameViewModel
+    gameViewModel: GameViewModel,
+    viewModel: ProfileViewModel,
 ) {
     val uiState by viewModel.profileUi
     if(uiState.isAuthenticated){
-        UserProfile(viewModel = viewModel)
+        UserProfile(
+            gameViewModel = gameViewModel,
+            viewModel = viewModel)
     }else{
-        LoginScreen(viewModel = viewModel,
+        LoginScreen(viewModel = gameViewModel,
+            profileViewModel = viewModel,
             onSignInEmail = { email ->
-                viewModel.profileVM.userRepo.sendSignInLink(email)})
+                gameViewModel.userRepo.sendSignInLink(email)})
     }
 }
 
 @Composable
 fun UserProfile(
     modifier: Modifier = Modifier,
-    viewModel: GameViewModel,
-
+    gameViewModel: GameViewModel,
+    viewModel: ProfileViewModel,
 ) {
     val uiState by viewModel.profileUi
 
@@ -62,7 +66,7 @@ fun UserProfile(
         UserNameBar(
             name = uiState.displayName,
             picture = uiState.userPicture,
-            signOutAction = { viewModel.profileVM.onSignOut() }
+            signOutAction = { viewModel.onSignOut() }
         )
 
         when(uiState.currentScreen){
@@ -84,10 +88,10 @@ fun UserProfile(
                                 modifier = modifier
                                     .fillMaxWidth(),
                                 game = uiState.gameList[index],
-                                onSelect = { viewModel.profileVM.setCurrentGame(uiState.gameList[index].id) },
+                                onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
                                 selected = uiState.gameList[index].id == uiState.currentGameIndex,
-                                finished = viewModel.profileVM.isCurrentGameFinished(),
-                                onDelete = { viewModel.profileVM.onDeleteGame(uiState.gameList[index].id) }
+                                finished = viewModel.isCurrentGameFinished(),
+                                onDelete = { viewModel.onDeleteGame(uiState.gameList[index].id) }
                             )
                         }
                     }
@@ -101,17 +105,18 @@ fun UserProfile(
             1 -> SettingsScreen(
                 modifier = modifier
                     .weight(1f),
-                profileViewModel = viewModel.profileVM
+                profileViewModel = viewModel
             )
             2 -> LeaderBoard(
                 modifier = modifier
                     .weight(1f),
-                viewModel = viewModel.profileVM.leaderBoardViewModel
+                viewModel = viewModel.leaderBoardViewModel
             )
         }
 
         BottomBar(
             modifier = modifier.fillMaxWidth(),
+            gameViewModel = gameViewModel,
             viewModel = viewModel,
             uiState = uiState)
 
@@ -123,7 +128,8 @@ fun UserProfile(
 @Composable
 fun BottomBar(
     modifier: Modifier,
-    viewModel: GameViewModel,
+    gameViewModel: GameViewModel,
+    viewModel: ProfileViewModel,
     uiState: ProfileScreenUiState
 ){
 
@@ -136,14 +142,14 @@ fun BottomBar(
             modifier = modifier
                 .smallButton()
                 .weight(1f),
-            action = {viewModel.profileVM.toggleSettings()}
+            action = {viewModel.toggleSettings()}
         )
         IconButton(
             icon = if(uiState.currentScreen == 2) R.drawable.baseline_videogame_asset_24 else R.drawable.baseline_leaderboard_24,
             modifier = modifier
                 .smallButton()
                 .weight(1f),
-            action = {viewModel.profileVM.toggleLeaderBoard() },
+            action = {viewModel.toggleLeaderBoard() },
             isEnabled = uiState.currentScreen != 1
         )
         IconButton(
@@ -151,7 +157,7 @@ fun BottomBar(
             modifier = modifier
                 .smallButton()
                 .weight(1f),
-            action = {viewModel.setCurrentPage(0) },
+            action = {gameViewModel.setCurrentPage(0) },
             isEnabled = uiState.currentScreen != 1
         )
         IconButton(
@@ -159,8 +165,8 @@ fun BottomBar(
             modifier = modifier
                 .smallButton()
                 .weight(1f),
-            action = {viewModel.continueGame()},
-            isEnabled = uiState.currentGameIndex != null && uiState.currentScreen == 0 && !viewModel.profileVM.isCurrentGameFinished()
+            action = {gameViewModel.continueGame()},
+            isEnabled = uiState.currentGameIndex != null && uiState.currentScreen == 0 && !viewModel.isCurrentGameFinished()
         )
 
     }

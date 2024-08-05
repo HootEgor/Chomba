@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.ai.VoiceRecognitionViewModel
 import com.egorhoot.chomba.ui.theme.composable.IconButton
@@ -16,7 +17,7 @@ import com.egorhoot.chomba.ui.theme.composable.IconButton
 fun VoiceRecognitionButton(
     modifier: Modifier = Modifier,
     onRecognized: (Int) -> Unit,
-    viewModel: VoiceRecognitionViewModel
+    viewModel: VoiceRecognitionViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 

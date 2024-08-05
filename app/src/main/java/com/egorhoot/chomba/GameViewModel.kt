@@ -1,8 +1,10 @@
 package com.egorhoot.chomba
 
 import android.app.Application
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.egorhoot.chomba.ai.VoiceRecognitionViewModel
 import com.egorhoot.chomba.data.CardSuit
@@ -11,23 +13,26 @@ import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.chombaScore
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
+import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.pages.user.ProfileViewModel
+import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
+import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.utils.IdConverter
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.round
 
-class GameViewModel(application: Application): AndroidViewModel(application) {
-
-
-    val profileVM = ProfileViewModel(application)
+@HiltViewModel
+class GameViewModel @Inject constructor(
+    val userRepo: UserRepository,
+    private val idConverter: IdConverter,
+    val profileUi: MutableState<ProfileScreenUiState>
+): ChombaViewModel() {
 
     val playerList = mutableStateOf<List<Player>>(listOf())
     var uiState = mutableStateOf(GameUiState())
         private set
-
-    val profileUi by profileVM::profileUi
-
-    val voiceRec = VoiceRecognitionViewModel(application,profileUi.value.selectedLanguage)
-
 
     private fun startProgressGame(){
         uiState.value = uiState.value.copy(inProgress = true,
@@ -47,9 +52,6 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     fun setCurrentPage(page: Int) {
         uiState.value = uiState.value.copy(currentPage = page)
-        if(page == 2){
-            voiceRec.setLanguage(profileUi.value.selectedLanguage)
-        }
 
         if(page == 3){
             profileUi.value = profileUi.value.copy(currentScreen = 0)
@@ -363,27 +365,26 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
 
     private fun setWinner(player: Player?) {
         uiState.value = uiState.value.copy(winner = player)
-        profileVM.showAlert(R.string.winner, "${player?.name}",
-            {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
+        showAlert(profileUi, R.string.winner, "${player?.name}",
+            {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
     }
 
     fun startGame() {
         viewModelScope.launch {
-            val context = getApplication<Application>()
             val updatedPlayerList = playerList.value.filter { it.visible }
             playerList.value = updatedPlayerList
             for (player in playerList.value){
                 if (player.name.trim() == ""){
-                    profileVM.showAlert(R.string.error, context.getString(R.string.player_name_empty),
-                        {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
+                    showAlert(profileUi, R.string.error, idConverter.getString(R.string.player_name_empty),
+                        {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
                     return@launch
                 }
             }
 
             val names = playerList.value.map { it.name }
             if (names.size != names.toSet().size){
-                profileVM.showAlert(R.string.error, context.getString(R.string.duplicate_names),
-                    {profileVM.dismissAlert()}, {profileVM.dismissAlert()})
+                showAlert(profileUi, R.string.error, idConverter.getString(R.string.duplicate_names),
+                    {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
                 return@launch
             }
             setCurrentPage(2)
@@ -417,10 +418,7 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     fun saveGame(exit: Boolean = false) {
         viewModelScope.launch {
             startProgressGame()
-            val savedGame = profileVM.saveGame(profileUi, playerList, uiState)
-            profileUi.value = savedGame.first
-            playerList.value = savedGame.second
-            uiState.value = savedGame.third
+            userRepo.saveGame(profileUi, playerList, uiState)
         }.invokeOnCompletion {
             stopProgressGame()
             if (exit)
@@ -449,10 +447,10 @@ class GameViewModel(application: Application): AndroidViewModel(application) {
     }
 
     fun onUndoLastRound(){
-        profileVM.showAlert(R.string.undo_last_round, getApplication<Application>().getString(R.string.are_you_sure),
+        showAlert(profileUi, R.string.undo_last_round, idConverter.getString(R.string.are_you_sure),
             {undoLastRound()
-            profileVM.dismissAlert()},
-            {profileVM.dismissAlert()})
+            dismissAlert(profileUi)},
+            {dismissAlert(profileUi)})
     }
 
     private fun undoLastRound(){

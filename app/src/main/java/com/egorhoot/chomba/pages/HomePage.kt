@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.egorhoot.chomba.GameViewModel
 import com.egorhoot.chomba.R
-import com.egorhoot.chomba.pages.solo.SoloViewModel
+import com.egorhoot.chomba.pages.user.ProfileViewModel
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
 import com.egorhoot.chomba.ui.theme.composable.TopBar
 import com.egorhoot.chomba.ui.theme.ext.smallButton
@@ -18,7 +18,7 @@ import com.egorhoot.chomba.ui.theme.ext.smallButton
 fun HomePage(
     modifier: Modifier = Modifier,
     viewModel: GameViewModel,
-    soloViewModel: SoloViewModel
+    profileViewModel: ProfileViewModel
 ) {
 
     Column {
@@ -26,7 +26,7 @@ fun HomePage(
             title = stringResource(R.string.app_name),
             firstButtonIcon = R.drawable.baseline_account_circle_24,
             onFirstActionClick = { viewModel.setCurrentPage(3)
-                viewModel.profileVM.loadGames()},
+                profileViewModel.loadGames()},
         )
         Column(
             modifier = modifier.fillMaxSize(),
@@ -51,7 +51,7 @@ fun HomePage(
             BasicTextButton(text = R.string.load_games,
                 modifier = modifier.smallButton(),
                 action = {viewModel.setCurrentPage(3)
-                    viewModel.profileVM.loadGames()})
+                    profileViewModel.loadGames()})
         }
     }
 

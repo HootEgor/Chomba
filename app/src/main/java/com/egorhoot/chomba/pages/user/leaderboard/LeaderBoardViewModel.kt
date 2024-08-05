@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
+import com.egorhoot.chomba.ChombaViewModel
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.LeaderBoardPlayer
 import com.egorhoot.chomba.data.Player
@@ -14,8 +15,10 @@ import com.egorhoot.chomba.data.isWinner
 import com.egorhoot.chomba.data.sortedByTotalScore
 import com.egorhoot.chomba.data.sortedByWinStreak
 import com.egorhoot.chomba.data.sortedByWins
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class LeaderBoardViewModel(application: Application): AndroidViewModel(application) {
+class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
 
     var uiState = mutableStateOf(LeaderBoardUiState())
         private set

@@ -4,37 +4,37 @@ import android.app.Application
 import android.net.Uri
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.egorhoot.chomba.ChombaViewModel
 import com.egorhoot.chomba.GameUiState
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
-import com.egorhoot.chomba.data.LeaderBoardPlayer
-import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.getTotalScore
-import com.egorhoot.chomba.data.isWinner
 import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.repo.UserRepository
-import com.google.firebase.auth.FirebaseAuth
+import com.egorhoot.chomba.utils.IdConverter
+import dagger.hilt.android.internal.Contexts.getApplication
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-    var profileUi = mutableStateOf(ProfileScreenUiState())
-        private set
-
-    val leaderBoardViewModel = LeaderBoardViewModel(application)
-
-    private val auth = FirebaseAuth.getInstance()
-
-    val userRepo = UserRepository(auth)
+@HiltViewModel
+open class ProfileViewModel @Inject constructor(
+    private val userRepo: UserRepository,
+    private val idConverter: IdConverter,
+    val leaderBoardViewModel: LeaderBoardViewModel,
+    val profileUi: MutableState<ProfileScreenUiState>
+): ChombaViewModel() {
 
     init {
-        if (auth.currentUser != null) {
+        if (userRepo.auth.currentUser != null) {
             viewModelScope.launch {
                 profileUi.value = profileUi.value.copy(isAuthenticated = true,
-                    displayName = auth.currentUser?.displayName ?: "",
-                    userPicture = auth.currentUser?.photoUrl ?: Uri.EMPTY )
+                    displayName = userRepo.auth.currentUser?.displayName ?: "",
+                    userPicture = userRepo.auth.currentUser?.photoUrl ?: Uri.EMPTY )
                 userRepo.loadVoiceRecLanguage(profileUi)
             }
         }
@@ -61,12 +61,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun signInWithGoogleToken(googleIdToken: String) {
-        profileUi.value = userRepo.signInWithGoogleToken(googleIdToken, profileUi)
+        userRepo.signInWithGoogleToken(googleIdToken, profileUi)
     }
 
     private fun signOut() {
         viewModelScope.launch {
-            auth.signOut()
+            userRepo.auth.signOut()
         }.invokeOnCompletion {
             profileUi.value = profileUi.value.copy(isAuthenticated = false,
                 displayName = "",
@@ -75,25 +75,17 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun onSignOut(){
-        showAlert(R.string.sign_out, getApplication<Application>().getString(R.string.are_you_sure),
+        showAlert(profileUi,R.string.sign_out, idConverter.getString(R.string.are_you_sure),
             {signOut()
-            dismissAlert()},
-            {dismissAlert()})
-    }
-
-    fun saveGame(profileUi: MutableState<ProfileScreenUiState>,
-                 playerList: MutableState<List<Player>>,
-                 uiState: MutableState<GameUiState>
-    ): Triple<ProfileScreenUiState, List<Player>, GameUiState>{
-        return userRepo.saveGame(profileUi, playerList, uiState)
+            dismissAlert(profileUi)},
+            {dismissAlert(profileUi)})
     }
 
     fun onDeleteGame(id: String){
-        val context = getApplication<Application>()
-        showAlert(R.string.delete_game, context.getString(R.string.are_you_sure),
+        showAlert(profileUi,R.string.delete_game, idConverter.getString(R.string.are_you_sure),
             {deleteGame(id)
-            dismissAlert()},
-            {dismissAlert()})
+            dismissAlert(profileUi)},
+            {dismissAlert(profileUi)})
     }
 
     private fun deleteGame(id: String){
@@ -147,21 +139,5 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             profileUi.value = profileUi.value.copy(currentScreen = 2)
             leaderBoardViewModel.getLeaderBoardPlayers(profileUi.value.gameList)
         }
-    }
-
-    fun SelectSpeechRecLanguage(lang: Language){
-        profileUi.value = profileUi.value.copy(selectedLanguage = lang)
-    }
-
-    fun showAlert(title: Int, msg: String, action: () -> Unit, dismiss: () -> Unit){
-        profileUi.value = profileUi.value.copy(showAlert = true,
-            alertTitle = title,
-            alertMsg = msg,
-            alertAction = action,
-            alertDismiss = dismiss)
-    }
-
-    fun dismissAlert(){
-        profileUi.value = profileUi.value.copy(showAlert = false)
     }
 }
