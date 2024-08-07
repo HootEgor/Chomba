@@ -225,8 +225,8 @@ class GameViewModel @Inject constructor(
                 declarer = null)
         }
 
-        uiState.value = uiState.value.copy(round = uiState.value.round + 1,
-            distributorIndex = nextDistributorIndex())
+        uiState.value = uiState.value.copy(round = uiState.value.round + 1)
+        uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
     }
 
     fun makeDissolution(){
@@ -305,8 +305,8 @@ class GameViewModel @Inject constructor(
     }
 
     private fun nextDistributorIndex(): Int {
-        val index = uiState.value.distributorIndex
-        return if (index == playerList.value.size - 1) 0 else index + 1
+        val index = uiState.value.round % playerList.value.size
+        return if (index == 0) playerList.value.size - 1 else index - 1
     }
 
     private fun getPlayerOnBarrel(): Player? {
@@ -387,6 +387,8 @@ class GameViewModel @Inject constructor(
                     {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
                 return@launch
             }
+            uiState.value = uiState.value.copy(round = 1,
+                distributorIndex = nextDistributorIndex())
             setCurrentPage(2)
         }
     }
@@ -454,24 +456,24 @@ class GameViewModel @Inject constructor(
     }
 
     private fun undoLastRound(){
+        var updated = false
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             val scoreList = existingPlayer.scoreList
             if (scoreList.isNotEmpty()) {
-                val lastScore = scoreList.last()
-                if (lastScore.type == 1 && lastScore.value == -120) {
-                    existingPlayer.copy(scoreList = scoreList.dropLast(2) + Score(-120, 1),
-                        scorePerRound = 0)
-                } else {
-                    existingPlayer.copy(scoreList = scoreList.dropLast(1),
-                        scorePerRound = 0)
-                }
+                updated = true
+                existingPlayer.copy(scoreList = scoreList.filter { it.round != uiState.value.round-1 },
+                    scorePerRound = 0, blind = false,
+                    takenChombas = listOf())
             } else {
                 existingPlayer
             }
         }
 
-
-        playerList.value = updatedPlayerList
+        if (updated) {
+            playerList.value = updatedPlayerList
+            uiState.value = uiState.value.copy(round = if (uiState.value.round - 1 < 1) 1 else uiState.value.round - 1)
+            uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
+        }
     }
 
 
