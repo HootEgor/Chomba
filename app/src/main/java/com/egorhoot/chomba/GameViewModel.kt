@@ -277,8 +277,8 @@ class GameViewModel @Inject constructor(
                 declarer = null)
         }
 
-        uiState.value = uiState.value.copy(round = uiState.value.round + 1,
-            distributorIndex = nextDistributorIndex())
+        uiState.value = uiState.value.copy(round = uiState.value.round + 1)
+        uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
     }
 
     fun makePenalty(player: Player){
@@ -387,8 +387,7 @@ class GameViewModel @Inject constructor(
                     {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
                 return@launch
             }
-            uiState.value = uiState.value.copy(round = 1,
-                distributorIndex = nextDistributorIndex())
+            uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
             setCurrentPage(2)
         }
     }
@@ -475,6 +474,8 @@ class GameViewModel @Inject constructor(
             uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
         }
     }
+
+
 
 
 }

@@ -1,6 +1,8 @@
 package com.egorhoot.chomba.ui.theme.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -43,7 +45,7 @@ fun CircularChart(
     modifier: Modifier,
     pressModifier: Modifier,
     value: Int,
-    maxValue: Int,
+    maxValue: Int = 1000,
     color: Color,
     zeroNum: Int = 0,
     backgroundCircleColor: Color = Color.LightGray.copy(alpha = 0.3f),
@@ -51,54 +53,32 @@ fun CircularChart(
     blind: Boolean,
     fontSize: Int = 32
 ) {
-    var sweepAngle = value.toFloat()/ maxValue.toFloat() * 360f
+    val targetSweepAngle = (value.toFloat() / maxValue.toFloat() * 360f).coerceAtLeast(0f)
+
+    val animatedSweepAngle = animateFloatAsState(
+        targetValue = targetSweepAngle,
+        animationSpec = tween(durationMillis = 2000),
+        label = ""
+    )
+
+    var sweepAngle = animatedSweepAngle.value
 
     if (sweepAngle<0)
         sweepAngle = 0f
+
+    val backGroundColor = MaterialTheme.colorScheme.background
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            val size = size.width.coerceAtMost(size.height)
-            val arcRadius = size / 2
 
-            val adjustedThickness = arcRadius * thicknessFraction
-            drawArc(
-                color = backgroundCircleColor,
-                startAngle = 90f,
-                sweepAngle = 360f,
-                useCenter = false,
-                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
-                size = Size(arcRadius * 2, arcRadius * 2),
-                topLeft = Offset(
-                    x = (size - arcRadius * 2) / 2,
-                    y = (size - arcRadius * 2) / 2
-                )
-            )
-            drawArc(
-                color = color,
-                startAngle = 90f,
-                sweepAngle = sweepAngle,
-                useCenter = false,
-                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
-                size = Size(arcRadius * 2, arcRadius * 2),
-                topLeft = Offset(
-                    x = (size - arcRadius * 2) / 2,
-                    y = (size - arcRadius * 2) / 2
-                )
-            )
-        }
 
         Surface(
             modifier = Modifier
                 .fillMaxSize(),
             shape = CircleShape,
-            color = Color.Transparent,
+            color = backGroundColor,
             content = {
                 Column (
                 modifier = pressModifier
@@ -141,6 +121,52 @@ fun CircularChart(
             }
             }
         )
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            val size = size.width.coerceAtMost(size.height)
+            val arcRadius = size / 2
+
+            val adjustedThickness = arcRadius * thicknessFraction
+            drawArc(
+                color = backGroundColor,
+                startAngle = 90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
+                size = Size(arcRadius * 2, arcRadius * 2),
+                topLeft = Offset(
+                    x = (size - arcRadius * 2) / 2,
+                    y = (size - arcRadius * 2) / 2
+                )
+            )
+            drawArc(
+                color = backgroundCircleColor,
+                startAngle = 90f,
+                sweepAngle = 360f,
+                useCenter = false,
+                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
+                size = Size(arcRadius * 2, arcRadius * 2),
+                topLeft = Offset(
+                    x = (size - arcRadius * 2) / 2,
+                    y = (size - arcRadius * 2) / 2
+                )
+            )
+            drawArc(
+                color = color,
+                startAngle = 90f,
+                sweepAngle = sweepAngle,
+                useCenter = false,
+                style = Stroke(width = adjustedThickness, cap = StrokeCap.Round),
+                size = Size(arcRadius * 2, arcRadius * 2),
+                topLeft = Offset(
+                    x = (size - arcRadius * 2) / 2,
+                    y = (size - arcRadius * 2) / 2
+                )
+            )
+        }
 
 
     }

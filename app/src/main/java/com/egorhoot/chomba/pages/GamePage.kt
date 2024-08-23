@@ -87,7 +87,7 @@ fun GamePage(
                 val buttonsWithIcons = listOf(
                     R.drawable.baseline_lightbulb_24 to stringResource(R.string.tips),
                     R.drawable.baseline_save_24 to stringResource(R.string.save_game),
-                    R.drawable.baseline_blind_24 to stringResource(R.string.set_declarer),
+                    R.drawable.baseline_hail_24 to stringResource(R.string.set_declarer),
                     R.drawable.baseline_undo_24 to stringResource(R.string.undo),
                 )
 
@@ -206,7 +206,7 @@ fun GamePage(
         }
         else{
             BasicIconButton(text = R.string.set_declarer,
-                icon = R.drawable.baseline_blind_24,
+                icon = R.drawable.baseline_hail_24,
                 modifier = Modifier.basicButton(),
                 action = {setDeclarer.value = true})
         }
@@ -288,7 +288,7 @@ fun GamePage(
                                 .weight(1f),
                             textModifier = Modifier.padding(4.dp),
                             textStyle = TextStyle(fontSize = 16.sp),
-                            startIndex = 0
+                            startIndex = players.indexOf(uiState.declarer?.name)
                         )
 
                         Picker(
@@ -301,7 +301,7 @@ fun GamePage(
                                 .weight(1f),
                             textModifier = Modifier.padding(4.dp),
                             textStyle = TextStyle(fontSize = 16.sp),
-                            startIndex = startIndex.intValue
+                            startIndex = scores.indexOf(uiState.declarer?.declaration.toString())
                         )
                     }
                 }
@@ -503,7 +503,8 @@ fun PlayerCard(
 
     Surface(
         shape = Shapes.large,
-        color = MaterialTheme.colorScheme.background,
+        color = if (!isDistributor) MaterialTheme.colorScheme.background
+        else MaterialTheme.colorScheme.primaryContainer,
         modifier = modifier
             .fillMaxWidth()
             .border(
@@ -534,8 +535,7 @@ fun PlayerCard(
                                 painter = painterResource(id = R.drawable.baseline_hail_24),
                                 contentDescription = null,
                                 modifier = Modifier.padding(start = 16.dp),
-                                tint = if (!isDistributor) Color.Transparent
-                                else MaterialTheme.colorScheme.onTertiaryContainer,
+                                tint = Color.Transparent,
                             )
                             ResizableText(
                                 text = player.name,
@@ -569,7 +569,7 @@ fun PlayerCard(
                                                 color = MaterialTheme.colorScheme.secondaryContainer,
                                                 shape = Shapes.large
                                             ),
-                                        shape = RoundedCornerShape(8.dp),
+                                        shape = Shapes.large,
                                         color = MaterialTheme.colorScheme.background,
                                     ) {
                                         Column(
@@ -653,7 +653,7 @@ fun PlayerCard(
                                                 color = MaterialTheme.colorScheme.secondaryContainer,
                                                 shape = Shapes.large
                                             ),
-                                        shape = RoundedCornerShape(8.dp),
+                                        shape = Shapes.large,
                                         color = MaterialTheme.colorScheme.background,
                                     ) {
                                         ScorePicker(
@@ -696,7 +696,6 @@ fun PlayerCard(
             }
 
             AnimatedVisibility(visible = declarer != null) {
-                Divider(modifier = Modifier.fillMaxWidth())
 
                 Row(
                     modifier = Modifier
