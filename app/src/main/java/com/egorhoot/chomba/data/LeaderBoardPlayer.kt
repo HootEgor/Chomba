@@ -7,6 +7,7 @@ data class LeaderBoardPlayer(
     val wins: Int,
     val totalScore: Int,
     val winStreak: Int,
+    val totalChombas: Int
 )
 
 fun List<LeaderBoardPlayer>.sortedByWins(): List<LeaderBoardPlayer> {
@@ -19,6 +20,10 @@ fun List<LeaderBoardPlayer>.sortedByTotalScore(): List<LeaderBoardPlayer> {
 
 fun List<LeaderBoardPlayer>.sortedByWinStreak(): List<LeaderBoardPlayer> {
     return this.sortedByDescending { it.winStreak }
+}
+
+fun List<LeaderBoardPlayer>.sortedByTotalChombas(): List<LeaderBoardPlayer> {
+    return this.sortedByDescending { it.totalChombas }
 }
 
 @SuppressLint("DefaultLocale")

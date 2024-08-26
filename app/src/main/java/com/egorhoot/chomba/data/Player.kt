@@ -186,4 +186,13 @@ fun Player.getDissolution(): Int{
     return dissolutionNum
 }
 
+fun Player.getTotalChombas(): Int {
+    var totalChombas = 0
+    for (score in scoreList) {
+        totalChombas += score.takenChombas.size
+    }
+
+    return totalChombas
+}
+
 

@@ -199,7 +199,7 @@ class GameViewModel @Inject constructor(
                 type = 2
             }
 
-            val newScore = Score(score, type, uiState.value.round)
+            val newScore = Score(score, type, uiState.value.round, existingPlayer.takenChombas)
 
             existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
                 scorePerRound = 0, blind = false,
@@ -247,6 +247,10 @@ class GameViewModel @Inject constructor(
                     if(existingPlayer.getTotalScore() >= 880) {
                         score = 0
                         type = -2
+                        if(uiState.value.playerOnBarrel?.name == existingPlayer.name && existingPlayer.getMissBarrel() == 2) {
+                            type = -4
+                            score = 120
+                        }
                     }else if(existingPlayer.getTotalScore() + score >= 880) {
                         score = 880 - existingPlayer.getTotalScore()
                     }

@@ -20,7 +20,7 @@ enum class CardValue(val customValue: Int) {
 
 
 enum class CardSuit {
-    CORAZON, DIAMANTE, TREBOL, PICA
+    CORAZON, DIAMANTE, TREBOL, PICA, ACE
 }
 
 fun chombaScore(suit: Int): Int{
@@ -29,6 +29,7 @@ fun chombaScore(suit: Int): Int{
         1 -> 60
         2 -> 80
         3 -> 100
+        4 -> 200
         else -> 0
     }
 }

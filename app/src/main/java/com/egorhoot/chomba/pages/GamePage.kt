@@ -41,6 +41,7 @@ import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.getBarrel
+import com.egorhoot.chomba.data.getChombas
 import com.egorhoot.chomba.data.getDissolution
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
@@ -714,7 +715,7 @@ fun PlayerCard(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (isTaken) MaterialTheme.colorScheme.primaryContainer
                                 else MaterialTheme.colorScheme.background,
-                                contentColor = if (suit.ordinal > 1) Color.Red
+                                contentColor = if (suit.ordinal > 1 && suit != CardSuit.ACE) Color.Red
                                 else MaterialTheme.colorScheme.onBackground
                             ),
                             action = {
@@ -807,6 +808,15 @@ fun ScoreCard(
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center)
+        Row(
+            modifier = Modifier.weight(1f),
+        ) {
+            for(chomba in score.getChombas()){
+                Icon(painter = painterResource(id = suitIcon(chomba.ordinal)),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp).weight(1f))
+            }
+        }
         Icon(painter = painterResource(id = typeIcon(score.type)),
             contentDescription = null,
             modifier = Modifier
@@ -923,6 +933,7 @@ fun suitIcon(suit: Int): Int {
         1 -> R.drawable.ic_trebol
         2 -> R.drawable.ic_diamante
         3 -> R.drawable.ic_corazon
+        4 -> R.drawable.ic_ace
         else -> R.drawable.baseline_square_24
     }
 }

@@ -87,9 +87,9 @@ fun LeaderBoard(
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
                         FullIconButton(
-                            icon = R.drawable.win_streak,
+                            icon = R.drawable.card_suits,
                             modifier = modifier.weight(1f),
-                            action = { viewModel.sortPlayersByWinStreak() },
+                            action = { viewModel.sortPlayersByTotalChombas() },
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                         )
@@ -169,7 +169,7 @@ fun LeaderBoardItem(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = player.winStreak.toString(),
+                    text = player.totalChombas.toString(),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     modifier = modifier.weight(1f),

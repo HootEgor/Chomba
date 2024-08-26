@@ -9,9 +9,11 @@ import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.LeaderBoardPlayer
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.getScoreSum
+import com.egorhoot.chomba.data.getTotalChombas
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.data.isFinished
 import com.egorhoot.chomba.data.isWinner
+import com.egorhoot.chomba.data.sortedByTotalChombas
 import com.egorhoot.chomba.data.sortedByTotalScore
 import com.egorhoot.chomba.data.sortedByWinStreak
 import com.egorhoot.chomba.data.sortedByWins
@@ -41,6 +43,7 @@ class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
             var totalScore = 0
             var winStreak = 0
             var maxWinStreak = 0
+            var totalChombas = 0
             for (game in gameList.reversed()) {
                 if(!game.isFinished())
                     continue
@@ -57,10 +60,11 @@ class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
                         if(winStreak > maxWinStreak)
                             maxWinStreak = winStreak
 
+                        totalChombas += player.getTotalChombas()
                     }
                 }
             }
-            players.add(LeaderBoardPlayer(playerName, wins, totalScore, maxWinStreak))
+            players.add(LeaderBoardPlayer(playerName, wins, totalScore, maxWinStreak, totalChombas))
         }
 
         uiState.value = uiState.value.copy(players = players.sortedByWins())
@@ -76,5 +80,9 @@ class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
 
     fun sortPlayersByWinStreak() {
         uiState.value = uiState.value.copy(players = uiState.value.players.sortedByWinStreak())
+    }
+
+    fun sortPlayersByTotalChombas() {
+        uiState.value = uiState.value.copy(players = uiState.value.players.sortedByTotalChombas())
     }
 }
