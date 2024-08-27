@@ -64,4 +64,5 @@
     <string name="undo_last_round">Undo last round</string>
     <string name="wins">Wins</string>
     <string name="score">Score</string>
+    <string name="saved_to_local_storage">Saved to local storage</string>
 </resources>

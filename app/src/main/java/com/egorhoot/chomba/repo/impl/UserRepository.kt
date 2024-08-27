@@ -141,6 +141,25 @@ class UserRepositoryImpl @Inject constructor(): UserRepository {
 
     }
 
+    override fun editGame(profileUi: MutableState<ProfileScreenUiState>,
+                          game: Game){
+        val userUid = auth.currentUser?.uid
+        if (userUid != null) {
+            db.collection("users").document(userUid)
+                .collection("gameList")
+                .document(game.id)
+                .set(game, SetOptions.merge())
+                .addOnSuccessListener {
+                    profileUi.value = profileUi.value.copy(saveMsg = R.string.successfully_saved)
+                }
+                .addOnFailureListener {
+                    profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_save_game)
+                }
+        }else{
+            profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
+        }
+    }
+
     override fun loadGames(profileUi: MutableState<ProfileScreenUiState>){
         val db = Firebase.firestore
         val userUid = auth.currentUser?.uid

@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.egorhoot.chomba.GameViewModel
 import com.egorhoot.chomba.R
+import com.egorhoot.chomba.pages.user.editgame.EditGameScreen
+import com.egorhoot.chomba.pages.user.editgame.EditGameViewModel
 import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoard
 import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.ui.theme.Shapes
@@ -91,7 +93,8 @@ fun UserProfile(
                                 onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
                                 selected = uiState.gameList[index].id == uiState.currentGameIndex,
                                 finished = viewModel.isCurrentGameFinished(),
-                                onDelete = { viewModel.onDeleteGame(uiState.gameList[index].id) }
+                                onDelete = { viewModel.onDeleteGame(uiState.gameList[index].id) },
+                                onEdit = { viewModel.toggleEditGame() }
                             )
                         }
                     }
@@ -112,14 +115,19 @@ fun UserProfile(
                     .weight(1f),
                 viewModel = viewModel.leaderBoardViewModel
             )
+            3 -> EditGameScreen(
+                modifier = modifier,
+                onBack = {viewModel.toggleEditGame()},
+            )
         }
 
-        BottomBar(
-            modifier = modifier.fillMaxWidth(),
-            gameViewModel = gameViewModel,
-            viewModel = viewModel,
-            uiState = uiState)
-
+        if(uiState.currentScreen!=3){
+            BottomBar(
+                modifier = modifier.fillMaxWidth(),
+                gameViewModel = gameViewModel,
+                viewModel = viewModel,
+                uiState = uiState)
+        }
     }
 }
 
@@ -130,7 +138,7 @@ fun BottomBar(
     modifier: Modifier,
     gameViewModel: GameViewModel,
     viewModel: ProfileViewModel,
-    uiState: ProfileScreenUiState
+    uiState: ProfileScreenUiState,
 ){
 
     Row(

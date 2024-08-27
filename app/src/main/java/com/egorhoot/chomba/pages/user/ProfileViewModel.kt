@@ -102,7 +102,8 @@ open class ProfileViewModel @Inject constructor(
             profileUi.value = profileUi.value.copy(currentGameIndex = null)
         }else{
             val game = profileUi.value.gameList.find { it.id == id }!!
-            profileUi.value = profileUi.value.copy(currentGameIndex = id)
+            profileUi.value = profileUi.value.copy(currentGameIndex = id,
+                currentGame = game)
         }
 
     }
@@ -138,6 +139,15 @@ open class ProfileViewModel @Inject constructor(
         }else{
             profileUi.value = profileUi.value.copy(currentScreen = 2)
             leaderBoardViewModel.getLeaderBoardPlayers(profileUi.value.gameList)
+        }
+    }
+
+    fun toggleEditGame(){
+        if(profileUi.value.currentScreen == 3){
+            profileUi.value = profileUi.value.copy(currentScreen = 0)
+        }else{
+            setCurrentGame(profileUi.value.currentGame!!.id)
+            profileUi.value = profileUi.value.copy(currentScreen = 3)
         }
     }
 }

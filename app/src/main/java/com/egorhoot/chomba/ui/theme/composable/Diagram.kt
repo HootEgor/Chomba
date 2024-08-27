@@ -179,7 +179,8 @@ fun GameCard(
     onSelect: () -> Unit,
     selected: Boolean = false,
     finished: Boolean = false,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ){
     Surface (
         shape = Shapes.large,
@@ -221,9 +222,18 @@ fun GameCard(
             }
 
             AnimatedVisibility(visible = selected){
-                IconButton(icon = R.drawable.baseline_delete_24,
-                    modifier = modifier.fillMaxWidth().padding(8.dp, 0.dp, 8.dp, 4.dp),
-                    action = onDelete)
+                Column {
+                    IconButton(icon = R.drawable.baseline_border_color_24,
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 0.dp, 8.dp, 0.dp),
+                        action = onEdit)
+                    IconButton(icon = R.drawable.baseline_delete_24,
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 0.dp, 8.dp, 4.dp),
+                        action = onDelete)
+                }
             }
 
 

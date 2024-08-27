@@ -2,6 +2,7 @@ package com.egorhoot.chomba.repo
 
 import androidx.compose.runtime.MutableState
 import com.egorhoot.chomba.GameUiState
+import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
@@ -17,6 +18,8 @@ interface UserRepository {
     fun saveGame(profileUi: MutableState<ProfileScreenUiState>,
                          playerList: MutableState<List<Player>>,
                          uiState: MutableState<GameUiState>)
+    fun editGame(profileUi: MutableState<ProfileScreenUiState>,
+                         game: Game)
     fun loadGames(profileUi: MutableState<ProfileScreenUiState>)
     fun deleteGame(id: String, profileUi: MutableState<ProfileScreenUiState>)
     fun saveVoiceRecLanguage(language: Language)
