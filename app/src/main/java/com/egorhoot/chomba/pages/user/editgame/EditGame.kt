@@ -49,11 +49,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.getChombas
-import com.egorhoot.chomba.pages.ColorPickerButton
-import com.egorhoot.chomba.pages.ScoreCard
-import com.egorhoot.chomba.pages.suitIcon
-import com.egorhoot.chomba.pages.typeIcon
 import com.egorhoot.chomba.ui.theme.Shapes
+import com.egorhoot.chomba.ui.theme.composable.Dropdown
+import com.egorhoot.chomba.ui.theme.composable.suitIcon
+import com.egorhoot.chomba.ui.theme.composable.typeIcon
 
 @Composable
 fun EditGameScreen(
@@ -157,6 +156,9 @@ fun EditPlayerCard(
                                 },
                                 onEditScoreRound = { round ->
                                     viewModel.editScoreRound(player, score, round)
+                                },
+                                onEditScoreType = { type ->
+                                    viewModel.editScoreType(player, score, type)
                                 })
                         }
                     }
@@ -172,13 +174,20 @@ fun EditPlayerCard(
 fun EditScoreCard(
     score: Score,
     onEditScoreValue: (Int) -> Unit = {},
-    onEditScoreRound: (Int) -> Unit = {}
+    onEditScoreRound: (Int) -> Unit = {},
+    onEditScoreType: (Int) -> Unit = {}
 ){
-    val scoreValue = remember { mutableIntStateOf(score.value) }
-    scoreValue.intValue = score.value
 
-    val scoreRound = remember { mutableIntStateOf(score.round) }
-    scoreRound.intValue = score.round
+    val buttonsWithIcons = listOf(
+        R.drawable.baseline_close_24 to (-1).toString(),
+        R.drawable.baseline_horizontal_rule_24 to 0.toString(),
+        R.drawable.baseline_check_24 to 1.toString(),
+        R.drawable.ic_1200952 to 2.toString(),
+        R.drawable.ic_1200952 to (-2).toString(),
+        R.drawable.ic_1200952 to (-4).toString(),
+        R.drawable.ic_gift to 3.toString(),
+        R.drawable.baseline_border_color_24 to (-3).toString(),
+    )
 
     val prefix = if(score.type == -1 || score.type == -4 ) "-"
     else ""
@@ -186,10 +195,9 @@ fun EditScoreCard(
         verticalAlignment = Alignment.CenterVertically
     ){
         OutlinedTextField(
-            value = scoreRound.intValue.toString(),
+            value = score.round.toString(),
             onValueChange = { newValue ->
-                scoreRound.intValue = if(newValue.isEmpty()) 0 else newValue.toInt()
-                onEditScoreRound(scoreRound.intValue)
+                onEditScoreRound(if(newValue.isEmpty()) 0 else newValue.toInt())
             },
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done,
@@ -218,10 +226,9 @@ fun EditScoreCard(
                 modifier = Modifier,
                 textAlign = TextAlign.Center)
             OutlinedTextField(
-                value = scoreValue.intValue.toString(),
+                value = score.value.toString(),
                 onValueChange = { newValue ->
-                    scoreValue.intValue = if(newValue.isEmpty()) 0 else newValue.toInt()
-                    onEditScoreValue(scoreValue.intValue)
+                    onEditScoreValue(if(newValue.isEmpty()) 0 else newValue.toInt())
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done,
@@ -250,11 +257,13 @@ fun EditScoreCard(
             }
         }
 
-        Icon(painter = painterResource(id = typeIcon(score.type)),
-            contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .weight(1f))
+        Dropdown(
+            buttonsWithIcons = buttonsWithIcons,
+            onItemClick = {
+                onEditScoreType(it.toInt())
+            },
+            icon = typeIcon(score.type)
+        )
     }
 }
 

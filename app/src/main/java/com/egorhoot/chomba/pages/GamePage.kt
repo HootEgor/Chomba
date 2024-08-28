@@ -50,6 +50,7 @@ import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.composable.Chart
 import com.egorhoot.chomba.ui.theme.composable.CircularChart
+import com.egorhoot.chomba.ui.theme.composable.Dropdown
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.Picker
 import com.egorhoot.chomba.ui.theme.composable.ResizableText
@@ -57,6 +58,8 @@ import com.egorhoot.chomba.ui.theme.composable.SaveGame
 import com.egorhoot.chomba.ui.theme.composable.Tips
 import com.egorhoot.chomba.ui.theme.composable.TopBar
 import com.egorhoot.chomba.ui.theme.composable.rememberPickerState
+import com.egorhoot.chomba.ui.theme.composable.suitIcon
+import com.egorhoot.chomba.ui.theme.composable.typeIcon
 import com.egorhoot.chomba.ui.theme.ext.basicButton
 
 @Composable
@@ -851,90 +854,4 @@ fun ScorePicker(
     )
 }
 
-@Composable
-fun Dropdown(
-    buttonsWithIcons: List<Pair<Int, String>>,
-    onItemClick: (String) -> Unit,
-    icon: Int
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    IconButton(
-        icon = icon,
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(2.dp),
-        action = { expanded = true }
-    )
-
-    Box(
-        contentAlignment = Alignment.TopEnd,
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(end = 8.dp)
-    ) {
-
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-
-                .background(MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            buttonsWithIcons.forEach { (buttonIcon, buttonText) ->
-                DropdownMenuItem(
-                    text = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Start,
-                        ) {
-                            Icon(
-                                painter = painterResource(id = buttonIcon),
-                                contentDescription = null,
-                                modifier = Modifier.padding(end = 8.dp),
-                            )
-                            Text(text = buttonText)
-                        }
-                    },
-                    onClick = {
-                        onItemClick(buttonText)
-                        expanded = false
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    colors = MenuDefaults.itemColors(
-                        textColor = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                )
-            }
-        }
-    }
-}
-
-
-@DrawableRes
-fun typeIcon(type: Int): Int {
-    return when (type) {
-        -1 -> R.drawable.baseline_close_24
-        0 -> R.drawable.baseline_horizontal_rule_24
-        1 -> R.drawable.baseline_check_24
-        2, -2, -4 -> R.drawable.ic_1200952
-        3 -> R.drawable.ic_gift
-        -3 -> R.drawable.baseline_border_color_24
-        else -> R.drawable.baseline_square_24
-    }
-}
-
-@DrawableRes
-fun suitIcon(suit: Int): Int {
-    return when (suit) {
-        0 -> R.drawable.ic_pica
-        1 -> R.drawable.ic_trebol
-        2 -> R.drawable.ic_diamante
-        3 -> R.drawable.ic_corazon
-        4 -> R.drawable.ic_ace
-        else -> R.drawable.baseline_square_24
-    }
-}
 

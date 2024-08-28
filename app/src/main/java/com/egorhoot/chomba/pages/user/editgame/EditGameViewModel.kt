@@ -71,6 +71,31 @@ class EditGameViewModel @Inject constructor(
         )
     }
 
+    fun editScoreType(player: Player, score: Score, type: Int){
+        val newScore = score.copy(type = type)
+        val newGame = profileUi.value.currentGame!!.copy(
+            playerList = profileUi.value.currentGame!!.playerList.map {
+                if(it.name == player.name){
+                    it.copy(
+                        scoreList = it.scoreList.map {
+                            if(it == score){
+                                newScore
+                            } else {
+                                it
+                            }
+                        }
+                    )
+                } else {
+                    it
+                }
+            }
+        )
+
+        profileUi.value = profileUi.value.copy (
+            currentGame = newGame
+        )
+    }
+
     fun editPlayerName(player: Player, name: String){
         val newGame = profileUi.value.currentGame!!.copy(
             playerList = profileUi.value.currentGame!!.playerList.map {
