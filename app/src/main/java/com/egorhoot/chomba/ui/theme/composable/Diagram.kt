@@ -1,6 +1,8 @@
 package com.egorhoot.chomba.ui.theme.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.TargetBasedAnimation
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -23,6 +25,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -54,14 +62,28 @@ fun CircularChart(
     fontSize: Int = 32
 ) {
     val targetSweepAngle = (value.toFloat() / maxValue.toFloat() * 360f).coerceAtLeast(0f)
-
-    val animatedSweepAngle = animateFloatAsState(
-        targetValue = targetSweepAngle,
-        animationSpec = tween(durationMillis = 2000),
-        label = ""
+    val animatedSweepAngle = remember {
+        mutableFloatStateOf(0f)
+    }
+    val anim = TargetBasedAnimation(
+        animationSpec = tween(2000),
+        typeConverter = Float.VectorConverter,
+        initialValue = 0f,
+        targetValue = targetSweepAngle
     )
 
-    var sweepAngle = animatedSweepAngle.value
+    val playTime = remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(targetSweepAngle) {
+        val startTime = withFrameNanos { it }
+
+        do {
+            playTime.longValue = withFrameNanos { it } - startTime
+            animatedSweepAngle.floatValue = anim.getValueFromNanos(playTime.longValue)
+        } while (animatedSweepAngle.floatValue < targetSweepAngle)
+    }
+
+    var sweepAngle = animatedSweepAngle.floatValue
 
     if (sweepAngle<0)
         sweepAngle = 0f
@@ -218,7 +240,8 @@ fun GameCard(
                     .weight(1f)
                     .padding(4.dp, 0.dp, 4.dp, 4.dp)
                     .aspectRatio(2.2f),
-                    playerList = game.playerList)
+                    playerList = game.playerList,
+                    drawSpeed = 300)
             }
 
             AnimatedVisibility(visible = selected){
