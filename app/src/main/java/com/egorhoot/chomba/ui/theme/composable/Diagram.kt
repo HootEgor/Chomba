@@ -1,10 +1,20 @@
 package com.egorhoot.chomba.ui.theme.composable
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.EaseInBack
+import androidx.compose.animation.core.EaseInBounce
+import androidx.compose.animation.core.EaseInExpo
+import androidx.compose.animation.core.EaseInOutCirc
+import androidx.compose.animation.core.EaseInOutExpo
 import androidx.compose.animation.core.TargetBasedAnimation
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.with
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -39,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.egorhoot.chomba.R
@@ -48,6 +59,7 @@ import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.ui.theme.Shapes
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun CircularChart(
     modifier: Modifier,
@@ -61,29 +73,45 @@ fun CircularChart(
     blind: Boolean,
     fontSize: Int = 32
 ) {
-    val targetSweepAngle = (value.toFloat() / maxValue.toFloat() * 360f).coerceAtLeast(0f)
-    val animatedSweepAngle = remember {
+//    val targetSweepAngle = (value.toFloat() / maxValue.toFloat() * 360f).coerceAtLeast(0f)
+    val animatedValue = remember {
         mutableFloatStateOf(0f)
     }
+
+    val targetValue = if(value.toFloat() > 555f && value.toFloat() <= 650 && animatedValue.floatValue < 555f) 555f else value.toFloat()
+
     val anim = TargetBasedAnimation(
         animationSpec = tween(2000),
         typeConverter = Float.VectorConverter,
         initialValue = 0f,
-        targetValue = targetSweepAngle
+        targetValue = targetValue
+    )
+
+    val fullAnim = TargetBasedAnimation(
+        animationSpec = tween(1000, -200, EaseInExpo),
+        typeConverter = Float.VectorConverter,
+        initialValue = targetValue,
+        targetValue = value.toFloat()
     )
 
     val playTime = remember { mutableLongStateOf(0L) }
 
-    LaunchedEffect(targetSweepAngle) {
-        val startTime = withFrameNanos { it }
+    LaunchedEffect(value) {
+        var startTime = withFrameNanos { it }
 
         do {
             playTime.longValue = withFrameNanos { it } - startTime
-            animatedSweepAngle.floatValue = anim.getValueFromNanos(playTime.longValue)
-        } while (animatedSweepAngle.floatValue < targetSweepAngle)
+            animatedValue.floatValue = anim.getValueFromNanos(playTime.longValue)
+        } while (animatedValue.floatValue < targetValue)
+
+        startTime = withFrameNanos { it }
+        do{
+            playTime.longValue = withFrameNanos { it } - startTime
+            animatedValue.floatValue = fullAnim.getValueFromNanos(playTime.longValue)
+        } while (animatedValue.floatValue < value.toFloat())
     }
 
-    var sweepAngle = animatedSweepAngle.floatValue
+    var sweepAngle = (animatedValue.floatValue / maxValue.toFloat() * 360f).coerceAtLeast(0f)
 
     if (sweepAngle<0)
         sweepAngle = 0f
@@ -109,7 +137,7 @@ fun CircularChart(
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 Text(
-                    text = value.toString(),
+                    text = animatedValue.floatValue.toInt().toString(),
                     style = MaterialTheme.typography.displaySmall,
                     fontSize = fontSize.sp
                 )
@@ -122,22 +150,23 @@ fun CircularChart(
                             modifier = Modifier.size(16.dp),
                         )
                     }
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(0.5f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ){
 
-                    items(zeroNum){
-                        Image(
-                            painter = painterResource(
-                                id = R.drawable.ic_1200952
-                            ),
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(0.5f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ){
+
+                        items(zeroNum){
+                            Image(
+                                painter = painterResource(
+                                    id = R.drawable.ic_1200952
+                                ),
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
                     }
-                }
 
 
             }
