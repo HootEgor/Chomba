@@ -88,11 +88,13 @@ fun CircularChart(
     )
 
     val fullAnim = TargetBasedAnimation(
-        animationSpec = tween(1000, -200, EaseInExpo),
+        animationSpec = tween(1000, 500, EaseInBack),
         typeConverter = Float.VectorConverter,
         initialValue = targetValue,
         targetValue = value.toFloat()
     )
+
+    val roundVal = if(value < 0) -4 else 4
 
     val playTime = remember { mutableLongStateOf(0L) }
 
@@ -109,6 +111,8 @@ fun CircularChart(
             playTime.longValue = withFrameNanos { it } - startTime
             animatedValue.floatValue = fullAnim.getValueFromNanos(playTime.longValue)
         } while (animatedValue.floatValue < value.toFloat())
+
+        animatedValue.floatValue = ((animatedValue.floatValue.toInt()+roundVal) / 5) * 5f
     }
 
     var sweepAngle = (animatedValue.floatValue / maxValue.toFloat() * 360f).coerceAtLeast(0f)
