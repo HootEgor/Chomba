@@ -44,12 +44,13 @@ import com.egorhoot.chomba.ui.theme.Shapes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.sqrt
 
 @Composable
 fun Chart(
     modifier: Modifier = Modifier,
     playerList: List<Player>,
-    drawSpeed: Int = 500
+    drawSpeed: Int = 2000
 ) {
     Surface(
         shape = Shapes.large,
@@ -82,7 +83,7 @@ fun CurvedLineChart(
     gradientToAlpha: Float = 0f,
     gridLineColor: Color = Color.Gray,
     gridLineThickness: Float = 1f,
-    drawSpeed: Int = 500,
+    drawSpeed: Int = 2000,
 ) {
 
     val drawPathAnimation = remember {
@@ -93,7 +94,7 @@ fun CurvedLineChart(
 
     LaunchedEffect(targetRound) {
         drawPathAnimation.animateTo(
-            1f, tween(targetRound*drawSpeed, 0, LinearEasing)
+            1f, tween(sqrt(targetRound.toDouble()).toInt()*drawSpeed, 0, LinearEasing)
         )
     }
 
@@ -106,6 +107,8 @@ fun CurvedLineChart(
                 }
             }
         }
+
+        min-=50
 
         for (i in 800 downTo min+50 step 200) {
             drawScoreLines(gridLineColor, i, gridLineThickness, min)

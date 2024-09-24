@@ -1,5 +1,6 @@
 package com.egorhoot.chomba.pages
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -235,7 +236,7 @@ fun GamePage(
 
         val scores = remember { (100..420 step 5).map { it.toString() } }
         val scoresValue = rememberPickerState()
-        val startIndex = remember {mutableIntStateOf(0)}
+        val startIndex = remember {mutableIntStateOf(scores.indexOf(uiState.declarer?.declaration.toString()))}
         val currentScore = remember {mutableIntStateOf(100)}
 
         AlertDialog(
@@ -305,7 +306,7 @@ fun GamePage(
                                 .weight(1f),
                             textModifier = Modifier.padding(4.dp),
                             textStyle = TextStyle(fontSize = 16.sp),
-                            startIndex = scores.indexOf(uiState.declarer?.declaration.toString())
+                            startIndex = startIndex.intValue
                         )
                     }
                 }

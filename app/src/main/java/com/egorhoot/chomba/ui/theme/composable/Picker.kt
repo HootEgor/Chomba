@@ -76,9 +76,7 @@ fun Picker(
                 if (stopped) {
                     val index = listState.firstVisibleItemIndex + visibleItemsMiddle
                     val item = getItem(index)
-                    if (state.selectedItem != item) {
-                        state.selectedItem = item
-                    }
+                    state.selectedItem = item
                 }
                 isScrollingStopped = stopped
             }

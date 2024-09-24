@@ -274,7 +274,7 @@ fun GameCard(
                     .padding(4.dp, 0.dp, 4.dp, 4.dp)
                     .aspectRatio(2.2f),
                     playerList = game.playerList,
-                    drawSpeed = 300)
+                    drawSpeed = 1000)
             }
 
             AnimatedVisibility(visible = selected){
