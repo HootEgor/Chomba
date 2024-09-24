@@ -65,4 +65,6 @@
     <string name="wins">Wins</string>
     <string name="score">Score</string>
     <string name="saved_to_local_storage">Saved to local storage</string>
+    <string name="total_gain">"Total gain: "</string>
+    <string name="total_loss">"Total loss: "</string>
 </resources>

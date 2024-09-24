@@ -290,10 +290,10 @@ class GameViewModel @Inject constructor(
             var score = 0
 
             if(existingPlayer.name == player.name) {
-                score = -120
+                score = 120
             }
 
-            val newScore = Score(score, 1, uiState.value.round)
+            val newScore = Score(score, -1, uiState.value.round)
 
             if (score != 0){
                 existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
