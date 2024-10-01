@@ -21,3 +21,19 @@ fun Game.isFinished(): Boolean {
 fun Game.isWinner(player: Player): Boolean {
     return player.getTotalScore() >= 1000
 }
+
+fun Game.totalRound(): Int {
+    return playerList.maxOf { it.getMaxRound() }
+}
+
+fun Game.getChombaNum(suit: CardSuit): Int {
+    return playerList.sumOf { it.getChombaNum(suit) }
+}
+
+fun Game.getTotalGain(): Int {
+    return playerList.sumOf { it.getTotalGain() }
+}
+
+fun Game.getTotalLoss(): Int {
+    return playerList.sumOf { it.getTotalLoss() }
+}

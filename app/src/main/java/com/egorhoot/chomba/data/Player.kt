@@ -195,4 +195,16 @@ fun Player.getTotalChombas(): Int {
     return totalChombas
 }
 
+fun Player.getChombaNum(suit: CardSuit): Int {
+    return scoreList.filter { it.takenChombas.contains(suit) }.size
+}
+
+fun Player.getTotalGain(): Int {
+    return scoreList.filter { (it.type == 1 || it.type == 3) && it.value != -120 }.sumOf { it.value }
+}
+
+fun Player.getTotalLoss(): Int {
+    return scoreList.filter { it.type == -1 || it.type == -4 }.sumOf { -it.value }
+}
+
 

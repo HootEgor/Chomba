@@ -23,14 +23,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,10 +59,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.egorhoot.chomba.R
+import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Player
+import com.egorhoot.chomba.data.getChombaNum
 import com.egorhoot.chomba.data.getMissBarrel
+import com.egorhoot.chomba.data.getTotalGain
+import com.egorhoot.chomba.data.getTotalLoss
 import com.egorhoot.chomba.data.getTotalScore
+import com.egorhoot.chomba.data.totalRound
 import com.egorhoot.chomba.ui.theme.Shapes
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -269,12 +280,96 @@ fun GameCard(
             }
 
             AnimatedVisibility(visible = selected) {
-                Chart(modifier = Modifier
-                    .weight(1f)
-                    .padding(4.dp, 0.dp, 4.dp, 4.dp)
-                    .aspectRatio(2.2f),
-                    playerList = game.playerList,
-                    drawSpeed = 1000)
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                    ) {
+                        Divider(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(1.dp)
+                        )
+                        Text(
+                            text = game.totalRound().toString(),
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                        )
+                        Divider(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(1.dp)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(3.dp, 4.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        for (suit in CardSuit.values()){
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(1.dp, 0.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = suitIcon(suit.ordinal)),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (suit.ordinal > 1 && suit != CardSuit.ACE) Color.Red
+                                    else MaterialTheme.colorScheme.onBackground
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(text = game.getChombaNum(suit).toString(), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(0.dp, 4.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(0.dp, 4.dp).wrapContentSize()
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_trending_up_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = game.getTotalGain().toString(), style = MaterialTheme.typography.bodyMedium)
+                        }
+
+                        Row(
+                            modifier = Modifier.padding(0.dp, 4.dp).wrapContentSize()
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_trending_down_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = game.getTotalLoss().toString(), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                    Chart(modifier = Modifier
+                        .padding(4.dp, 0.dp, 4.dp, 4.dp)
+                        .aspectRatio(2.2f),
+                        playerList = game.playerList,
+                        drawSpeed = 1000)
+                }
             }
 
             AnimatedVisibility(visible = selected){
