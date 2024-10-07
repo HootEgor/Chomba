@@ -310,6 +310,7 @@ class GameViewModel @Inject constructor(
 
     private fun nextDistributorIndex(): Int {
         val index = uiState.value.round % playerList.value.size
+        saveGame()
         return if (index == 0) playerList.value.size - 1 else index - 1
     }
 

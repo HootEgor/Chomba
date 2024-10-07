@@ -33,11 +33,11 @@ fun HomePage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if(viewModel.playerList.value.isNotEmpty()) {
-                BasicTextButton(text = R.string.continue_game,
-                    modifier = modifier.smallButton(),
-                    action = {viewModel.setCurrentPage(1)})
-            }
+//            if(viewModel.playerList.value.isNotEmpty()) {
+//                BasicTextButton(text = R.string.continue_game,
+//                    modifier = modifier.smallButton(),
+//                    action = {viewModel.setCurrentPage(1)})
+//            }
 
 //            BasicTextButton(text = R.string.solo_game,
 //                modifier = modifier.smallButton(),

@@ -122,6 +122,7 @@ class UserRepositoryImpl @Inject constructor(): UserRepository {
                     .collection("gameList")
                     .document().id
             }
+            profileUi.value = profileUi.value.copy(currentGameIndex = id)
             val date = System.currentTimeMillis()
             val gameData = Game(id, date ,playerList.value, uiState.value)
             db.collection("users").document(userUid)
@@ -130,7 +131,6 @@ class UserRepositoryImpl @Inject constructor(): UserRepository {
                 .set(gameData, SetOptions.merge())
                 .addOnSuccessListener {
                     uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
-                    profileUi.value = profileUi.value.copy(currentGameIndex = id)
                 }
                 .addOnFailureListener {
                     uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
