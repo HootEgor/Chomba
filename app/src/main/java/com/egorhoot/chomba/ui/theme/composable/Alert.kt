@@ -1,5 +1,6 @@
 package com.egorhoot.chomba.ui.theme.composable
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,7 +61,8 @@ fun Tips(
         onDismissRequest = {onDismissRequest()},
         title = { Text(text = stringResource(R.string.tips), style = MaterialTheme.typography.headlineSmall) },
         text = {
-            val pagerState = rememberPagerState(initialPage = 1)
+            val pagerState = rememberPagerState(initialPage = 1,
+                pageCount = { 3 })
             val currentPage = remember { mutableStateOf(1) }
             LaunchedEffect(currentPage.value){
                 if(currentPage.value == -1) return@LaunchedEffect
@@ -88,7 +90,7 @@ fun Tips(
                         isUnderlined = pagerState.currentPage == 2
                     )
                 }
-                HorizontalPager(pageCount = 3,
+                HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
                         .size(400.dp)
@@ -209,6 +211,22 @@ fun Tips(
             }
         },
         dismissButton = {
+        }
+    )
+}
+
+@Composable
+fun AlertOk(@StringRes title: Int, @StringRes message: Int, action: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = action,
+        title = { Text(text = stringResource(id = title), style = MaterialTheme.typography.headlineSmall) },
+        text = { Text(text = stringResource(id = message), style = MaterialTheme.typography.bodyMedium) },
+        confirmButton = {
+            TextButton(
+                onClick = action
+            ) {
+                Text(text = stringResource(R.string.confirm_button), style = MaterialTheme.typography.bodyMedium)
+            }
         }
     )
 }

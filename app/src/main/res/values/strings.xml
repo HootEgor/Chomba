@@ -67,4 +67,10 @@
     <string name="saved_to_local_storage">Saved to local storage</string>
     <string name="total_gain">"Total gain: "</string>
     <string name="total_loss">"Total loss: "</string>
+    <string name="please_enable_microphone_permission">Please enable microphone permission</string>
+    <string name="your_device_does_not_support_speech_recognition">Your device does not support speech recognition</string>
+    <string name="request_permission_audio_message">To enhance your experience, our app needs access to your microphone. Please enable microphone services to continue.</string>
+    <string name="request_permission">Request permission</string>
+    <string name="confirm_button">Ok</string>
+    <string name="request_permission_audio_title">Microphone permission required</string>
 </resources>

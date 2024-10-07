@@ -31,4 +31,10 @@ object DomainModule {
     fun provideMutableProfileUiState(): MutableState<ProfileScreenUiState> {
         return mutableStateOf(ProfileScreenUiState())
     }
+
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context {
+        return context
+    }
 }

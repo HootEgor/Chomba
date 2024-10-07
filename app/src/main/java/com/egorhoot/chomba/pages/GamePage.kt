@@ -1,7 +1,5 @@
 package com.egorhoot.chomba.pages
 
-import android.util.Log
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -15,11 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,6 +42,7 @@ import com.egorhoot.chomba.data.getDissolution
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.data.getZeroNum
+import com.egorhoot.chomba.pages.speech.VoiceRecognitionButton
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.composable.Chart
