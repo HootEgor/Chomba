@@ -1,6 +1,7 @@
 package com.egorhoot.chomba.data
 
 import android.annotation.SuppressLint
+import androidx.compose.ui.graphics.Color
 
 data class LeaderBoardPlayer(
     val name: String,
@@ -8,7 +9,8 @@ data class LeaderBoardPlayer(
     val totalScore: Int,
     val winStreak: Int,
     val totalChombas: Int,
-    val soreList: List<Score>
+    val soreList: List<Score>,
+    val colors : List<Color>
 )
 
 fun List<LeaderBoardPlayer>.sortedByWins(): List<LeaderBoardPlayer> {

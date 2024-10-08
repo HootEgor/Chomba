@@ -1,6 +1,13 @@
 package com.egorhoot.chomba.pages.user.leaderboard
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
@@ -26,16 +33,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.materialcore.toRadians
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.LeaderBoardPlayer
@@ -47,7 +61,12 @@ import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.FullIconButton
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.ResizableText
+import com.egorhoot.chomba.ui.theme.composable.animatedBorder
 import com.egorhoot.chomba.ui.theme.composable.suitIcon
+import kotlinx.coroutines.delay
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
 
 @Composable
 fun LeaderBoard(
@@ -132,13 +151,39 @@ fun LeaderBoardItem(
     position: Int
     ) {
     val expanded = remember {mutableStateOf(false)}
+
+    val currentColor = remember { mutableStateOf(player.colors[0]) }
+
+    val targetAlpha = remember { mutableStateOf(1f) }
+
+    LaunchedEffect(player) {
+        while (true) {
+            targetAlpha.value = if (targetAlpha.value == 1f) 0.3f else 1f
+            delay(1000L)
+        }
+    }
+
+    val animatedColor = animateColorAsState(
+        targetValue = currentColor.value.copy(alpha = targetAlpha.value),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+        label = "animatedColor"
+    )
+
+    LaunchedEffect(player) {
+        while (true) {
+            currentColor.value = player.colors.random().copy(alpha = targetAlpha.value)
+            delay(1000L)
+        }
+    }
+
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(0.dp, 1.dp)
             .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.tertiaryContainer,
+                width = if (position == 1) 3.dp else 1.dp,
+                color = if (position == 1) animatedColor.value else MaterialTheme.colorScheme.tertiaryContainer,
                 shape = Shapes.medium
             )
             .clickable(onClick = {
@@ -245,7 +290,9 @@ fun LeaderBoardItem(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
-                        modifier = Modifier.padding(0.dp, 4.dp).wrapContentSize()
+                        modifier = Modifier
+                            .padding(0.dp, 4.dp)
+                            .wrapContentSize()
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_trending_up_24),
@@ -258,7 +305,9 @@ fun LeaderBoardItem(
                     }
 
                     Row(
-                        modifier = Modifier.padding(0.dp, 4.dp).wrapContentSize()
+                        modifier = Modifier
+                            .padding(0.dp, 4.dp)
+                            .wrapContentSize()
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_trending_down_24),
@@ -274,4 +323,19 @@ fun LeaderBoardItem(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun LeaderBoardPreview() {
+    val player = LeaderBoardPlayer(
+        name = "Player",
+        wins = 1,
+        totalScore = 1000,
+        winStreak = 1,
+        totalChombas = 1,
+        soreList = emptyList(),
+        colors = listOf(Color.Red, Color.Blue, Color.Green)
+    )
+    LeaderBoardItem(player = player, position = 2)
 }

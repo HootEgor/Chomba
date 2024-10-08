@@ -3,6 +3,7 @@ package com.egorhoot.chomba.pages.user.leaderboard
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import com.egorhoot.chomba.ChombaViewModel
 import com.egorhoot.chomba.data.Game
@@ -46,6 +47,7 @@ class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
             var maxWinStreak = 0
             var totalChombas = 0
             val scoreList = mutableListOf<Score>()
+            val colors = mutableListOf<Color>()
             for (game in gameList.reversed()) {
                 if(!game.isFinished())
                     continue
@@ -67,10 +69,11 @@ class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
                         for (score in player.scoreList) {
                             scoreList.add(score)
                         }
+                        colors.add(Color(player.color.toULong()))
                     }
                 }
             }
-            players.add(LeaderBoardPlayer(playerName, wins, totalScore, maxWinStreak, totalChombas, scoreList))
+            players.add(LeaderBoardPlayer(playerName, wins, totalScore, maxWinStreak, totalChombas, scoreList, colors))
         }
 
         uiState.value = uiState.value.copy(players = players.sortedByWins())
