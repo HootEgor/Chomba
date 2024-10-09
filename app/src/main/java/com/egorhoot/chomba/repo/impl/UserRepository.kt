@@ -25,9 +25,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class UserRepositoryImpl @Inject constructor(): UserRepository {
-    override val auth = FirebaseAuth.getInstance()
-    private val db = Firebase.firestore
+class UserRepositoryImpl @Inject constructor(
+    override val auth: FirebaseAuth,
+    private val db: FirebaseFirestore
+): UserRepository {
 
     override fun sendSignInLink(email: String) {
         auth.sendSignInLinkToEmail(email, buildActionCodeSettings())
@@ -54,12 +55,11 @@ class UserRepositoryImpl @Inject constructor(): UserRepository {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    val newUser = User(email = email)
 
                     // Сохранение информации о пользователе в базу данных
                     // Например, используя Firebase Firestore:
                     val db = FirebaseFirestore.getInstance()
-                    user?.let { db.collection("users").document(it.uid).set(newUser) }
+                    user?.let { db.collection("users").document(it.uid) }
 
                     // Вызов метода для автоматического входа в приложение
                     // Например, установка статуса аутентификации в вашей ViewModel:
@@ -161,7 +161,6 @@ class UserRepositoryImpl @Inject constructor(): UserRepository {
     }
 
     override fun loadGames(profileUi: MutableState<ProfileScreenUiState>){
-        val db = Firebase.firestore
         val userUid = auth.currentUser?.uid
         if (userUid != null) {
             db.collection("users").document(userUid)

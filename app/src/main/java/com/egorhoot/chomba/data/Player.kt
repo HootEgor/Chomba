@@ -5,6 +5,7 @@ import kotlin.random.Random
 
 data class Player(
     var visible: Boolean = true,
+    var userId: String = "",
     var name: String = "",
     var color: String = generateRandomColor().toString(),
     var scoreList: List<Score> = listOf(),

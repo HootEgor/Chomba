@@ -16,6 +16,7 @@ import com.egorhoot.chomba.pages.GamePage
 import com.egorhoot.chomba.pages.user.UserPage
 import com.egorhoot.chomba.ui.theme.composable.ShowAlert
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.egorhoot.chomba.pages.onlinegame.room.Room
 import com.egorhoot.chomba.pages.user.ProfileViewModel
 import com.egorhoot.chomba.ui.theme.AppTheme
 
@@ -24,7 +25,7 @@ fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState
+    val pageState by viewModel.pageState
     AppTheme{
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -38,7 +39,7 @@ fun GameScreen(
                     .fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            when(uiState.currentPage) {
+            when(pageState.currentPage) {
                 0 -> {
                     HomePage(viewModel = viewModel, profileViewModel = profileViewModel)
                 }
@@ -50,6 +51,9 @@ fun GameScreen(
                 }
                 3 -> {
                     UserPage(viewModel = profileViewModel, gameViewModel = viewModel)
+                }
+                4 -> {
+                    Room()
                 }
                 else -> {
                     HomePage(viewModel = viewModel, profileViewModel = profileViewModel)

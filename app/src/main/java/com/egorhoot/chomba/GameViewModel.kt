@@ -13,6 +13,7 @@ import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.chombaScore
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
+import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.pages.user.ProfileViewModel
 import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
@@ -27,7 +28,8 @@ import kotlin.math.round
 class GameViewModel @Inject constructor(
     val userRepo: UserRepository,
     private val idConverter: IdConverter,
-    val profileUi: MutableState<ProfileScreenUiState>
+    val profileUi: MutableState<ProfileScreenUiState>,
+    val pageState: MutableState<PageState>
 ): ChombaViewModel() {
 
     val playerList = mutableStateOf<List<Player>>(listOf())
@@ -50,9 +52,15 @@ class GameViewModel @Inject constructor(
         setCurrentPage(1)
     }
 
-    fun setCurrentPage(page: Int) {
-        uiState.value = uiState.value.copy(currentPage = page)
+    fun onlineGame(){
+        setCurrentPage(4)
+    }
 
+    fun setCurrentPage(page: Int) {
+        if(page == 0 && pageState.value.currentPage == 2){
+            saveGame()
+        }
+        pageState.value = pageState.value.copy(currentPage = page)
         if(page == 3){
             profileUi.value = profileUi.value.copy(currentScreen = 0)
         }
@@ -227,6 +235,10 @@ class GameViewModel @Inject constructor(
 
         uiState.value = uiState.value.copy(round = uiState.value.round + 1)
         uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
+
+        if(uiState.value.round % 3 == 0){
+            saveGame()
+        }
     }
 
     fun makeDissolution(){
@@ -283,6 +295,10 @@ class GameViewModel @Inject constructor(
 
         uiState.value = uiState.value.copy(round = uiState.value.round + 1)
         uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
+
+        if(uiState.value.round % 3 == 0){
+            saveGame()
+        }
     }
 
     fun makePenalty(player: Player){
@@ -310,7 +326,6 @@ class GameViewModel @Inject constructor(
 
     private fun nextDistributorIndex(): Int {
         val index = uiState.value.round % playerList.value.size
-        saveGame()
         return if (index == 0) playerList.value.size - 1 else index - 1
     }
 

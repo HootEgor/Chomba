@@ -44,6 +44,10 @@ fun HomePage(
 //                action = {viewModel.setCurrentPage(4)
 //                    soloViewModel.newGame()})
 
+            BasicTextButton(text = R.string.online_game,
+                modifier = modifier.smallButton(),
+                action = {viewModel.onlineGame()})
+
             BasicTextButton(text = R.string.new_game,
                 modifier = modifier.smallButton(),
                 action = {viewModel.newGame()})

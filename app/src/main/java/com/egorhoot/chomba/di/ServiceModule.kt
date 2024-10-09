@@ -1,6 +1,8 @@
 package com.egorhoot.chomba.di
 
+import com.egorhoot.chomba.repo.OnLineGameRepository
 import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.repo.impl.OnLineGameRepositoryImpl
 import com.egorhoot.chomba.repo.impl.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -12,4 +14,7 @@ import dagger.hilt.components.SingletonComponent
 abstract class ServiceModule {
     @Binds
     abstract fun provideUserRepository(impl: UserRepositoryImpl): UserRepository
+
+    @Binds
+    abstract fun provideOnLineGameRepository(impl: OnLineGameRepositoryImpl): OnLineGameRepository
 }

@@ -1,6 +1,7 @@
 package com.egorhoot.chomba.pages.user
 
 import android.net.Uri
+import coil.compose.AsyncImagePainter
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
@@ -22,6 +23,7 @@ data class ProfileScreenUiState(
     val currentGame: Game? = null,
 
     val inProgress: Boolean = false,
+    val isSuccess: Boolean = false,
 
     val saveMsg: Int = R.string.in_progress,
 
