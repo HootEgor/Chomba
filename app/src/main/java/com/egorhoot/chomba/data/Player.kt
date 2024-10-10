@@ -208,4 +208,8 @@ fun Player.getTotalLoss(): Int {
     return scoreList.filter { it.type == -1 || it.type == -4 }.sumOf { -it.value }
 }
 
+fun Player.getChombaScore(): Int {
+    return takenChombas.sumOf { chombaScore(it.ordinal) }
+}
+
 

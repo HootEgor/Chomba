@@ -68,6 +68,10 @@ fun Picker(
             listState.scrollToItem(listStartIndex)
     }
 
+    LaunchedEffect(isScrollingStopped) {
+        state.selectedItem = getItem(listState.firstVisibleItemIndex + visibleItemsMiddle)
+    }
+
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }
             .map { isScrollingInProgress -> !isScrollingInProgress }

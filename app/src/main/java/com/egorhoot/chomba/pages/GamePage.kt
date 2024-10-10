@@ -1,6 +1,12 @@
 package com.egorhoot.chomba.pages
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,6 +43,7 @@ import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.getBarrel
+import com.egorhoot.chomba.data.getChombaScore
 import com.egorhoot.chomba.data.getChombas
 import com.egorhoot.chomba.data.getDissolution
 import com.egorhoot.chomba.data.getMissBarrel
@@ -343,7 +350,9 @@ fun GamePage(
             text = {
                 Column {
                     for(player in playerList){
-                        Text(text = player.name + " : " + player.scorePerRound.toString() + if(player.blind) " x2" else "",
+                        var score = player.scorePerRound + player.getChombaScore()
+                        if (score > 420 ) score = 420
+                        Text(text = player.name + " : " + score.toString() + if(player.blind) " x2" else "",
                             style = MaterialTheme.typography.titleMedium,
                             textAlign = TextAlign.Center)
                     }
@@ -502,6 +511,25 @@ fun PlayerCard(
     setBlind: () -> Unit
 ){
 
+
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val glow by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow"
+    )
+
+    val warningColor = if((player.getTotalScore() + player.scorePerRound + player.getChombaScore() == 555 && player.name != declarer?.name) ||
+        (player.getTotalScore() + player.declaration == 555 && player.name == declarer?.name)) MaterialTheme.colorScheme.error.copy(alpha = glow)
+    else Color.Transparent
+
+
+
     Surface(
         shape = Shapes.large,
         color = if (!isDistributor) MaterialTheme.colorScheme.background
@@ -533,26 +561,41 @@ fun PlayerCard(
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.baseline_hail_24),
+                                painter = painterResource(id = R.drawable.baseline_warning_amber_24),
                                 contentDescription = null,
                                 modifier = Modifier.padding(start = 16.dp),
-                                tint = Color.Transparent,
+                                tint = warningColor,
                             )
                             ResizableText(
                                 text = player.name,
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.weight(2f),
                             )
-                            Text(text = if (player.name == declarer?.name) player.declaration.toString()
-                            else "",
-                                style = MaterialTheme.typography.titleLarge,
+                            Box(
+                                contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .weight(1f)
                                     .combinedClickable(
                                         onClick = {},
                                         onLongClick = { setScorePerRoundD() }
-                                    ),
-                                textAlign = TextAlign.Center)
+                                    )
+                            ) {
+                                Text(
+                                    text = if (player.name == declarer?.name) player.declaration.toString() else "",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    textAlign = TextAlign.Center
+                                )
+//                                if(player.getChombaScore() > 0){
+//                                    Text(
+//                                        text = "+" + player.getChombaScore().toString(),
+//                                        style = MaterialTheme.typography.bodySmall,
+//                                        textAlign = TextAlign.Center,
+//                                        modifier = Modifier.padding(top = 32.dp),
+//                                        color = MaterialTheme.colorScheme.error,
+//                                        maxLines = 1
+//                                    )
+//                                }
+                            }
                         }
                         Box(
                             modifier = Modifier
@@ -644,7 +687,8 @@ fun PlayerCard(
                                         }
                                     }
                                 }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.Center) {
                                     Surface(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -663,6 +707,16 @@ fun PlayerCard(
                                                 .padding(horizontal = 4.dp),
                                             onSelect = { onSave(it) },
                                             startScore = player.scorePerRound
+                                        )
+                                    }
+                                    if(player.getChombaScore() > 0){
+                                        Text(
+                                            text = "+" + player.getChombaScore().toString(),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            textAlign = TextAlign.Start,
+                                            modifier = Modifier.padding(start = 56.dp),
+                                            color = MaterialTheme.colorScheme.error,
+                                            maxLines = 1
                                         )
                                     }
                                 }
@@ -689,7 +743,7 @@ fun PlayerCard(
                         value = player.getTotalScore(),
                         maxValue = 1000,
                         color = Color(player.color.toULong()),
-                        zeroNum = if (player.getTotalScore() == 880) player.getMissBarrel()
+                        zeroNum = if (player.getTotalScore() == 880) player.getMissBarrel() + 1
                         else 0,
                         blind = player.blind,
                     )

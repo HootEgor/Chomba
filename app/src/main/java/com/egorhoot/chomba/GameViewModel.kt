@@ -11,6 +11,7 @@ import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.chombaScore
+import com.egorhoot.chomba.data.getChombaScore
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.pages.PageState
@@ -162,7 +163,11 @@ class GameViewModel @Inject constructor(
     fun nextRound() {
 
         val updatedPlayerList = playerList.value.map { existingPlayer ->
+            existingPlayer.scorePerRound += existingPlayer.getChombaScore()
             var score = existingPlayer.scorePerRound
+            if(score > 420){
+                score = 420
+            }
             var type = 1
 
             if (existingPlayer.scorePerRound == 0) {
@@ -415,8 +420,7 @@ class GameViewModel @Inject constructor(
     fun takeChomba(player: Player, suit: Int) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             if (existingPlayer.name == player.name) {
-                existingPlayer.copy(takenChombas = existingPlayer.takenChombas + CardSuit.values()[suit],
-                    scorePerRound = existingPlayer.scorePerRound + chombaScore(suit))
+                existingPlayer.copy(takenChombas = existingPlayer.takenChombas + CardSuit.values()[suit])
             } else {
                 existingPlayer
             }
@@ -427,8 +431,7 @@ class GameViewModel @Inject constructor(
     fun undoChomba(player: Player, suit: Int) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             if (existingPlayer.name == player.name) {
-                existingPlayer.copy(takenChombas = existingPlayer.takenChombas.filter { it.ordinal != suit },
-                    scorePerRound = existingPlayer.scorePerRound - chombaScore(suit))
+                existingPlayer.copy(takenChombas = existingPlayer.takenChombas.filter { it.ordinal != suit })
             } else {
                 existingPlayer
             }
