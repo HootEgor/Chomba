@@ -38,11 +38,13 @@ class OnLineGameRepositoryImpl @Inject constructor(
     ) {
         val user = auth.currentUser
         if (user != null) {
-            val gameUser = User(id = user.uid)
+            val gameUser = User(id = user.uid, userPicture = user.photoUrl.toString(), name = if(user.displayName != null) user.displayName!! else "")
             val roomId = generateRoomId()
+            val date = System.currentTimeMillis()
             val room = onLineGameUiState.value.copy(
                 game = OnLineGame(
                     roomCode = roomId,
+                    date = date,
                     userList = listOf(gameUser)
                 )
             )
@@ -111,7 +113,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
     ) {
         val user = auth.currentUser
         if (user != null) {
-            val gameUser = User(id = user.uid)
+            val gameUser = User(id = user.uid, userPicture = user.photoUrl.toString(), name = if(user.displayName != null) user.displayName!! else "")
             if (onLineGameUiState.value.rooms.contains(code)){
                 db.collection("rooms")
                     .document(code)

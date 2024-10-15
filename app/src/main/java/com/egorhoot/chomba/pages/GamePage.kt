@@ -79,7 +79,9 @@ fun GamePage(
     val saveAlert = remember { mutableStateOf(false) }
     val isMenuExpanded = remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -118,7 +120,9 @@ fun GamePage(
         )
 
             Column(
-                modifier = Modifier.wrapContentSize().weight(1f),
+                modifier = Modifier
+                    .wrapContentSize()
+                    .weight(1f),
             ) {
                 for(i in 0 until viewModel.playerList.value.size){
                     val player = playerList[i]
@@ -134,7 +138,7 @@ fun GamePage(
                         declarer = uiState.declarer,
                         showScoreList = {viewModel.showScoreList(player, true)},
                         isDistributor = player.name == playerList[uiState.distributorIndex].name,
-                        setScorePerRoundD = {viewModel.setScorePerRoundD(player)},
+                        setScorePerRound = {viewModel.setScorePerRound(player)},
                         setBlind = {viewModel.setBlind(player)}
                     )
                 }
@@ -254,7 +258,9 @@ fun GamePage(
                         text = stringResource(R.string.set_declarer),
                         style = MaterialTheme.typography.headlineSmall)
                     VoiceRecognitionButton(
-                        modifier = Modifier.weight(1f).wrapContentWidth(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .wrapContentWidth(),
                         onRecognized = { recognizedScore ->
                             if (recognizedScore < 100) {
                                 val hundreds = (currentScore.intValue / 100) * 100
@@ -507,7 +513,7 @@ fun PlayerCard(
     declarer: Player?,
     showScoreList: () -> Unit,
     isDistributor: Boolean,
-    setScorePerRoundD: () -> Unit,
+    setScorePerRound: () -> Unit,
     setBlind: () -> Unit
 ){
 
@@ -524,9 +530,14 @@ fun PlayerCard(
         label = "glow"
     )
 
-    val warningColor = if((player.getTotalScore() + player.scorePerRound + player.getChombaScore() == 555 && player.name != declarer?.name) ||
-        (player.getTotalScore() + player.declaration == 555 && player.name == declarer?.name)) MaterialTheme.colorScheme.error.copy(alpha = glow)
-    else Color.Transparent
+    var warningColor = if (player.getTotalScore() - 120 == 555)
+            Color(0xFFFFA500)
+    else
+        Color.Transparent
+
+    if((player.getTotalScore() + player.scorePerRound + player.getChombaScore() == 555 && player.name != declarer?.name) ||
+        ((player.getTotalScore() + player.declaration == 555 || player.getTotalScore() - player.declaration == 555)  && player.name == declarer?.name))
+        warningColor = MaterialTheme.colorScheme.error.copy(alpha = glow)
 
 
 
@@ -577,7 +588,7 @@ fun PlayerCard(
                                     .weight(1f)
                                     .combinedClickable(
                                         onClick = {},
-                                        onLongClick = { setScorePerRoundD() }
+                                        onLongClick = { setScorePerRound() }
                                     )
                             ) {
                                 Text(
@@ -868,7 +879,9 @@ fun ScoreCard(
             for(chomba in score.getChombas()){
                 Icon(painter = painterResource(id = suitIcon(chomba.ordinal)),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp).weight(1f))
+                    modifier = Modifier
+                        .size(24.dp)
+                        .weight(1f))
             }
         }
         Icon(painter = painterResource(id = typeIcon(score.type)),
@@ -885,11 +898,18 @@ fun ScorePicker(
     onSelect: (Int) -> Unit,
     startScore: Int,
 ) {
-    val scores = remember { (0..420 step 5).map { it.toString() } }
+    val scores = remember { (0..120 step 5).map { it.toString() } }
     val pickerValue = rememberPickerState()
+    val start = remember { mutableStateOf(startScore) }
 
     LaunchedEffect(pickerValue.selectedItem) {
         onSelect(pickerValue.selectedItem.toIntOrNull() ?: startScore)
+    }
+
+    LaunchedEffect(startScore) {
+        start.value = if(scores.indexOf(startScore.toString()) == -1) 0
+        else scores.indexOf(startScore.toString())
+
     }
 
     Picker(
@@ -901,7 +921,7 @@ fun ScorePicker(
             .wrapContentSize(Alignment.Center),
         textModifier = Modifier.padding(4.dp),
         textStyle = TextStyle(fontSize = 16.sp),
-        startIndex = scores.indexOf(startScore.toString())
+        startIndex = start.value
     )
 }
 

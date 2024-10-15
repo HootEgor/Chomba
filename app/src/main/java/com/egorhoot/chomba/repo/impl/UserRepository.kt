@@ -101,6 +101,8 @@ class UserRepositoryImpl @Inject constructor(
                     profileUi.value = profileUi.value.copy(isAuthenticated = true,
                         displayName = user?.displayName ?: "",
                         userPicture = user?.photoUrl ?: Uri.EMPTY)
+
+                    loadGames(profileUi)
                 } else {
                     // Обработка ошибок
                 }

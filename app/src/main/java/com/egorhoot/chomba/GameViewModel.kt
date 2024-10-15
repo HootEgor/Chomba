@@ -1,6 +1,7 @@
 package com.egorhoot.chomba
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -110,10 +111,10 @@ class GameViewModel @Inject constructor(
         playerList.value = updatedPlayerList
     }
 
-    fun setScorePerRoundD(player: Player){
+    fun setScorePerRound(player: Player) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             if (existingPlayer.name == player.name) {
-                existingPlayer.copy(scorePerRound = existingPlayer.declaration)
+                existingPlayer.copy(scorePerRound = existingPlayer.declaration - existingPlayer.getChombaScore())
             } else {
                 existingPlayer
             }
