@@ -11,6 +11,7 @@ data class GameUiState(
     val showPlayer: Player? = null,
     val round: Int = 1,
     val distributorIndex: Int = 0,
+    val takePlayerNameList: List<String> = emptyList(),
 
     val inProgress: Boolean = false,
     val saveMsg: Int = R.string.in_progress,

@@ -108,19 +108,92 @@ class GameViewModel @Inject constructor(
                 existingPlayer
             }
         }
+
+        val updatedTakePlayerNameList = uiState.value.takePlayerNameList.toMutableList()
+        if(updatedTakePlayerNameList.contains(player.name)) {
+            updatedTakePlayerNameList.remove(player.name)
+            updatedTakePlayerNameList.add(0, player.name)
+        }
+        else{
+            updatedTakePlayerNameList.add(0, player.name)
+        }
+
+        uiState.value = uiState.value.copy(takePlayerNameList = updatedTakePlayerNameList)
+
         playerList.value = updatedPlayerList
+
+        checkTotalScore()
     }
 
     fun setScorePerRound(player: Player) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             if (existingPlayer.name == player.name) {
-                existingPlayer.copy(scorePerRound = existingPlayer.declaration - existingPlayer.getChombaScore())
+                if(existingPlayer.getChombaScore() > existingPlayer.declaration){
+                    existingPlayer.copy(scorePerRound = 0)
+                }
+                else{
+                    existingPlayer.copy(scorePerRound = if(existingPlayer.declaration -
+                        existingPlayer.getChombaScore() > 120) 120 else existingPlayer.declaration - existingPlayer.getChombaScore())
+                }
             } else {
                 existingPlayer
             }
         }
+
+        val updatedTakePlayerNameList = uiState.value.takePlayerNameList.toMutableList()
+        if(updatedTakePlayerNameList.contains(player.name)) {
+            updatedTakePlayerNameList.remove(player.name)
+            updatedTakePlayerNameList.add(0, player.name)
+        }
+        else{
+            updatedTakePlayerNameList.add(0, player.name)
+        }
+
+        uiState.value = uiState.value.copy(takePlayerNameList = updatedTakePlayerNameList)
+
+        playerList.value = updatedPlayerList
+        checkTotalScore()
+    }
+
+    fun checkTotalScore() {
+        var totalScore = 120
+        var updatedPlayerList = playerList.value
+
+        // Subtract scorePerRound from totalScore for each player in the list
+        for (player in uiState.value.takePlayerNameList) {
+            val playerScore = updatedPlayerList.find { it.name == player }?.scorePerRound ?: 0
+            totalScore -= playerScore
+
+            // If the totalScore goes negative, cap the score of this player and stop further reduction
+            if (totalScore < 0) {
+                updatedPlayerList = updatedPlayerList.map { existingPlayer ->
+                    if (existingPlayer.name == player) {
+                        existingPlayer.copy(scorePerRound = existingPlayer.scorePerRound + totalScore)
+                    } else {
+                        existingPlayer
+                    }
+                }
+                totalScore = 0
+                break
+            }
+        }
+
+        // Ensure the last player's score adjusts so that the total equals 120
+        if (totalScore > 0) {
+            val lastPlayer = uiState.value.takePlayerNameList.last()
+            updatedPlayerList = updatedPlayerList.map { existingPlayer ->
+                if (existingPlayer.name == lastPlayer) {
+                    existingPlayer.copy(scorePerRound = existingPlayer.scorePerRound + totalScore)
+                } else {
+                    existingPlayer
+                }
+            }
+        }
+
+        // Update the playerList state
         playerList.value = updatedPlayerList
     }
+
 
     fun setBlind(player: Player) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
@@ -240,7 +313,8 @@ class GameViewModel @Inject constructor(
         }
 
         uiState.value = uiState.value.copy(round = uiState.value.round + 1)
-        uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
+        uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex(),
+            takePlayerNameList = listOf())
 
         if(uiState.value.round % 3 == 0){
             saveGame()
