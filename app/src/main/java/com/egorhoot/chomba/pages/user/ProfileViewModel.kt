@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @HiltViewModel
 open class ProfileViewModel @Inject constructor(
     private val userRepo: UserRepository,
-    private val idConverter: IdConverter,
+    val idConverter: IdConverter,
     val leaderBoardViewModel: LeaderBoardViewModel,
     val profileUi: MutableState<ProfileScreenUiState>
 ): ChombaViewModel() {

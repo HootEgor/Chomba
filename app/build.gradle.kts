@@ -2,35 +2,36 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
-    id("kotlin-kapt")
-    id("com.google.dagger.hilt.android")
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlinKapt)
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.daggerHilt)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.egorhoot.chomba"
-    compileSdk = 34
-    val _patch: Int
+    compileSdk = 35
+    val patch: Int
     val versionPropsFile = file("version.properties")
     if (versionPropsFile.canRead()) {
         val versionProps = Properties()
         versionProps.load(FileInputStream(versionPropsFile))
-        _patch = versionProps.getProperty("PATCH").toInt()+1
-        versionProps.setProperty("PATCH", _patch.toString())
+        patch = versionProps.getProperty("PATCH").toInt()+1
+        versionProps.setProperty("PATCH", patch.toString())
         versionProps.store(versionPropsFile.writer(), null)
     } else {
         throw Exception("Could not read version.properties!")
     }
-    val _versionName = "0.0.$_patch"
+    val versionN = "0.0.$patch"
 
     defaultConfig {
         applicationId = "com.egorhoot.chomba"
         minSdk = 26
-        targetSdk = 34
-        versionCode = _patch
-        versionName = _versionName
+        targetSdk = 35
+        versionCode = patch
+        versionName = versionN
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -59,7 +60,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
     packaging {
         resources {
@@ -70,50 +71,37 @@ android {
 
 dependencies {
 
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation(platform("androidx.compose:compose-bom:2023.03.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation("com.google.firebase:firebase-firestore-ktx:24.10.0")
-    implementation("com.google.firebase:firebase-database-ktx:20.3.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.wear.compose:compose-material-core:1.4.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation(libs.coreKtx)
+    implementation(libs.lifecycleRuntimeKtx)
+    implementation(libs.activityCompose)
+    implementation(platform(libs.composeBom))
+    implementation(libs.lifecycleViewmodelCompose)
+    implementation(libs.firebaseFirestore)
+    implementation(libs.firebaseDatabase)
+    implementation(libs.appCompat)
+    implementation(libs.wearComposeMaterial)
+    implementation(libs.junit)
+    implementation(libs.androidxJunit)
+    implementation(libs.espressoCore)
+    implementation(libs.colorPickerCompose)
+    implementation(platform(libs.firebaseBom))
+    implementation(libs.firebaseAuthKtx)
+    implementation(libs.runtimeLivedata)
+    implementation(libs.coilCompose)
+    implementation(libs.gson)
+    implementation(libs.accompanistPermissions)
 
-    implementation("com.github.skydoves:colorpicker-compose:1.0.4")
+    // Retrofit
+    implementation(libs.retrofit)
+    // Moshi
+    implementation (libs.moshi.kotlin)
+    implementation(libs.material3.android)
+    implementation(libs.ui.tooling.preview.android)
+    implementation(libs.play.services.auth)
+    //noinspection KaptUsageInsteadOfKsp
+    kapt (libs.moshi.kotlin.codegen)
 
-    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
-    implementation("com.google.firebase:firebase-analytics-ktx")
-
-
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
-    //implementation("com.google.android.gms:play-services-ads:23.3.0")
-
-    implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
-
-    implementation("io.coil-kt:coil-compose:2.4.0")
-
-//    implementation("org.deeplearning4j:deeplearning4j-core:0.9.1")
-//    implementation("org.encog:encog-core:3.4")
-
-    implementation ("com.google.code.gson:gson:2.8.8")
-
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt ("com.google.dagger:hilt-android-compiler:2.51.1")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.2.0")
-
-    implementation ("com.google.accompanist:accompanist-permissions:0.34.0")
-
+    implementation (libs.hilt.android)
+    kapt (libs.hilt.compiler)
+    implementation(libs.hiltNavigationCompose)
 }

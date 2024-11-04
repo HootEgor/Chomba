@@ -54,7 +54,7 @@ fun LoginScreen(
     )
 
     val onGoogleSignInClick = {
-        val apiKey = "356192759763-ft8atdev0oif0ld83cq0pdp8b55aqp31.apps.googleusercontent.com"
+        val apiKey = profileViewModel.idConverter.getString(R.string.default_web_client_id)
         val request = viewModel.userRepo.getSignInRequest(apiKey)
         oneTapClient.beginSignIn(request)
             .addOnSuccessListener {

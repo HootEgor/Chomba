@@ -14,6 +14,7 @@ import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.chombaScore
 import com.egorhoot.chomba.data.getChombaScore
 import com.egorhoot.chomba.data.getMissBarrel
+import com.egorhoot.chomba.data.getScoreSum
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
@@ -389,7 +390,7 @@ class GameViewModel @Inject constructor(
                 score = 120
             }
 
-            val newScore = Score(score, -1, uiState.value.round)
+            val newScore = Score(score, -1, uiState.value.round-1)
 
             if (score != 0){
                 existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
@@ -422,41 +423,62 @@ class GameViewModel @Inject constructor(
         if (playersOnBarrel.size == 1){
             return playersOnBarrel[0]
         }
-        else if (playersOnBarrel.size > 1){
-            var countList: List<Int> = listOf()
-            for (player in playersOnBarrel){
-                var count = 0
-                for(i in playersOnBarrel.size-1 downTo 1){
-                    if (player.scoreList[scoreListSize - i].type == 2 ||
-                        player.scoreList[scoreListSize - i].type == -2){
-                       count++
+        else if (playersOnBarrel.size == 2){
+            if(uiState.value.playerOnBarrel != null){
+                var playerOnBarrel = playersOnBarrel[0]
+                for (player in playersOnBarrel){
+                    if (player.name == uiState.value.playerOnBarrel?.name){
+                        makePenalty(player)
+                    }else {
+                        playerOnBarrel = player
                     }
                 }
-                countList = countList + count
+                return playerOnBarrel
             }
-
-            val minIndex = countList.indexOf(countList.minOrNull())
-            var playerOnBarrel = playersOnBarrel[0]
-            //count equal values in countList
-            if(countList.count(countList[minIndex]::equals) == playersOnBarrel.size){
+            else{
                 for(player in playersOnBarrel){
                     makePenalty(player)
                 }
                 return null
-            }else{
-                for(player in playersOnBarrel){
-                    if(playersOnBarrel.indexOf(player) == minIndex){
-                        playerOnBarrel = player
-                    }else{
-                        makePenalty(player)
-                    }
-                }
             }
-
-            return playerOnBarrel
+        }else{
+            for(player in playersOnBarrel){
+                makePenalty(player)
+            }
+            return null
+//            var countList: List<Int> = listOf()
+//            for (player in playersOnBarrel){
+//                var count = 0
+//                for(i in playersOnBarrel.size-1 downTo 1){
+//                    if (player.scoreList[scoreListSize - i].type == 2 ||
+//                        player.scoreList[scoreListSize - i].type == -2 ||
+//                        player.getTotalScore(player.scoreList[scoreListSize - i].round-1) == 880){
+//                       count++
+//                    }
+//                }
+//                countList = countList + count
+//            }
+//
+//            val minIndex = countList.indexOf(countList.minOrNull())
+//            var playerOnBarrel = playersOnBarrel[0]
+//            //count equal values in countList
+//            if(countList.count(countList[minIndex]::equals) == playersOnBarrel.size){
+//                for(player in playersOnBarrel){
+//                    makePenalty(player)
+//                }
+//                return null
+//            }else{
+//                for(player in playersOnBarrel){
+//                    if(playersOnBarrel.indexOf(player) == minIndex){
+//                        playerOnBarrel = player
+//                    }else{
+//                        makePenalty(player)
+//                    }
+//                }
+//            }
+//
+//            return playerOnBarrel
         }
-
-        return null
     }
 
     fun showScoreList(player: Player?, show: Boolean) {

@@ -134,8 +134,8 @@ fun Player.getZeroNum(): Int {
         zeroNum = 0
     }
 
-    if (getTotalScore()==880)
-        zeroNum = 0
+//    if (getTotalScore()==880)
+//        zeroNum = 0
 
     return zeroNum
 }

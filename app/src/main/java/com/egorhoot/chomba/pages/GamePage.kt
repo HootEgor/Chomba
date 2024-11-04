@@ -279,7 +279,7 @@ fun GamePage(
                         },)
                 }},
             text = {
-                Surface(shape = RoundedCornerShape(4.dp),
+                Surface(shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.surface,
                     modifier = modifier
                         .fillMaxWidth()

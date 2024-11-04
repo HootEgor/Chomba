@@ -216,6 +216,16 @@ private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, lineWidth
 
     drawPath(
         path = animatedPath.value,
+        color = Color.White,
+        style = Stroke(
+            width = lineWidth+10,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round,
+        )
+    )
+
+    drawPath(
+        path = animatedPath.value,
         color = lineColor,
         style = Stroke(
             width = lineWidth,
