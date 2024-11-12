@@ -13,7 +13,13 @@ interface OnLineGameRepository {
                  onLineGameUiState: MutableState<OnLineGameUiState>,
                  profileUi: MutableState<ProfileScreenUiState>,
                          onResult: () -> Unit)
+    suspend fun exitRoom(onLineGameUiState: MutableState<OnLineGameUiState>,
+                         profileUi: MutableState<ProfileScreenUiState>,
+                         onResult: () -> Unit)
     suspend fun getAvailableRooms(onLineGameUiState: MutableState<OnLineGameUiState>,
                           profileUi: MutableState<ProfileScreenUiState>,
                                   onResult: () -> Unit)
+    suspend fun subscribeOnUpdates(onLineGameUiState: MutableState<OnLineGameUiState>,
+                                   profileUi: MutableState<ProfileScreenUiState>,
+                                   onResult: () -> Unit)
 }

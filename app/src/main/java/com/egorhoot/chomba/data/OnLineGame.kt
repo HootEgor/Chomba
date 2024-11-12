@@ -3,7 +3,7 @@ package com.egorhoot.chomba.data
 data class OnLineGame (
     val id: String = "",
     val date: Long = 0,
-    val roomCode: String = "",
+    val room: Room = Room(),
     val userList: List<User> = listOf(),
     val game: Game = Game(),
 )

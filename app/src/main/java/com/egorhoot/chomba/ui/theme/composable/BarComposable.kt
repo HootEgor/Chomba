@@ -61,6 +61,8 @@ fun TopBar(
                             .fillMaxHeight()
                             .padding(2.dp),
                         colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         ),
                         isEnabled = secondIconEnabled,

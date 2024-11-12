@@ -2,6 +2,7 @@ package com.egorhoot.chomba.pages.onlinegame.room
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,9 +30,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.egorhoot.chomba.R
+import com.egorhoot.chomba.data.Room
 import com.egorhoot.chomba.pages.ColorPickerButton
 import com.egorhoot.chomba.pages.onlinegame.OnLineGame
+import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
+import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.TopBar
 
 @Composable
@@ -46,22 +50,26 @@ fun Room(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        TopBar(
-            title = stringResource(R.string.online_game),
-            onFirstActionClick = { viewModel.homePage()}
-        )
+        if(uiState.page!=1){
+            TopBar(
+                title = stringResource(R.string.online_game),
+                onFirstActionClick = { viewModel.homePage()}
+            )
+        }
         when(uiState.page){
             0 -> {
                 Choose (
                     onSelect = { page ->
                         viewModel.setRoomPage(page)
                     },
-                    create = { viewModel.createRoom() }
+                    create = { viewModel.createRoom() },
+                    browse = { viewModel.setRoomPage(3) }
                 )
             }
             1 -> {
-                if(onLineGameUiState.game.roomCode.isNotEmpty()){
-                    OnLineGame()
+                if(onLineGameUiState.game.room.id.isNotEmpty()){
+                    OnLineGame(modifier = modifier.fillMaxSize(),
+                        leaveGame = { viewModel.leaveGame() })
                 }
                 else{
                     Text(stringResource(R.string.in_progress))
@@ -73,6 +81,26 @@ fun Room(
                         viewModel.joinRoom(code)
                     }
                 )
+            }
+            3 -> {
+                BrowseRooms (
+                    modifier = Modifier.fillMaxSize().weight(1f),
+                    rooms = onLineGameUiState.rooms,
+                )
+                Row(){
+                    IconButton(
+                        icon = R.drawable.baseline_arrow_back_ios_24,
+                        modifier = modifier.weight(1f).padding(2.dp, 0.dp),
+                        action = {viewModel.setRoomPage(0) })
+                    IconButton(
+                        icon = R.drawable.baseline_refresh_24,
+                        modifier = modifier.weight(1f).padding(2.dp, 0.dp),
+                        action = {  })
+                    IconButton(
+                        icon = R.drawable.baseline_arrow_forward_ios_24,
+                        modifier = modifier.weight(1f).padding(2.dp, 0.dp),
+                        action = {  })
+                }
             }
             else -> {
                 Choose (
@@ -91,7 +119,8 @@ fun Room(
 fun Choose(
     modifier: Modifier = Modifier,
     onSelect: (Int) -> Unit,
-    create:()->Unit
+    create:()->Unit,
+    browse:()->Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -101,6 +130,9 @@ fun Choose(
         BasicTextButton(text = R.string.create_room,
             modifier = modifier,
             action = { create() })
+        BasicTextButton(text = R.string.browse_rooms,
+            modifier = modifier,
+            action = { browse() })
         BasicTextButton(text = R.string.join_room,
             modifier = modifier,
             action = { onSelect(2) })
@@ -150,6 +182,22 @@ fun JoinRoom(
         BasicTextButton(text = R.string.join,
             modifier = modifier,
             action = { onConfirm(code.value) })
+    }
+}
+
+@Composable
+fun BrowseRooms(
+    modifier: Modifier = Modifier,
+    rooms: List<String>,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        for(room in rooms){
+            Text(room)
+        }
     }
 }
 

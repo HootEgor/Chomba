@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.OnLineGame
+import com.egorhoot.chomba.data.Room
 import com.egorhoot.chomba.data.User
 import com.egorhoot.chomba.data.isFull
 import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
@@ -43,7 +44,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
             val date = System.currentTimeMillis()
             val room = onLineGameUiState.value.copy(
                 game = OnLineGame(
-                    roomCode = roomId,
+                    room = Room(id = roomId, private = true),
                     date = date,
                     userList = listOf(gameUser)
                 )
@@ -190,6 +191,72 @@ class OnLineGameRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun exitRoom(
+        onLineGameUiState: MutableState<OnLineGameUiState>,
+        profileUi: MutableState<ProfileScreenUiState>,
+        onResult: () -> Unit
+    ) {
+        val user = auth.currentUser
+        if (user != null) {
+            val room = onLineGameUiState.value.game
+            val userList = room.userList.filter { it.id != user.uid }
+            val newRoom = room.copy(
+                userList = userList
+            )
+            if(userList.isNotEmpty()){
+                db.collection("rooms")
+                    .document(room.room.id)
+                    .set(newRoom)
+                    .addOnSuccessListener {
+                        onLineGameUiState.value = onLineGameUiState.value.copy(
+                            game = newRoom
+                        )
+                        profileUi.value = profileUi.value.copy(
+                            alertMsg = idConverter.getString(R.string.room_exited),
+                            isSuccess = true
+                        )
+                        onResult()
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("TAG", "Error adding document", e)
+                        profileUi.value = profileUi.value.copy(
+                            alertMsg = idConverter.getString(R.string.error),
+                            isSuccess = false
+                        )
+                        onResult()
+                    }
+            }else{
+                profileUi.value = profileUi.value.copy(
+                    alertMsg = idConverter.getString(R.string.room_exited),
+                    isSuccess = false
+                )
+                onResult()
+                deleteRoom(room.room.id)
+            }
+
+        }else {
+            profileUi.value = profileUi.value.copy(
+                alertMsg = idConverter.getString(R.string.failed_you_are_not_authenticated),
+                isSuccess = false
+            )
+            onResult()
+        }
+    }
+
+     fun deleteRoom(
+        code: String)
+    {
+        db.collection("rooms")
+            .document(code)
+            .delete()
+            .addOnSuccessListener {
+                Log.d("TAG", "DocumentSnapshot successfully deleted!")
+            }
+            .addOnFailureListener { e ->
+                Log.w("TAG", "Error deleting document", e)
+            }
+    }
+
     override suspend fun getAvailableRooms(
         onLineGameUiState: MutableState<OnLineGameUiState>,
         profileUi: MutableState<ProfileScreenUiState>,
@@ -218,6 +285,33 @@ class OnLineGameRepositoryImpl @Inject constructor(
                     isSuccess = false
                 )
                 onResult()
+            }
+    }
+
+    override suspend fun subscribeOnUpdates(
+        onLineGameUiState: MutableState<OnLineGameUiState>,
+        profileUi: MutableState<ProfileScreenUiState>,
+        onResult: () -> Unit
+    ) {
+        // look for updates for onlineGameUiState.value.room.id
+        db.collection("rooms")
+            .document(onLineGameUiState.value.game.room.id)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w("TAG", "Listen failed.", error)
+                    return@addSnapshotListener
+                }
+
+                if (value != null && value.exists()) {
+                    val room = value.toObject(OnLineGameUiState::class.java)
+                    if (room != null) {
+                        onLineGameUiState.value = onLineGameUiState.value.copy(
+                            game = room.game
+                        )
+                    }
+                } else {
+                    Log.d("TAG", "Current data: null")
+                }
             }
     }
 

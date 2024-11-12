@@ -111,4 +111,33 @@ class RoomViewModel @Inject constructor(
         }
     }
 
+    fun leaveGame(){
+        viewModelScope.launch {
+            startProgress()
+            showAlert(profileUi, R.string.leave_room, idConverter.getString(R.string.are_you_sure),
+                action =
+                {
+                    onLeaveRoom()
+                    dismissAlert(profileUi)
+                },
+                {
+                    dismissAlert(profileUi)
+                }
+            )
+        }
+    }
+
+    private fun onLeaveRoom(){
+        viewModelScope.launch {
+            onLineGameRepo.exitRoom(onLineGameUiState, profileUi
+            ) {
+                stopProgress()
+                homePage()
+                if(profileUi.value.isSuccess){
+                    profileUi.value = profileUi.value.copy(alertMsg = idConverter.getString(R.string.room_left))
+                }
+            }
+        }
+    }
+
 }

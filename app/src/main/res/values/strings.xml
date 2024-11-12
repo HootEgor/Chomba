@@ -75,7 +75,7 @@
     <string name="request_permission_audio_title">Microphone permission required</string>
     <string name="online_game">Online game</string>
     <string name="create_room">Create room</string>
-    <string name="join_room">Join</string>
+    <string name="join_room">Join by code</string>
     <string name="room_created">Room created</string>
     <string name="room_code">room code</string>
     <string name="join">Join</string>
@@ -86,4 +86,12 @@
     <string name="joining_room">Joining room</string>
     <string name="getting_rooms">Getting rooms</string>
     <string name="rooms_fetched">Rooms fetched</string>
+    <string name="room_exited">Room exited</string>
+    <string name="leave">Leave</string>
+    <string name="leave_room">Leave room</string>
+    <string name="room_left">Room left</string>
+    <string name="room_copied_to_clipboard">Room code copied to clipboard!</string>
+    <string name="browse_rooms">Browse rooms</string>
+    <string name="back">Back</string>
+    <string name="refresh">Refresh</string>
 </resources>
