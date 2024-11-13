@@ -40,7 +40,8 @@ import com.egorhoot.chomba.ui.theme.composable.TopBar
 fun OnLineGame(
     modifier: Modifier = Modifier,
     viewModel: OnLineGameViewModel = hiltViewModel(),
-    leaveGame: () -> Unit
+    leaveGame: () -> Unit,
+    back: () -> Unit
 ) {
     val uiState = viewModel.onLineGameUiState.value
     Surface(
@@ -69,9 +70,18 @@ fun OnLineGame(
                 }
 
             }
-            BasicTextButton(text = R.string.leave_room,
-                modifier = Modifier,
-                action = { leaveGame()})
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                IconButton(icon = R.drawable.baseline_arrow_back_ios_24,
+                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
+                    action = { back()},
+                    shape = Shapes.extraLarge)
+                BasicTextButton(text = R.string.leave,
+                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
+                    action = { leaveGame()})
+                Spacer(modifier = Modifier.weight(1f).padding(2.dp, 0.dp))
+            }
         }
 
     }

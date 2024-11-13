@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -127,6 +129,7 @@ fun PlayerItem(
     onSave: (String, String) -> Unit,
     isLast: Boolean = false
 ){
+    val focusManager = LocalFocusManager.current
     val userName = remember { mutableStateOf(player.name) }
     userName.value = player.name
     val color = remember { mutableStateOf(player.color) }
@@ -147,6 +150,11 @@ fun PlayerItem(
                 imeAction = if(isLast) ImeAction.Done else ImeAction.Next,
                 keyboardType = KeyboardType.Text,
             ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                }
+            ),
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .fillMaxHeight()
@@ -163,6 +171,7 @@ fun PlayerItem(
             },
             placeholder = { Text(stringResource(R.string.player)) },
             colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.background,
                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
             )
         )

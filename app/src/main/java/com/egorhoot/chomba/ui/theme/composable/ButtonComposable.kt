@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -71,18 +72,19 @@ fun BasicTextButton(
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
     ),
     elevation: Int = 4,
+    isEnabled: Boolean = true
 ) {
     Button(
         onClick = action,
         modifier = modifier,
         shape = MaterialTheme.shapes.extraLarge,
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = elevation.dp,
-            pressedElevation = 0.dp,
-            disabledElevation = 0.dp
-        )
-            ,
-        colors = colors
+//        elevation = ButtonDefaults.buttonElevation(
+//            defaultElevation = elevation.dp,
+//            pressedElevation = 0.dp,
+//            disabledElevation = 0.dp
+//        ),
+        colors = colors,
+        enabled = isEnabled
     ) {
         Text(
             text = stringResource(text),
@@ -101,12 +103,13 @@ fun IconButton(
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
     ),
     noIcon: Boolean = false,
-    isEnabled: Boolean = true
+    isEnabled: Boolean = true,
+    shape: Shape = MaterialTheme.shapes.medium
 ) {
     Button(
         onClick = action,
         modifier = modifier,
-        shape = MaterialTheme.shapes.medium,
+        shape = shape,
         colors = colors,
         enabled = isEnabled
     ) {

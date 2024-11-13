@@ -30,6 +30,10 @@ class RoomViewModel @Inject constructor(
 
     val roomUiState = mutableStateOf(RoomUiState())
 
+    init{
+        browseRooms()
+    }
+
     private fun startProgress(){
         profileUi.value = profileUi.value.copy(inProgress = true,
             alertMsg = idConverter.getString(profileUi.value.saveMsg))
@@ -70,7 +74,12 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun joinRoom(code: String){
+    fun joinRoom(){
+        val code = roomUiState.value.roomCode
+        if(onLineGameUiState.value.rooms.contains(code)){
+            startJoinRoom(code)
+            return
+        }
         viewModelScope.launch {
             startProgress()
             showAlert(profileUi, R.string.getting_rooms, idConverter.getString(profileUi.value.saveMsg),
@@ -90,10 +99,10 @@ class RoomViewModel @Inject constructor(
         }
     }
 
-    fun startJoinRoom(code: String){
+    private fun startJoinRoom(code: String){
         viewModelScope.launch {
             startProgress()
-            showAlert(profileUi, R.string.joining_room, idConverter.getString(profileUi.value.saveMsg),
+            showAlert(profileUi, R.string.joining_room, idConverter.getString(R.string.in_progress),
                 {
                     dismissAlert(profileUi)
                 },
@@ -121,6 +130,7 @@ class RoomViewModel @Inject constructor(
                     dismissAlert(profileUi)
                 },
                 {
+                    stopProgress()
                     dismissAlert(profileUi)
                 }
             )
@@ -138,6 +148,22 @@ class RoomViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun browseRooms(){
+        viewModelScope.launch {
+            startProgress()
+            onLineGameRepo.getAvailableRooms(onLineGameUiState, profileUi){
+                stopProgress()
+//                if(profileUi.value.isSuccess){
+//                    setRoomPage(3)
+//                }
+            }
+        }
+    }
+
+    fun onRoomCodeChanged(code: String){
+        roomUiState.value = roomUiState.value.copy(roomCode = code)
     }
 
 }

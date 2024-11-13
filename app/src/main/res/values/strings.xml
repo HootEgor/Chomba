@@ -74,7 +74,7 @@
     <string name="confirm_button">Ok</string>
     <string name="request_permission_audio_title">Microphone permission required</string>
     <string name="online_game">Online game</string>
-    <string name="create_room">Create room</string>
+    <string name="create_room">Create</string>
     <string name="join_room">Join by code</string>
     <string name="room_created">Room created</string>
     <string name="room_code">room code</string>
