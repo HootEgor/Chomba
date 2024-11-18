@@ -1,6 +1,8 @@
 package com.egorhoot.chomba.pages.onlinegame
 
 import android.net.Uri
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,11 +23,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -80,7 +87,10 @@ fun OnLineGame(
                 BasicTextButton(text = R.string.leave,
                     modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
                     action = { leaveGame()})
-                Spacer(modifier = Modifier.weight(1f).padding(2.dp, 0.dp))
+                BasicTextButton(text = if(viewModel.isOwner()) R.string.start else R.string.ready,
+                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
+                    action = { viewModel.readyToPlay()},
+                    isEnabled = if(viewModel.isOwner()) viewModel.isNonOwnerReady() else true)
             }
         }
 
@@ -127,6 +137,14 @@ fun UserPreview(
                 maxLines = 1,
                 modifier = modifier.weight(1f)
             )
+            //ready text with icon at the end of row
+            if (user.ready) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.baseline_check_24),
+                    contentDescription = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
 
         }
     }

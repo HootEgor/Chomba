@@ -94,4 +94,5 @@
     <string name="browse_rooms">Browse rooms</string>
     <string name="back">Back</string>
     <string name="refresh">Refresh</string>
+    <string name="ready">Ready</string>
 </resources>

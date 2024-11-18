@@ -68,6 +68,7 @@ class RoomViewModel @Inject constructor(
             ) {
                 stopProgress()
                 if(profileUi.value.isSuccess){
+                    onLineGameUiState.value = onLineGameUiState.value.copy(topBarText = onLineGameUiState.value.game.room.id)
                     setRoomPage(1)
                 }
             }
@@ -113,6 +114,7 @@ class RoomViewModel @Inject constructor(
             onLineGameRepo.joinRoom(code, onLineGameUiState, profileUi){
                 stopProgress()
                 if(profileUi.value.isSuccess){
+                    onLineGameUiState.value = onLineGameUiState.value.copy(topBarText = onLineGameUiState.value.game.room.id)
                     setRoomPage(1)
                 }
             }

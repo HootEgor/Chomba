@@ -32,6 +32,10 @@ class OnLineGameRepositoryImpl @Inject constructor(
     private val idConverter: IdConverter
 ): OnLineGameRepository {
 
+    override fun isOwner(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean {
+        return onLineGameUiState.value.game.userList.isNotEmpty() && onLineGameUiState.value.game.userList[0].id == auth.currentUser?.uid
+    }
+
     override suspend fun createRoom(
         onLineGameUiState: MutableState<OnLineGameUiState>,
         profileUi: MutableState<ProfileScreenUiState>,
@@ -123,7 +127,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                         if (document != null) {
                             var room = document.toObject(OnLineGameUiState::class.java)
                             if (room != null) {
-                                if (!room.game.isFull()) {
+                                if (!room.game.isFull() || room.game.userList.find { it.id == gameUser.id } != null){
                                     if(room.game.userList.find { it.id == gameUser.id } == null){
                                         val userList = room.game.userList.toMutableList()
                                         userList.add(gameUser)
@@ -132,28 +136,39 @@ class OnLineGameRepositoryImpl @Inject constructor(
                                                 userList = userList
                                             )
                                         )
+
+                                        db.collection("rooms")
+                                            .document(code)
+                                            .set(room)
+                                            .addOnSuccessListener {
+                                                onLineGameUiState.value = onLineGameUiState.value.copy(
+                                                    game = room.game
+                                                )
+                                                profileUi.value = profileUi.value.copy(
+                                                    alertMsg = idConverter.getString(R.string.room_joined),
+                                                    isSuccess = true
+                                                )
+                                                onResult()
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.w("TAG", "Error adding document", e)
+                                                profileUi.value = profileUi.value.copy(
+                                                    alertMsg = idConverter.getString(R.string.error),
+                                                    isSuccess = false
+                                                )
+                                                onResult()
+                                            }
+                                    }else{
+                                        onLineGameUiState.value = onLineGameUiState.value.copy(
+                                            game = room.game
+                                        )
+                                        profileUi.value = profileUi.value.copy(
+                                            alertMsg = idConverter.getString(R.string.room_joined),
+                                            isSuccess = true
+                                        )
+                                        onResult()
                                     }
-                                    db.collection("rooms")
-                                        .document(code)
-                                        .set(room)
-                                        .addOnSuccessListener {
-                                            onLineGameUiState.value = onLineGameUiState.value.copy(
-                                                game = room.game
-                                            )
-                                            profileUi.value = profileUi.value.copy(
-                                                alertMsg = idConverter.getString(R.string.room_joined),
-                                                isSuccess = true
-                                            )
-                                            onResult()
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Log.w("TAG", "Error adding document", e)
-                                            profileUi.value = profileUi.value.copy(
-                                                alertMsg = idConverter.getString(R.string.error),
-                                                isSuccess = false
-                                            )
-                                            onResult()
-                                        }
+
 
                                 }else{
                                     profileUi.value = profileUi.value.copy(
@@ -286,6 +301,57 @@ class OnLineGameRepositoryImpl @Inject constructor(
                 )
                 onResult()
             }
+    }
+
+    override suspend fun readyToPlay(
+        onLineGameUiState: MutableState<OnLineGameUiState>,
+        profileUi: MutableState<ProfileScreenUiState>,
+        onResult: () -> Unit
+    ) {
+        val user = auth.currentUser
+        if (user != null) {
+            val room = onLineGameUiState.value
+            val userList = room.game.userList.map {
+                if (it.id == user.uid) {
+                    it.copy(ready = !it.ready)
+                } else {
+                    it
+                }
+            }
+            val newGame = room.game.copy(
+                userList = userList
+            )
+            val newUiState = room.copy(
+                game = newGame
+            )
+            db.collection("rooms")
+                .document(room.game.room.id)
+                .set(newUiState)
+                .addOnSuccessListener {
+                    onLineGameUiState.value = onLineGameUiState.value.copy(
+                        game = newGame
+                    )
+                    profileUi.value = profileUi.value.copy(
+                        alertMsg = idConverter.getString(R.string.ready),
+                        isSuccess = true
+                    )
+                    onResult()
+                }
+                .addOnFailureListener { e ->
+                    Log.w("TAG", "Error adding document", e)
+                    profileUi.value = profileUi.value.copy(
+                        alertMsg = idConverter.getString(R.string.error),
+                        isSuccess = false
+                    )
+                    onResult()
+                }
+        }else {
+            profileUi.value = profileUi.value.copy(
+                alertMsg = idConverter.getString(R.string.failed_you_are_not_authenticated),
+                isSuccess = false
+            )
+            onResult()
+        }
     }
 
     override suspend fun subscribeOnUpdates(

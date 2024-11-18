@@ -6,6 +6,7 @@ import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 
 interface OnLineGameRepository {
 
+    fun isOwner(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean
     suspend fun createRoom(onLineGameUiState: MutableState<OnLineGameUiState>,
                            profileUi: MutableState<ProfileScreenUiState>,
                            onResult: () -> Unit)
@@ -19,6 +20,9 @@ interface OnLineGameRepository {
     suspend fun getAvailableRooms(onLineGameUiState: MutableState<OnLineGameUiState>,
                           profileUi: MutableState<ProfileScreenUiState>,
                                   onResult: () -> Unit)
+    suspend fun readyToPlay(onLineGameUiState: MutableState<OnLineGameUiState>,
+                            profileUi: MutableState<ProfileScreenUiState>,
+                            onResult: () -> Unit)
     suspend fun subscribeOnUpdates(onLineGameUiState: MutableState<OnLineGameUiState>,
                                    profileUi: MutableState<ProfileScreenUiState>,
                                    onResult: () -> Unit)

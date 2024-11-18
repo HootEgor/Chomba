@@ -29,7 +29,6 @@ class OnLineGameViewModel @Inject constructor(
 ) : ChombaViewModel(){
 
     init {
-        onLineGameUiState.value = onLineGameUiState.value.copy(topBarText = onLineGameUiState.value.game.room.id)
         viewModelScope.launch {
             onLineGameRepo.subscribeOnUpdates(onLineGameUiState, profileUi
             ) {
@@ -64,5 +63,24 @@ class OnLineGameViewModel @Inject constructor(
             // Optionally, you might want to show a confirmation (e.g., a Toast)
             Toast.makeText(context, idConverter.getString(R.string.room_copied_to_clipboard), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    fun readyToPlay() {
+        viewModelScope.launch {
+            startProgress()
+            onLineGameRepo.readyToPlay(onLineGameUiState, profileUi
+            ) {
+                stopProgress()
+            }
+        }
+    }
+
+    fun isOwner(): Boolean {
+        return onLineGameRepo.isOwner(onLineGameUiState)
+    }
+
+    fun isNonOwnerReady(): Boolean {
+        val isOwner = isOwner()
+        return onLineGameUiState.value.game.userList.all { it.ready && !isOwner }
     }
 }
