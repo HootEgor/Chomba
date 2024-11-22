@@ -303,6 +303,8 @@ class GameViewModel @Inject constructor(
             }
         }
 
+        equalizeScores(1000, 330)
+
         val playerOnBarrel = getPlayerOnBarrel()
         if (playerOnBarrel != null){
             uiState.value = uiState.value.copy(playerOnBarrel = playerOnBarrel)
@@ -595,6 +597,18 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    private fun equalizeScores(sum: Int, equalizedScore: Int){
+        val playersScoreSum = playerList.value.sumOf { it.getTotalScore() }
+        if(playersScoreSum == sum){
+            val updatedPlayerList = playerList.value.map { existingPlayer ->
+                val score = equalizedScore - existingPlayer.getTotalScore()
+                val newScore = Score(score, 1, uiState.value.round)
+                existingPlayer.copy(scoreList = (existingPlayer.scoreList + newScore),
+                    scorePerRound = 0)
+            }
+            playerList.value = updatedPlayerList
+        }
+    }
 
 
 
