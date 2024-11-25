@@ -95,4 +95,5 @@
     <string name="back">Back</string>
     <string name="refresh">Refresh</string>
     <string name="ready">Ready</string>
+    <string name="get_players_from_last_game">Get last players</string>
 </resources>

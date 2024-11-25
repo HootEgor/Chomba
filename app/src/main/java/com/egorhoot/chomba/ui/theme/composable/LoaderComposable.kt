@@ -17,23 +17,16 @@ import com.egorhoot.chomba.ui.theme.Shapes
 
 @Composable
 fun CircleLoader(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    visible: Boolean = true
 ) {
-    Surface(
-        shape = Shapes.large,
-        color = MaterialTheme.colorScheme.background,
+    if (!visible) return
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .padding(vertical = 8.dp)
+            .padding(horizontal = 16.dp)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator()
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+        CircularProgressIndicator()
     }
 }

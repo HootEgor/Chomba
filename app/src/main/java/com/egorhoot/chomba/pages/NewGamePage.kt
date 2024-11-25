@@ -43,6 +43,7 @@ import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
+import com.egorhoot.chomba.ui.theme.composable.CircleLoader
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.TopBar
 import com.egorhoot.chomba.ui.theme.ext.basicButton
@@ -102,13 +103,20 @@ fun NewGamePage(
             }
         }
 
-        Box(
+        Column(
             modifier = modifier
                 .weight(1f)
                 .padding(horizontal = 64.dp),
-            contentAlignment = Alignment.Center
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
         ){
-            this@Column.AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3){
+            CircleLoader(visible = uiState.inProgress)
+            BasicTextButton(text = R.string.get_players_from_last_game,
+                modifier = modifier
+                    .basicButton()
+                    .padding(bottom = 4.dp),
+                action = {viewModel.getPlayersFromLastGame()})
+            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3){
                 BasicTextButton(text = R.string.start,
                     modifier = modifier
                         .basicButton()

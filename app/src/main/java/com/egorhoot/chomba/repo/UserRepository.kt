@@ -24,4 +24,5 @@ interface UserRepository {
     fun deleteGame(id: String, profileUi: MutableState<ProfileScreenUiState>)
     fun saveVoiceRecLanguage(language: Language)
     fun loadVoiceRecLanguage(profileUi: MutableState<ProfileScreenUiState>)
+    fun getPlayersFromLastGame(playerList: MutableState<List<Player>>, onResult: () -> Unit)
 }

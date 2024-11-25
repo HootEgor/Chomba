@@ -598,6 +598,9 @@ class GameViewModel @Inject constructor(
     }
 
     private fun equalizeScores(sum: Int, equalizedScore: Int){
+        if(playerList.value.find { it.getTotalScore() == sum } != null){
+            return
+        }
         val playersScoreSum = playerList.value.sumOf { it.getTotalScore() }
         if(playersScoreSum == sum){
             val updatedPlayerList = playerList.value.map { existingPlayer ->
@@ -607,6 +610,15 @@ class GameViewModel @Inject constructor(
                     scorePerRound = 0)
             }
             playerList.value = updatedPlayerList
+        }
+    }
+
+    fun getPlayersFromLastGame(){
+        viewModelScope.launch {
+            startProgressGame()
+            userRepo.getPlayersFromLastGame(playerList){
+                stopProgressGame()
+            }
         }
     }
 

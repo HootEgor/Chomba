@@ -10,6 +10,7 @@ import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.data.LanguageId
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.User
+import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.repo.UserRepository
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
@@ -245,6 +246,44 @@ class UserRepositoryImpl @Inject constructor(
                 }
                 .addOnFailureListener { exception ->
                     Log.w("dataBase", "get failed with ", exception)
+                }
+        }
+    }
+
+    override fun getPlayersFromLastGame(playerList: MutableState<List<Player>>, onResult: () -> Unit){
+        val userUid = auth.currentUser?.uid
+        if (userUid != null) {
+            db.collection("users").document(userUid)
+                .collection("gameList")
+                .orderBy("date", Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener { result ->
+                    for (document in result) {
+                        try{
+                            val gameData = document.toObject(Game::class.java)
+                            val playerL = gameData.playerList
+                            //first players is winner so we need to sort them
+                            //the order of players must be saved
+                            val winner = playerL.maxByOrNull { it.getTotalScore() }
+                            val winnerIndex = playerL.indexOf(winner)
+                            val sortedList = playerL.subList(winnerIndex, playerL.size) + playerL.subList(0, winnerIndex)
+                            //make new players with sorted names
+                            val newPlayerList = mutableListOf<Player>()
+                            for (element in sortedList){
+                                newPlayerList.add(Player(name = element.name, color = element.color))
+                            }
+                            playerList.value = newPlayerList
+                            onResult()
+                        }catch (e: Exception){
+                            Log.w("dataBase", "loadGameList:failure", e)
+                            onResult()
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("dataBase", "loadGameList:failure", exception)
+                    onResult()
                 }
         }
     }
