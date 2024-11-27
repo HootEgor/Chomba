@@ -2,6 +2,16 @@ package com.egorhoot.chomba.pages
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,15 +21,21 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,12 +48,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.egorhoot.chomba.GameViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Player
@@ -50,13 +72,13 @@ import com.egorhoot.chomba.ui.theme.ext.basicButton
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NewGamePage(
     modifier: Modifier = Modifier,
     viewModel: GameViewModel
-){
+) {
     val uiState by viewModel.uiState
     val playerList by viewModel.playerList
     Column(
@@ -72,34 +94,18 @@ fun NewGamePage(
         Box(
             modifier = modifier
                 .weight(2f)
-                .padding(horizontal = 64.dp),
+                .padding(horizontal = 32.dp),
             contentAlignment = Alignment.Center
         ){
             Column(modifier = modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.Top) {
-                LazyColumn {
-                    items(playerList) { item ->
-                        AnimatedVisibility(
-                            visible = item.visible
-                        ) {
-                            PlayerItem(
-                                player = item,
-                                onDelete = { viewModel.removePlayer(item)},
-                                onSave = { name, color ->
-                                    viewModel.updatePlayer(item, name, color.toString())
-                                },
-                                isLast = playerList.indexOf(item) == playerList.size - 1
-                            )
-                        }
-                    }
-                }
+                DraggablePlayerList(
+                    playerList = playerList,
+                    onMove = { fromIndex, toIndex -> viewModel.movePlayer(fromIndex, toIndex) },
+                    onPlayerAction = { player -> viewModel.removePlayer(player) },
+                    onSave = { player, name, color -> viewModel.updatePlayer(player ,name, color) }
+                )
 
-                AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 3){
-                BasicIconButton(text = R.string.add_player,
-                    icon = R.drawable.baseline_add_24,
-                    modifier = modifier.basicButton(),
-                    action ={ viewModel.addPlayer() })
-                }
             }
         }
 
@@ -109,24 +115,117 @@ fun NewGamePage(
                 .padding(horizontal = 64.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             CircleLoader(visible = uiState.inProgress)
-            BasicTextButton(text = R.string.get_players_from_last_game,
+            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 3) {
+                BasicIconButton(
+                    text = R.string.add_player,
+                    icon = R.drawable.baseline_add_24,
+                    modifier = modifier.basicButton(),
+                    action = { viewModel.addPlayer() }
+                )
+            }
+            BasicTextButton(
+                text = R.string.get_players_from_last_game,
                 modifier = modifier
                     .basicButton()
                     .padding(bottom = 4.dp),
-                action = {viewModel.getPlayersFromLastGame()})
-            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3){
-                BasicTextButton(text = R.string.start,
+                action = { viewModel.getPlayersFromLastGame() }
+            )
+            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3) {
+                BasicTextButton(
+                    text = R.string.start,
                     modifier = modifier
                         .basicButton()
                         .padding(bottom = 16.dp),
-                    action = {viewModel.startGame()})
+                    action = { viewModel.startGame() }
+                )
             }
-
         }
     }
 }
+
+@Composable
+fun DraggablePlayerList(
+    playerList: List<Player>,
+    onMove: (fromIndex: Int, toIndex: Int) -> Unit,
+    onPlayerAction: (Player) -> Unit,
+    onSave: (Player, String, String) -> Unit,
+    height: Int = 64
+) {
+    val draggedIndex = remember { mutableStateOf(-1) }
+    val offsetY = remember { mutableStateOf(0f) }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        userScrollEnabled = false
+    ) {
+        itemsIndexed(playerList) { index, player ->
+            val isDragging = draggedIndex.value == index
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height.dp)
+                    .border(2.dp, if (isDragging) MaterialTheme.colorScheme.tertiary else Color.Transparent)
+                    .pointerInput(Unit) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { offset ->
+                                draggedIndex.value = index
+                            },
+                            onDragEnd = {
+                                draggedIndex.value = -1
+                                offsetY.value = 0f
+                            },
+                            onDragCancel = {
+                                draggedIndex.value = -1
+                                offsetY.value = 0f
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                offsetY.value += dragAmount.y
+
+                                val newIndex = calculateNewIndex(
+                                    draggedIndex.value,
+                                    offsetY.value,
+                                    playerList.size,
+                                    height.toFloat()
+                                )
+                                if (newIndex != draggedIndex.value) {
+                                    onMove(draggedIndex.value, newIndex)
+                                    draggedIndex.value = newIndex
+                                    offsetY.value = 0f
+                                }
+                            }
+                        )
+                    }
+                    .offset {
+                        if (isDragging) {
+                            IntOffset(0, offsetY.value.roundToInt())
+                        } else {
+                            IntOffset(0, 0)
+                        }
+                    }
+            ) {
+                PlayerItem(
+                    modifier = Modifier.fillMaxSize(),
+                    player = player,
+                    onDelete = { onPlayerAction(player) },
+                    onSave = { name, color ->
+                        onSave(player, name, color)
+                    },
+                    isLast = index == playerList.size - 1
+                )
+
+            }
+        }
+    }
+}
+
+fun calculateNewIndex(currentIndex: Int, offsetY: Float, listSize: Int, height: Float): Int {
+    val newIndex = (currentIndex + (offsetY / height).toInt()).coerceIn(0, listSize - 1)
+    return newIndex
+}
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,6 +247,11 @@ fun PlayerItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Icon(
+            imageVector = ImageVector.vectorResource(R.drawable.baseline_drag_handle_24),
+            contentDescription = null,
+            modifier = Modifier.size(32.dp)
+        )
         OutlinedTextField(
             value = userName.value,
             onValueChange = { newValue ->
@@ -166,7 +270,7 @@ fun PlayerItem(
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .fillMaxHeight()
-                .padding(bottom = 8.dp),
+                .padding(vertical = 4.dp),
             singleLine = true,
             textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
             trailingIcon = {

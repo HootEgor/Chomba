@@ -101,6 +101,13 @@ class GameViewModel @Inject constructor(
         playerList.value = updatedPlayerList
     }
 
+    fun movePlayer(fromIndex: Int, toIndex: Int) {
+        val updatedList = playerList.value.toMutableList()
+        val item = updatedList.removeAt(fromIndex)
+        updatedList.add(toIndex, item)
+        playerList.value = updatedList
+    }
+
     fun saveScorePerRound(player: Player, score: Int) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
             if (existingPlayer.name == player.name) {
