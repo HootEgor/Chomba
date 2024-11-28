@@ -12,9 +12,11 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -42,7 +44,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -72,6 +77,7 @@ import com.egorhoot.chomba.ui.theme.ext.basicButton
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import kotlinx.coroutines.channels.Channel
 import kotlin.math.roundToInt
 
 @Composable
@@ -165,7 +171,6 @@ fun DraggablePlayerList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(height.dp)
-                    .border(2.dp, if (isDragging) MaterialTheme.colorScheme.tertiary else Color.Transparent)
                     .pointerInput(Unit) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = { offset ->
@@ -181,7 +186,7 @@ fun DraggablePlayerList(
                             },
                             onDrag = { change, dragAmount ->
                                 change.consume()
-                                offsetY.value += dragAmount.y
+                                offsetY.value += dragAmount.y*0.5f
 
                                 val newIndex = calculateNewIndex(
                                     draggedIndex.value,
@@ -212,7 +217,8 @@ fun DraggablePlayerList(
                     onSave = { name, color ->
                         onSave(player, name, color)
                     },
-                    isLast = index == playerList.size - 1
+                    isLast = index == playerList.size - 1,
+                    isDragging = isDragging
                 )
 
             }
@@ -234,7 +240,8 @@ fun PlayerItem(
     player: Player,
     onDelete: () -> Unit,
     onSave: (String, String) -> Unit,
-    isLast: Boolean = false
+    isLast: Boolean = false,
+    isDragging: Boolean = false
 ){
     val focusManager = LocalFocusManager.current
     val userName = remember { mutableStateOf(player.name) }
@@ -243,7 +250,9 @@ fun PlayerItem(
     color.value = player.color
 
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
+            .border(2.dp, if (isDragging) MaterialTheme.colorScheme.tertiary else Color.Transparent,
+                MaterialTheme.shapes.small),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
