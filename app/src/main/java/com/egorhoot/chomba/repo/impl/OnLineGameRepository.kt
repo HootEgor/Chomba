@@ -36,6 +36,10 @@ class OnLineGameRepositoryImpl @Inject constructor(
         return onLineGameUiState.value.game.userList.isNotEmpty() && onLineGameUiState.value.game.userList[0].id == auth.currentUser?.uid
     }
 
+    override fun isNonOwnerReady(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean {
+        return onLineGameUiState.value.game.userList.size > 1 && onLineGameUiState.value.game.userList.subList(1, onLineGameUiState.value.game.userList.size).all { it.ready }
+    }
+
     override suspend fun createRoom(
         onLineGameUiState: MutableState<OnLineGameUiState>,
         profileUi: MutableState<ProfileScreenUiState>,

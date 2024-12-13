@@ -47,8 +47,6 @@ import com.egorhoot.chomba.ui.theme.composable.TopBar
 fun OnLineGame(
     modifier: Modifier = Modifier,
     viewModel: OnLineGameViewModel = hiltViewModel(),
-    leaveGame: () -> Unit,
-    back: () -> Unit
 ) {
     val uiState = viewModel.onLineGameUiState.value
     Surface(
@@ -61,7 +59,7 @@ fun OnLineGame(
                 title = uiState.topBarText,
                 onFirstActionClick = { viewModel.homePage()},
                 secondButtonIcon = R.drawable.baseline_content_copy_24,
-                onSecondActionClick = { viewModel.copyRoomCodeToClipboard()},
+                onSecondActionClick = {},
                 secondIconEnabled = true
             )
             Column(
@@ -70,82 +68,11 @@ fun OnLineGame(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                for (user in uiState.game.userList) {
-                    UserPreview(
-                        modifier = Modifier.fillMaxWidth().padding(2.dp),
-                        user = user)
-                }
 
-            }
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                IconButton(icon = R.drawable.baseline_arrow_back_ios_24,
-                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
-                    action = { back()},
-                    shape = Shapes.extraLarge)
-                BasicTextButton(text = R.string.leave,
-                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
-                    action = { leaveGame()})
-                BasicTextButton(text = if(viewModel.isOwner()) R.string.start else R.string.ready,
-                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
-                    action = { viewModel.readyToPlay()},
-                    isEnabled = if(viewModel.isOwner()) viewModel.isNonOwnerReady() else true)
+
             }
         }
 
     }
 }
 
-@Composable
-fun UserPreview(
-    modifier: Modifier = Modifier,
-    user: User
-) {
-    Surface(
-        shape = Shapes.medium,
-        //shadowElevation = 4.dp,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Row(
-            modifier = modifier.height(56.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (user.userPicture != "") {
-                AsyncImage(
-                    model = user.userPicture.let { Uri.parse(it) },
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = user.name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                modifier = modifier.weight(1f)
-            )
-            //ready text with icon at the end of row
-            if (user.ready) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.baseline_check_24),
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-
-        }
-    }
-}

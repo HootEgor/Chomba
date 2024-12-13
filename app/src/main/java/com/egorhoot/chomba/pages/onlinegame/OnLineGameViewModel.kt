@@ -25,7 +25,6 @@ class OnLineGameViewModel @Inject constructor(
     val profileUi: MutableState<ProfileScreenUiState>,
     val onLineGameUiState: MutableState<OnLineGameUiState>,
     val pageState: MutableState<PageState>,
-    private val context: Context,
 ) : ChombaViewModel(){
 
     init {
@@ -47,40 +46,5 @@ class OnLineGameViewModel @Inject constructor(
 
     fun homePage(){
         pageState.value = pageState.value.copy(currentPage = 0)
-    }
-
-    fun copyRoomCodeToClipboard() {
-        viewModelScope.launch {
-            // Get the ClipboardManager system service
-            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-
-            // Create a ClipData with the room code
-            val clip = ClipData.newPlainText("Room Code", onLineGameUiState.value.game.room.id)
-
-            // Set the ClipData to the clipboard
-            clipboard.setPrimaryClip(clip)
-
-            // Optionally, you might want to show a confirmation (e.g., a Toast)
-            Toast.makeText(context, idConverter.getString(R.string.room_copied_to_clipboard), Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    fun readyToPlay() {
-        viewModelScope.launch {
-            startProgress()
-            onLineGameRepo.readyToPlay(onLineGameUiState, profileUi
-            ) {
-                stopProgress()
-            }
-        }
-    }
-
-    fun isOwner(): Boolean {
-        return onLineGameRepo.isOwner(onLineGameUiState)
-    }
-
-    fun isNonOwnerReady(): Boolean {
-        val isOwner = isOwner()
-        return onLineGameUiState.value.game.userList.all { it.ready && !isOwner }
     }
 }

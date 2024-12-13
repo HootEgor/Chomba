@@ -39,6 +39,10 @@ class GameViewModel @Inject constructor(
     var uiState = mutableStateOf(GameUiState())
         private set
 
+    fun isAuthorized(): Boolean {
+        return userRepo.auth.currentUser != null
+    }
+
     private fun startProgressGame(){
         uiState.value = uiState.value.copy(inProgress = true,
             saveMsg = R.string.in_progress)

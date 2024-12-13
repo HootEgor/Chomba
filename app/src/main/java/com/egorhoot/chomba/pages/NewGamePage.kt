@@ -131,13 +131,15 @@ fun NewGamePage(
                     action = { viewModel.addPlayer() }
                 )
             }
-            BasicTextButton(
-                text = R.string.get_players_from_last_game,
-                modifier = modifier
-                    .basicButton()
-                    .padding(bottom = 4.dp),
-                action = { viewModel.getPlayersFromLastGame() }
-            )
+            if (viewModel.isAuthorized()){
+                BasicTextButton(
+                    text = R.string.get_players_from_last_game,
+                    modifier = modifier
+                        .basicButton()
+                        .padding(bottom = 4.dp),
+                    action = { viewModel.getPlayersFromLastGame() }
+                )
+            }
             AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3) {
                 BasicTextButton(
                     text = R.string.start,

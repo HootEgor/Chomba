@@ -7,6 +7,7 @@ import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 interface OnLineGameRepository {
 
     fun isOwner(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean
+    fun isNonOwnerReady(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean
     suspend fun createRoom(onLineGameUiState: MutableState<OnLineGameUiState>,
                            profileUi: MutableState<ProfileScreenUiState>,
                            onResult: () -> Unit)

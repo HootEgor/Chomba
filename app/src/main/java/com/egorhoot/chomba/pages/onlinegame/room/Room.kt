@@ -1,21 +1,27 @@
 package com.egorhoot.chomba.pages.onlinegame.room
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -29,17 +35,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.egorhoot.chomba.R
+import com.egorhoot.chomba.data.User
 import com.egorhoot.chomba.pages.onlinegame.OnLineGame
 import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
+import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.TopBar
@@ -74,10 +86,13 @@ fun Room(
                 )
             }
             1 -> {
-                if(onLineGameUiState.game.room.id.isNotEmpty()){
-                    OnLineGame(modifier = modifier.fillMaxSize(),
-                        leaveGame = { viewModel.leaveGame() },
-                        back = { viewModel.setRoomPage(0) })
+                if(viewModel.isAllReady()){
+                    OnLineGame(
+                        modifier = modifier.fillMaxSize()
+                    )
+                } else if(onLineGameUiState.game.room.id.isNotEmpty()){
+                    PreGameRoom(modifier = modifier.fillMaxSize(),
+                        viewModel = viewModel)
                 }
                 else{
                     Text(stringResource(R.string.in_progress))
@@ -95,6 +110,109 @@ fun Room(
         }
     }
 
+}
+@Composable
+fun PreGameRoom(
+    modifier: Modifier = Modifier,
+    viewModel: RoomViewModel = hiltViewModel(),
+){
+    Surface(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            TopBar(
+                title = viewModel.roomCode,
+                onFirstActionClick = { viewModel.homePage()},
+                secondButtonIcon = R.drawable.baseline_content_copy_24,
+                onSecondActionClick = { viewModel.copyRoomCodeToClipboard()},
+                secondIconEnabled = true
+            )
+            Column(
+                modifier = modifier.fillMaxSize()
+                    .weight(1f),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                for (user in viewModel.game.userList) {
+                    UserPreview(
+                        modifier = Modifier.fillMaxWidth().padding(2.dp),
+                        user = user)
+                }
+
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                IconButton(icon = R.drawable.baseline_arrow_back_ios_24,
+                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
+                    action = { viewModel.leaveGame()},
+                    shape = Shapes.extraLarge)
+                BasicTextButton(text = R.string.leave,
+                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
+                    action = { viewModel.setRoomPage(0)})
+                BasicTextButton(text = if(viewModel.isOwner()) R.string.start else R.string.ready,
+                    modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
+                    action = { viewModel.readyToPlay()},
+                    isEnabled = if(viewModel.isOwner()) viewModel.isNonOwnerReady() else true)
+            }
+        }
+
+    }
+}
+
+@Composable
+fun UserPreview(
+    modifier: Modifier = Modifier,
+    user: User
+) {
+    Surface(
+        shape = Shapes.medium,
+        //shadowElevation = 4.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            modifier = modifier.height(56.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (user.userPicture != "") {
+                AsyncImage(
+                    model = user.userPicture.let { Uri.parse(it) },
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                modifier = modifier.weight(1f)
+            )
+            //ready text with icon at the end of row
+            if (user.ready) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.baseline_check_24),
+                    contentDescription = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+        }
+    }
 }
 
 @Composable
