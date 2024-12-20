@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +25,7 @@ import com.egorhoot.chomba.data.CardValue
 fun CardView(
     card: Card?,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
+    onClick: () -> Unit = {}
 ) {
     val suitModifier = Modifier
         .fillMaxWidth()
@@ -33,6 +34,7 @@ fun CardView(
     Box(
         modifier = modifier
             .border(2.dp, Color.Black, MaterialTheme.shapes.large)
+            .aspectRatio(0.7f)
             .clickable { onClick() },
     ) {
         card?.let { nonNullCard ->

@@ -40,6 +40,10 @@ class OnLineGameRepositoryImpl @Inject constructor(
         return onLineGameUiState.value.game.userList.size > 1 && onLineGameUiState.value.game.userList.subList(1, onLineGameUiState.value.game.userList.size).all { it.ready }
     }
 
+    override fun getThatUserName(): String {
+        return auth.currentUser?.displayName ?: ""
+    }
+
     override suspend fun createRoom(
         onLineGameUiState: MutableState<OnLineGameUiState>,
         profileUi: MutableState<ProfileScreenUiState>,
@@ -262,7 +266,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
         }
     }
 
-     fun deleteRoom(
+     private fun deleteRoom(
         code: String)
     {
         db.collection("rooms")
@@ -382,6 +386,32 @@ class OnLineGameRepositoryImpl @Inject constructor(
                 } else {
                     Log.d("TAG", "Current data: null")
                 }
+            }
+    }
+
+    override suspend fun updateGame(
+        onLineGameUiState: MutableState<OnLineGameUiState>,
+        profileUi: MutableState<ProfileScreenUiState>,
+        onResult: () -> Unit
+    ) {
+        //just save onLineGameUiState to db
+        db.collection("rooms")
+            .document(onLineGameUiState.value.game.room.id)
+            .set(onLineGameUiState.value)
+            .addOnSuccessListener {
+                profileUi.value = profileUi.value.copy(
+                    alertMsg = idConverter.getString(R.string.game_saved),
+                    isSuccess = true
+                )
+                onResult()
+            }
+            .addOnFailureListener { e ->
+                Log.w("TAG", "Error adding document", e)
+                profileUi.value = profileUi.value.copy(
+                    alertMsg = idConverter.getString(R.string.error),
+                    isSuccess = false
+                )
+                onResult()
             }
     }
 

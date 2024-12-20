@@ -8,6 +8,7 @@ interface OnLineGameRepository {
 
     fun isOwner(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean
     fun isNonOwnerReady(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean
+    fun getThatUserName(): String
     suspend fun createRoom(onLineGameUiState: MutableState<OnLineGameUiState>,
                            profileUi: MutableState<ProfileScreenUiState>,
                            onResult: () -> Unit)
@@ -27,4 +28,7 @@ interface OnLineGameRepository {
     suspend fun subscribeOnUpdates(onLineGameUiState: MutableState<OnLineGameUiState>,
                                    profileUi: MutableState<ProfileScreenUiState>,
                                    onResult: () -> Unit)
+    suspend fun updateGame(onLineGameUiState: MutableState<OnLineGameUiState>,
+                           profileUi: MutableState<ProfileScreenUiState>,
+                           onResult: () -> Unit)
 }

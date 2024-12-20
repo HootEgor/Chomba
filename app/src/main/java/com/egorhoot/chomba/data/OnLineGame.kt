@@ -6,6 +6,9 @@ data class OnLineGame (
     val room: Room = Room(),
     val userList: List<User> = listOf(),
     val game: Game = Game(),
+    val pricup: List<Card> = listOf(),
+    val isBindingEnd: Boolean = false,
+    val currentActionPlayer: String = "",
 )
 
 fun OnLineGame.isFinished(): Boolean {

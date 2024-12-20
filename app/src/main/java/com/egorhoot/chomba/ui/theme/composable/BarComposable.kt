@@ -1,5 +1,6 @@
 package com.egorhoot.chomba.ui.theme.composable
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,7 @@ fun TopBar(
     onFirstActionClick: () -> Unit = {},
     secondButtonIcon: Int = R.drawable.baseline_save_24,
     onSecondActionClick: () -> Unit = {},
+    titleClickAction: () -> Unit = {},
     secondIconEnabled: Boolean = false,
     isMenuExpanded: Boolean = false,
     menu: @Composable () -> Unit = {}
@@ -49,6 +51,10 @@ fun TopBar(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
+                    modifier = Modifier
+                        .clickable {
+                            titleClickAction()
+                        }
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 if (isMenuExpanded) {

@@ -1,5 +1,6 @@
 package com.egorhoot.chomba.data
 
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import kotlin.random.Random
 
@@ -16,6 +17,7 @@ data class Player(
     var isBot: Boolean = false,
     var isPass: Boolean = false,
     var takenChombas: List<CardSuit> = listOf(),
+    var userPicture: String = "",
 ){
     constructor() : this(visible = true,
         name = generateRandomName(),
@@ -27,7 +29,8 @@ data class Player(
         hand = listOf(),
         isBot = false,
         isPass = false,
-        takenChombas = listOf())
+        takenChombas = listOf(),
+        userPicture = "")
 }
 
 fun generateRandomName(): String {

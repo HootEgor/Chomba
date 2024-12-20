@@ -91,6 +91,7 @@ fun GamePage(
             onFirstActionClick = { viewModel.setCurrentPage(0) },
             secondButtonIcon = R.drawable.baseline_menu_24,
             onSecondActionClick = {isMenuExpanded.value = true},
+            titleClickAction = {viewModel.sumScoreToast()},
             secondIconEnabled = true,
             isMenuExpanded = true,
             menu = {

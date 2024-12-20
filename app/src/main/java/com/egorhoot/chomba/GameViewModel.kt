@@ -1,7 +1,9 @@
 package com.egorhoot.chomba
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -32,7 +34,8 @@ class GameViewModel @Inject constructor(
     val userRepo: UserRepository,
     private val idConverter: IdConverter,
     val profileUi: MutableState<ProfileScreenUiState>,
-    val pageState: MutableState<PageState>
+    val pageState: MutableState<PageState>,
+    private val context: Context,
 ): ChombaViewModel() {
 
     val playerList = mutableStateOf<List<Player>>(listOf())
@@ -630,6 +633,16 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    fun sumScoreToast(){
+        val sum = playerList.value.sumOf { it.getTotalScore() }
+        var sumString = sum.toString()
+        if (sum > 1000){
+            sumString += " - " + (sum - 1000)
+        }else if (sum < 1000){
+            sumString += " + " + (1000 - sum)
+        }
+        Toast.makeText(context, sumString, Toast.LENGTH_SHORT).show()
+    }
 
 
 }
