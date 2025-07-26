@@ -2,6 +2,8 @@ package com.egorhoot.chomba
 
 import android.app.Activity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
@@ -39,23 +41,11 @@ fun GameScreen(
     AppTheme(
         dynamicColor = false
     ){
-        val activity = LocalContext.current as Activity
-        val statusBarColor = MaterialTheme.colorScheme.primaryContainer
-        val useDarkIcons = statusBarColor.luminance() > 0.5f
 
-        // Apply bar color and icon appearance
-        SideEffect {
-            val window = activity.window
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-
-            WindowInsetsControllerCompat(window, window.decorView).apply {
-                isAppearanceLightStatusBars = useDarkIcons
-            }
-
-            // ✅ Avoid deprecated setter by using WindowCompat API (still uses setStatusBarColor internally, but it's wrapped properly)
-            window.statusBarColor = statusBarColor.toArgb()
-            window.navigationBarColor = statusBarColor.toArgb()
-        }
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.primaryContainer)
+        )
 
         Surface(
             modifier = Modifier.fillMaxSize().systemBarsPadding(),
