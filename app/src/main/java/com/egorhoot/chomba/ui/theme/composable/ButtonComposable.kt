@@ -78,11 +78,11 @@ fun BasicTextButton(
         onClick = action,
         modifier = modifier,
         shape = MaterialTheme.shapes.extraLarge,
-//        elevation = ButtonDefaults.buttonElevation(
-//            defaultElevation = elevation.dp,
-//            pressedElevation = 0.dp,
-//            disabledElevation = 0.dp
-//        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = elevation.dp,
+            pressedElevation = 0.dp,
+            disabledElevation = 0.dp
+        ),
         colors = colors,
         enabled = isEnabled
     ) {

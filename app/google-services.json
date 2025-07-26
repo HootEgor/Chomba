@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "356192759763",
     "project_id": "chomba-6b79f",
-    "storage_bucket": "chomba-6b79f.appspot.com"
+    "storage_bucket": "chomba-6b79f.firebasestorage.app"
   },
   "client": [
     {
@@ -14,11 +14,51 @@
       },
       "oauth_client": [
         {
+          "client_id": "356192759763-0h7j7vdfkcrsbhcjks2vu525rtc205i9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.egorhoot.chomba",
+            "certificate_hash": "a61d1b7f6f88ea6d546786e0f0294f09134beb7b"
+          }
+        },
+        {
+          "client_id": "356192759763-6u1skkhf7l6m9lmvg588l6qvu3f0vuq2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.egorhoot.chomba",
+            "certificate_hash": "6c1e32ee404b7ae42fe11048990196f5cbba7df7"
+          }
+        },
+        {
+          "client_id": "356192759763-7107cstiag0cupm1b4hhu5t9o8nertaf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.egorhoot.chomba",
+            "certificate_hash": "d98fdb1f67c515d4bffb0720cc97f14d144d5367"
+          }
+        },
+        {
           "client_id": "356192759763-i14dt765dqtg5eu5pg0rpcpj9g37076r.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.egorhoot.chomba",
             "certificate_hash": "ba28838eaece00b52055737e6c54a9a690a9101d"
+          }
+        },
+        {
+          "client_id": "356192759763-pot3fkagv9njme9rp7lgd31m1ntfth5e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.egorhoot.chomba",
+            "certificate_hash": "3235e9f7715e133548dc2db702782bbdf3a01c3c"
+          }
+        },
+        {
+          "client_id": "356192759763-u5b5cnqlf8gc1m103kj26d4v93i0hc58.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.egorhoot.chomba",
+            "certificate_hash": "cccf493c3e62cdfc9f03186a2487051eaa0aee6d"
           }
         },
         {

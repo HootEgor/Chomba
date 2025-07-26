@@ -35,5 +35,4 @@ data class ProfileScreenUiState(
     val alertMsg: String = "",
     val alertAction: () -> Unit = {},
     val alertDismiss: () -> Unit = {}
-
     )

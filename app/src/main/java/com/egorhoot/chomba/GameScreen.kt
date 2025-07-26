@@ -1,14 +1,23 @@
 package com.egorhoot.chomba
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.egorhoot.chomba.pages.HomePage
 import com.egorhoot.chomba.pages.NewGamePage
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,10 +34,31 @@ fun GameScreen(
     viewModel: GameViewModel = hiltViewModel(),
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
+
     val pageState by viewModel.pageState
-    AppTheme{
+    AppTheme(
+        dynamicColor = false
+    ){
+        val activity = LocalContext.current as Activity
+        val statusBarColor = MaterialTheme.colorScheme.primaryContainer
+        val useDarkIcons = statusBarColor.luminance() > 0.5f
+
+        // Apply bar color and icon appearance
+        SideEffect {
+            val window = activity.window
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+
+            WindowInsetsControllerCompat(window, window.decorView).apply {
+                isAppearanceLightStatusBars = useDarkIcons
+            }
+
+            // ✅ Avoid deprecated setter by using WindowCompat API (still uses setStatusBarColor internally, but it's wrapped properly)
+            window.statusBarColor = statusBarColor.toArgb()
+            window.navigationBarColor = statusBarColor.toArgb()
+        }
+
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().systemBarsPadding(),
             color = MaterialTheme.colorScheme.background
         ) {
             Image(

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.TargetBasedAnimation
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -86,6 +87,9 @@ fun CurvedLineChart(
     drawSpeed: Int = 2000,
 ) {
 
+    val isDarkTheme = isSystemInDarkTheme()
+    val backgroundColor = if (isDarkTheme) Color.Black else Color.White
+
     val drawPathAnimation = remember {
         Animatable(0f)
     }
@@ -120,7 +124,7 @@ fun CurvedLineChart(
         for (player in sortedPlayers.reversed()) {
             val color = Color(player.color.toULong())
             val gradientColors = listOf(color.copy(alpha = gradientFromAlpha), color.copy(alpha = gradientToAlpha))
-            drawCurvedLine(player, color, lineWidth, min, drawPathAnimation.value)
+            drawCurvedLine(player, color, backgroundColor, lineWidth, min, drawPathAnimation.value)
             drawGradientUnderCurve(player, gradientColors, min, drawPathAnimation.value)
         }
     }
@@ -181,7 +185,7 @@ private fun DrawScope.drawScoreLines(lineColor: Color, value: Int, thickness: Fl
     )
 }
 
-private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, lineWidth: Float, min: Int, progress: Float) {
+private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, backColor: Color, lineWidth: Float, min: Int, progress: Float) {
     if (player.scoreList.isEmpty()) return
 
     val path = Path().apply {
@@ -216,7 +220,7 @@ private fun DrawScope.drawCurvedLine(player: Player, lineColor: Color, lineWidth
 
     drawPath(
         path = animatedPath.value,
-        color = Color.White,
+        color = backColor,
         style = Stroke(
             width = lineWidth+10,
             cap = StrokeCap.Round,
