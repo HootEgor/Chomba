@@ -1,22 +1,31 @@
 package com.egorhoot.chomba.ui.theme.composable
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,15 +43,55 @@ import com.egorhoot.chomba.pages.ToggleUnderlineText
 @Composable
 fun SaveGame(
     onDismissRequest: () -> Unit,
-    msg: Int
+    msg: Int,
+    delayTimer: Float = -1.0f
 ) {
+    val progress = remember { Animatable(delayTimer) }
+
+    LaunchedEffect(delayTimer) {
+        if (delayTimer >= 0) {
+            progress.snapTo(1f)
+            progress.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(
+                    durationMillis = (delayTimer * 1000).toInt(),
+                    easing = LinearEasing
+                )
+            )
+            onDismissRequest()
+        }
+    }
+
     AlertDialog(
         onDismissRequest = {onDismissRequest()},
         title = { Text(text = stringResource(R.string.saving), style = MaterialTheme.typography.headlineSmall) },
         text = {
-            Text(text = stringResource(msg),
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center)
+            Column(
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.Start
+            ){
+                Text(text = stringResource(msg),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center)
+
+                Spacer(modifier = Modifier.size(16.dp))
+
+                if (progress.value >= 0) {
+                    LinearProgressIndicator(
+                        progress = { progress.value.coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        drawStopIndicator = {}
+                    )
+                }else{
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                }
+            }
         },
         confirmButton = {
         },

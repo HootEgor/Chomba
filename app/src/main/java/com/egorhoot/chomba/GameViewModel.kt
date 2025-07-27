@@ -604,7 +604,24 @@ class GameViewModel @Inject constructor(
         if (updated) {
             playerList.value = updatedPlayerList
             uiState.value = uiState.value.copy(round = if (uiState.value.round - 1 < 1) 1 else uiState.value.round - 1)
-            uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
+            uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex(),
+                takePlayerNameList = listOf())
+
+            equalizeScores(1000, 330)
+
+            val playerOnBarrel = getPlayerOnBarrel()
+            if (playerOnBarrel != null){
+                uiState.value = uiState.value.copy(playerOnBarrel = playerOnBarrel)
+                setDeclarer(playerOnBarrel.name, 125)
+            }
+            else{
+                uiState.value = uiState.value.copy(playerOnBarrel = null,
+                    declarer = null)
+            }
+
+            if(uiState.value.round % 3 == 0){
+                saveGame()
+            }
         }
     }
 

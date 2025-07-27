@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -139,7 +140,7 @@ fun GamePage(
                         declarer = uiState.declarer,
                         showScoreList = {viewModel.showScoreList(player, true)},
                         isDistributor = player.name == playerList[uiState.distributorIndex].name,
-                        setScorePerRound = {viewModel.setScorePerRound(player)},
+                        scoreClickAction = {setDeclarer.value = true},
                         setBlind = {viewModel.setBlind(player)}
                     )
                 }
@@ -228,8 +229,15 @@ fun GamePage(
     }
 
     if(saveAlert.value){
+        var delayTimer by remember(uiState.saveMsg) { mutableFloatStateOf(-1.0f) }
+
+        // Start the delay only when msg changes
+        LaunchedEffect(uiState.saveMsg) {
+            delayTimer = 5.0f
+        }
         SaveGame(onDismissRequest = {saveAlert.value = false},
-            msg = uiState.saveMsg)
+            msg = uiState.saveMsg,
+            delayTimer = delayTimer)
     }
 
     if(showTip.value){
@@ -514,7 +522,7 @@ fun PlayerCard(
     declarer: Player?,
     showScoreList: () -> Unit,
     isDistributor: Boolean,
-    setScorePerRound: () -> Unit,
+    scoreClickAction: () -> Unit,
     setBlind: () -> Unit
 ){
 
@@ -587,10 +595,9 @@ fun PlayerCard(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .combinedClickable(
-                                        onClick = {},
-                                        onLongClick = { setScorePerRound() }
-                                    )
+                                    .clickable {
+                                        scoreClickAction()
+                                    }
                             ) {
                                 Text(
                                     text = if (player.name == declarer?.name) player.declaration.toString() else "",
