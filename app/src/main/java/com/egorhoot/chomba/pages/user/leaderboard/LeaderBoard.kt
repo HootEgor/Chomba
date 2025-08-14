@@ -1,15 +1,13 @@
 package com.egorhoot.chomba.pages.user.leaderboard
 
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +15,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,32 +24,28 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.wear.compose.materialcore.toRadians
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.LeaderBoardPlayer
@@ -59,21 +55,25 @@ import com.egorhoot.chomba.data.getTotalGain
 import com.egorhoot.chomba.data.getTotalLoss
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.FullIconButton
-import com.egorhoot.chomba.ui.theme.composable.IconButton
+import com.egorhoot.chomba.ui.theme.composable.QRCodeImage
 import com.egorhoot.chomba.ui.theme.composable.ResizableText
-import com.egorhoot.chomba.ui.theme.composable.animatedBorder
 import com.egorhoot.chomba.ui.theme.composable.suitIcon
 import kotlinx.coroutines.delay
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.random.Random
 
 @Composable
 fun LeaderBoard(
     modifier: Modifier = Modifier,
-    viewModel: LeaderBoardViewModel,
+    viewModel: LeaderBoardViewModel = hiltViewModel(),
     ) {
     val uiState by viewModel.uiState
+
+    LaunchedEffect(Unit) {
+        viewModel.getLeaderBoardPlayers()
+    }
+
+    val color = MaterialTheme.colorScheme.onTertiaryContainer
+    val backColor = MaterialTheme.colorScheme.tertiaryContainer
+
     Column(
         modifier = modifier.fillMaxSize(),
     ) {
@@ -136,9 +136,16 @@ fun LeaderBoard(
             items(uiState.players) {
                     item ->
                 LeaderBoardItem(
-                player = item,
-                position = uiState.players.indexOf(item) + 1
-            )
+                    player = item,
+                    position = uiState.players.indexOf(item) + 1,
+                    generateQrCode = {
+                        viewModel.getUserQRCode(
+                            item.userId,
+                            256,
+                            color,
+                            backColor)
+                    }
+                )
             }
         }
     }
@@ -148,9 +155,11 @@ fun LeaderBoard(
 fun LeaderBoardItem(
     modifier: Modifier = Modifier,
     player: LeaderBoardPlayer,
-    position: Int
-    ) {
+    position: Int,
+    generateQrCode: () -> Bitmap
+) {
     val expanded = remember {mutableStateOf(false)}
+    val showQrCode = remember {mutableStateOf(false)}
 
     val currentColor = remember { mutableStateOf(player.colors[0]) }
 
@@ -164,18 +173,17 @@ fun LeaderBoardItem(
     }
 
     val animatedColor = animateColorAsState(
-        targetValue = currentColor.value.copy(alpha = targetAlpha.value),
+        targetValue = Color(currentColor.value.toULong()).copy(alpha = targetAlpha.value),
         animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
         label = "animatedColor"
     )
 
     LaunchedEffect(player) {
         while (true) {
-            currentColor.value = player.colors.random().copy(alpha = targetAlpha.value)
+            currentColor.value = player.colors.random()
             delay(1000L)
         }
     }
-
 
     Surface(
         modifier = modifier
@@ -199,7 +207,8 @@ fun LeaderBoardItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(modifier = modifier.weight(1f),
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
                 ){
                     Text(
                         text = position.toString(),
@@ -210,9 +219,20 @@ fun LeaderBoardItem(
                     ResizableText(
                         text = player.name,
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = modifier.fillMaxWidth(),
+                        modifier = modifier.fillMaxWidth(0.6f),
                         contentAlignment = Alignment.CenterStart
                     )
+
+                    if (player.userId.length < 25){
+                        Image(
+                            painter = painterResource(R.drawable.outline_qr_code_scanner_24),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxHeight(0.35f).clickable {
+                                showQrCode.value = true
+                            },
+                        )
+                    }
+
                 }
 
                 AnimatedVisibility(visible = !expanded.value,
@@ -323,19 +343,46 @@ fun LeaderBoardItem(
             }
         }
     }
+
+    if (showQrCode.value){
+        ShowQrCodeAlert(
+            action = {showQrCode.value = false},
+            qrCode = generateQrCode()
+        )
+    }
 }
 
-@Preview
 @Composable
-fun LeaderBoardPreview() {
-    val player = LeaderBoardPlayer(
-        name = "Player",
-        wins = 1,
-        totalScore = 1000,
-        winStreak = 1,
-        totalChombas = 1,
-        soreList = emptyList(),
-        colors = listOf(Color.Red, Color.Blue, Color.Green)
+fun ShowQrCodeAlert(
+    action: () -> Unit,
+    qrCode: Bitmap
+) {
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+        onDismissRequest = action,
+//        title = { Text(text = stringResource(uiState.alertTitle), style = MaterialTheme.typography.headlineSmall) },
+        text = {
+            QRCodeImage(
+                modifier = Modifier.fillMaxWidth().aspectRatio(1.0f),
+                qrCode = qrCode
+            )
+        },
+        confirmButton = {
+        },
     )
-    LeaderBoardItem(player = player, position = 2)
 }
+
+//@Preview
+//@Composable
+//fun LeaderBoardPreview() {
+//    val player = LeaderBoardPlayer(
+//        name = "Player",
+//        wins = 1,
+//        totalScore = 1000,
+//        winStreak = 1,
+//        totalChombas = 1,
+//        soreList = emptyList(),
+//        colors = listOf(Color.Red.toString(), Color.Blue.toString(), Color.Green.toString())
+//    )
+//    LeaderBoardItem(player = player, position = 2)
+//}

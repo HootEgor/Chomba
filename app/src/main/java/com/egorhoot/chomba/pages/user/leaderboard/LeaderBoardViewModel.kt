@@ -1,82 +1,45 @@
 package com.egorhoot.chomba.pages.user.leaderboard
 
-import android.app.Application
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
+import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.AndroidViewModel
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.set
+import androidx.lifecycle.viewModelScope
 import com.egorhoot.chomba.ChombaViewModel
-import com.egorhoot.chomba.data.Game
-import com.egorhoot.chomba.data.LeaderBoardPlayer
-import com.egorhoot.chomba.data.Player
-import com.egorhoot.chomba.data.Score
-import com.egorhoot.chomba.data.getScoreSum
-import com.egorhoot.chomba.data.getTotalChombas
-import com.egorhoot.chomba.data.getTotalScore
-import com.egorhoot.chomba.data.isFinished
-import com.egorhoot.chomba.data.isWinner
 import com.egorhoot.chomba.data.sortedByTotalChombas
 import com.egorhoot.chomba.data.sortedByTotalScore
 import com.egorhoot.chomba.data.sortedByWinStreak
 import com.egorhoot.chomba.data.sortedByWins
+import com.egorhoot.chomba.pages.user.ProfileScreenUiState
+import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.utils.Encryptor
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.common.BitMatrix
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
+@HiltViewModel
+class LeaderBoardViewModel @Inject constructor(
+    private val userRepo: UserRepository,
+    private val encryptor: Encryptor,
+    val profileUi: MutableState<ProfileScreenUiState>
+): ChombaViewModel(){
 
     var uiState = mutableStateOf(LeaderBoardUiState())
         private set
 
-    fun getLeaderBoardPlayers(gameList: List<Game>){
-        val playersName = mutableListOf<String>()
-        for (game in gameList) {
-            if(!game.isFinished())
-                continue
-            for (player in game.playerList) {
-                if(!playersName.contains(player.name)) {
-                    playersName.add(player.name)
-                }
+    suspend fun getLeaderBoardPlayers() {
+        if (userRepo.auth.currentUser != null) {
+            viewModelScope.launch {
+                val players = userRepo.getLeaderBoardPlayers(profileUi.value.relatedUserList)
+                uiState.value = uiState.value.copy(players = players.sortedByWins())
             }
         }
-
-        val players = mutableListOf<LeaderBoardPlayer>()
-        for (playerName in playersName) {
-            var wins = 0
-            var totalScore = 0
-            var winStreak = 0
-            var maxWinStreak = 0
-            var totalChombas = 0
-            val scoreList = mutableListOf<Score>()
-            val colors = mutableListOf<Color>()
-            for (game in gameList.reversed()) {
-                if(!game.isFinished())
-                    continue
-                for (player in game.playerList) {
-                    if (player.name == playerName) {
-                        totalScore += player.getTotalScore()
-                        if (game.isWinner(player)){
-                            wins += 1
-                            winStreak +=1
-                        }
-                        else{
-                            winStreak = 0
-                        }
-                        if(winStreak > maxWinStreak)
-                            maxWinStreak = winStreak
-
-                        totalChombas += player.getTotalChombas()
-
-                        for (score in player.scoreList) {
-                            scoreList.add(score)
-                        }
-                        colors.add(Color(player.color.toULong()))
-                    }
-                }
-            }
-            players.add(LeaderBoardPlayer(playerName, wins, totalScore, maxWinStreak, totalChombas, scoreList, colors))
-        }
-
-        uiState.value = uiState.value.copy(players = players.sortedByWins())
     }
 
     fun sortPlayersByWins() {
@@ -93,5 +56,9 @@ class LeaderBoardViewModel @Inject constructor(): ChombaViewModel(){
 
     fun sortPlayersByTotalChombas() {
         uiState.value = uiState.value.copy(players = uiState.value.players.sortedByTotalChombas())
+    }
+
+    fun getUserQRCode(userUid: String, size: Int, color: Color, backColor: Color): Bitmap {
+        return encryptor.getUserQRCode(userUid, size, color, backColor)
     }
 }

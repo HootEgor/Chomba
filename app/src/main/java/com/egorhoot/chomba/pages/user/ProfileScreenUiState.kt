@@ -1,23 +1,23 @@
 package com.egorhoot.chomba.pages.user
 
 import android.net.Uri
-import coil.compose.AsyncImagePainter
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
-import com.egorhoot.chomba.data.LeaderBoardPlayer
-import javax.inject.Inject
+import com.egorhoot.chomba.data.User
 
 data class ProfileScreenUiState(
     val email: String = "",
     val password: String = "",
     val repeatPassword: String = "",
     val displayName: String = "",
+    val nickname: String = "",
     val isAuthenticated: Boolean = false,
     val isAnonymous: Boolean = false,
     val userPicture: Uri? = null,
 
     val gameList: List<Game> = emptyList(),
+    val relatedUserList: List<User> = emptyList(),
 
     val currentGameIndex: String? = null,
     val currentGame: Game? = null,
@@ -34,5 +34,9 @@ data class ProfileScreenUiState(
     val alertTitle: Int = R.string.in_progress,
     val alertMsg: String = "",
     val alertAction: () -> Unit = {},
-    val alertDismiss: () -> Unit = {}
+    val alertDismiss: () -> Unit = {},
+
+    val scanQrCode: Boolean = false,
+    val cameraPermissionDenied: Boolean = false,
+    val cameraPermissionGranted: Boolean = false,
     )

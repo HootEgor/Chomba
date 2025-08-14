@@ -5,19 +5,43 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import com.egorhoot.chomba.ui.theme.AppTheme
+import androidx.compose.ui.graphics.toArgb
+import com.egorhoot.chomba.ui.theme.primaryContainerDark
+import com.egorhoot.chomba.ui.theme.primaryContainerLight
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
 
         super.onCreate(savedInstanceState)
-        setContent { GameScreen()}
+
+        setContent {
+            val isDarkTheme = isSystemInDarkTheme()
+
+            val primaryContainerLight = primaryContainerLight
+            val primaryContainerDark = primaryContainerDark
+
+            enableEdgeToEdge(
+                statusBarStyle = if (isDarkTheme) {
+                    SystemBarStyle.dark(scrim = primaryContainerDark.toArgb())
+                } else {
+                    SystemBarStyle.light(
+                        scrim = primaryContainerLight.toArgb(),
+                        darkScrim = primaryContainerLight.toArgb())
+                },
+                navigationBarStyle = if (isDarkTheme) {
+                    SystemBarStyle.dark(scrim = primaryContainerDark.toArgb())
+                } else {
+                    SystemBarStyle.light(
+                        scrim = primaryContainerLight.toArgb(),
+                        darkScrim = primaryContainerLight.toArgb())
+                }
+            )
+
+            GameScreen()
+        }
     }
 }

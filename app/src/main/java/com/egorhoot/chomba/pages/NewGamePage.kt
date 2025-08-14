@@ -36,6 +36,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +54,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -68,6 +71,9 @@ import androidx.compose.ui.zIndex
 import com.egorhoot.chomba.GameViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Player
+import com.egorhoot.chomba.data.User
+import com.egorhoot.chomba.pages.user.camera.CameraPermissionRequest
+import com.egorhoot.chomba.pages.user.camera.CameraScreen
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
 import com.egorhoot.chomba.ui.theme.composable.CircleLoader
@@ -86,7 +92,31 @@ fun NewGamePage(
     viewModel: GameViewModel
 ) {
     val uiState by viewModel.uiState
+    val profileUi by viewModel.profileUi
     val playerList by viewModel.playerList
+
+    val playerName = remember { mutableStateOf("") }
+
+    if(profileUi.scanQrCode){
+        if (!profileUi.cameraPermissionGranted) {
+            CameraPermissionRequest(
+                modifier = Modifier.padding(bottom = 16.dp),
+                permissionDenied = profileUi.cameraPermissionDenied,
+                onPermissionGranted = { viewModel.requestCamera() },
+                onPermissionDenied = { viewModel.onPermissionDenied() }
+            )
+        }
+        else{
+            CameraScreen (
+                onGetIds = { userUid ->
+                    viewModel.onRecognizeId(userUid, playerName.value)},
+                onError = viewModel::onCameraError,
+                onBack = viewModel::stopScanner)
+        }
+
+        return
+    }
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -107,9 +137,14 @@ fun NewGamePage(
                 verticalArrangement = Arrangement.Top) {
                 DraggablePlayerList(
                     playerList = playerList,
+                    viewModel = viewModel,
                     onMove = { fromIndex, toIndex -> viewModel.movePlayer(fromIndex, toIndex) },
                     onPlayerAction = { player -> viewModel.removePlayer(player) },
-                    onSave = { player, name, color -> viewModel.updatePlayer(player ,name, color) }
+                    onSave = { player, name, color -> viewModel.updatePlayer(player ,name, color) },
+                    onCameraAction = { name ->
+                        playerName.value = name
+                        viewModel.startScanner()
+                    },
                 )
 
             }
@@ -123,14 +158,14 @@ fun NewGamePage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircleLoader(visible = uiState.inProgress)
-            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 3) {
-                BasicIconButton(
-                    text = R.string.add_player,
-                    icon = R.drawable.baseline_add_24,
-                    modifier = modifier.basicButton(),
-                    action = { viewModel.addPlayer() }
-                )
-            }
+//            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 3) {
+//                BasicIconButton(
+//                    text = R.string.add_player,
+//                    icon = R.drawable.baseline_add_24,
+//                    modifier = modifier.basicButton(),
+//                    action = { viewModel.addPlayer() }
+//                )
+//            }
             if (viewModel.isAuthorized()){
                 BasicTextButton(
                     text = R.string.get_players_from_last_game,
@@ -156,10 +191,12 @@ fun NewGamePage(
 @Composable
 fun DraggablePlayerList(
     playerList: List<Player>,
+    viewModel: GameViewModel,
     onMove: (fromIndex: Int, toIndex: Int) -> Unit,
     onPlayerAction: (Player) -> Unit,
     onSave: (Player, String, String) -> Unit,
-    height: Int = 64
+    height: Int = 64,
+    onCameraAction: (String) -> Unit = {}
 ) {
     val draggedIndex = remember { mutableStateOf(-1) }
     val offsetY = remember { mutableStateOf(0f) }
@@ -167,8 +204,8 @@ fun DraggablePlayerList(
         modifier = Modifier.fillMaxSize(),
         userScrollEnabled = false
     ) {
-        itemsIndexed(playerList) { index, player ->
-            val isDragging = draggedIndex.value == index
+        itemsIndexed(playerList, key = { _, player -> player.name }) { index, player ->
+            val isDragging = draggedIndex.value == playerList.indexOf(player) //index
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -214,13 +251,17 @@ fun DraggablePlayerList(
             ) {
                 PlayerItem(
                     modifier = Modifier.fillMaxSize(),
+                    viewModel = viewModel,
                     player = player,
                     onDelete = { onPlayerAction(player) },
                     onSave = { name, color ->
                         onSave(player, name, color)
                     },
                     isLast = index == playerList.size - 1,
-                    isDragging = isDragging
+                    isDragging = isDragging,
+                    onCameraAction = { playerName ->
+                        onCameraAction(playerName)
+                    }
                 )
 
             }
@@ -235,26 +276,34 @@ fun calculateNewIndex(currentIndex: Int, offsetY: Float, listSize: Int, height: 
 
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerItem(
     modifier: Modifier = Modifier,
+    viewModel: GameViewModel,
     player: Player,
     onDelete: () -> Unit,
     onSave: (String, String) -> Unit,
     isLast: Boolean = false,
-    isDragging: Boolean = false
-){
+    isDragging: Boolean = false,
+    onCameraAction: (String) -> Unit = {}
+) {
     val focusManager = LocalFocusManager.current
     val userName = remember { mutableStateOf(player.name) }
-    userName.value = player.name
     val color = remember { mutableStateOf(player.color) }
-    color.value = player.color
+    val isEditing = remember { mutableStateOf(false) }
+    val expanded = remember { mutableStateOf(false) }
+    val availableUsers = viewModel.getAvailableUsersToSelect(player.userId ?: "") + User()
 
     Row(
-        modifier = modifier.fillMaxWidth()
-            .border(2.dp, if (isDragging) MaterialTheme.colorScheme.tertiary else Color.Transparent,
-                MaterialTheme.shapes.small),
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                2.dp,
+                if (isDragging) MaterialTheme.colorScheme.tertiary else Color.Transparent,
+                MaterialTheme.shapes.small
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -263,49 +312,104 @@ fun PlayerItem(
             contentDescription = null,
             modifier = Modifier.size(32.dp)
         )
-        OutlinedTextField(
-            value = userName.value,
-            onValueChange = { newValue ->
-                userName.value = newValue
-                onSave(userName.value, color.value)
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = if(isLast) ImeAction.Done else ImeAction.Next,
-                keyboardType = KeyboardType.Text,
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    focusManager.clearFocus()
-                }
-            ),
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth(0.7f)
-                .fillMaxHeight()
-                .padding(vertical = 4.dp),
-            singleLine = true,
-            textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
-            trailingIcon = {
-                ColorPickerButton(
-                    startColor = Color(color.value.toULong()),
-                    onColorSelected = {
-                        color.value = it.value.toString()},
-                    saveColor = { onSave(userName.value, color.value)}
+                .padding(vertical = 4.dp)
+        ) {
+            if (isEditing.value) {
+                // Editable TextField when long-clicked
+                OutlinedTextField(
+                    value = userName.value,
+                    onValueChange = {
+                        userName.value = it
+                        onSave(userName.value, color.value)
+                    },
+                    singleLine = true,
+                    textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            isEditing.value = false
+                            focusManager.clearFocus()
+                        }
+                    ),
+                    trailingIcon = {
+                        ColorPickerButton(
+                            startColor = Color(color.value.toULong()),
+                            onColorSelected = { color.value = it.value.toString() },
+                            saveColor = { onSave(userName.value, color.value) }
+                        )
+                    },
+                    placeholder = { Text(stringResource(R.string.player)) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.background,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                    )
                 )
-            },
-            placeholder = { Text(stringResource(R.string.player)) },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.background,
-                unfocusedContainerColor = MaterialTheme.colorScheme.background,
-            )
-        )
+            } else {
+                // Clickable Text with Dropdown
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(MaterialTheme.shapes.small)
+                        .clickable { expanded.value = true }
+                        .combinedClickable(
+                            onClick = { expanded.value = true },
+                            onLongClick = {
+                                if (player.userId.isBlank()){
+                                    isEditing.value = true
+                                }
+                            }
+                        )
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = userName.value.ifBlank { stringResource(R.string.player) },
+                        style = TextStyle(color = MaterialTheme.colorScheme.onBackground)
+                    )
+                    ColorPickerButton(
+                        startColor = Color(color.value.toULong()),
+                        onColorSelected = { color.value = it.value.toString() },
+                        saveColor = { onSave(userName.value, color.value) }
+                    )
+                }
 
-        IconButton(icon = R.drawable.baseline_delete_24,
+                DropdownMenu(
+                    modifier = Modifier.background(MaterialTheme.colorScheme.background),
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false }
+                ) {
+                    availableUsers.forEach { user ->
+                        DropdownMenuItem(
+                            modifier = Modifier.background(if (user.id.isBlank()) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.background),
+                            text = { Text(user.nickname) },
+                            onClick = {
+                                viewModel.setPlayerFromUser(user, player.name)
+                                userName.value = user.nickname
+                                expanded.value = false
+                                onSave(user.nickname, color.value)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        IconButton(icon = R.drawable.baseline_camera_24,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
-            action = { onDelete() })
+            action = {onCameraAction(player.name)})
     }
 }
+
 
 @Composable
 fun ColorPickerButton(

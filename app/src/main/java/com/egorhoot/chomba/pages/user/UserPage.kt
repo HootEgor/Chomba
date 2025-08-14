@@ -112,8 +112,7 @@ fun UserProfile(
             )
             2 -> LeaderBoard(
                 modifier = modifier
-                    .weight(1f),
-                viewModel = viewModel.leaderBoardViewModel
+                    .weight(1f)
             )
             3 -> EditGameScreen(
                 modifier = modifier,
@@ -158,7 +157,7 @@ fun BottomBar(
                 .smallButton()
                 .weight(1f),
             action = {viewModel.toggleLeaderBoard() },
-            isEnabled = uiState.currentScreen != 1
+            isEnabled = uiState.currentScreen != 1 && uiState.relatedUserList.isNotEmpty()
         )
         IconButton(
             icon = R.drawable.baseline_home_24,

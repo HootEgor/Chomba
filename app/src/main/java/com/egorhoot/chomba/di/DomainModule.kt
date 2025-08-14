@@ -6,11 +6,13 @@ import androidx.compose.runtime.mutableStateOf
 import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
+import com.egorhoot.chomba.pages.user.camera.CameraManager
+import com.egorhoot.chomba.utils.Encryptor
 import com.egorhoot.chomba.utils.IdConverter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.firestore
+import com.google.firebase.Firebase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,5 +74,19 @@ object DomainModule {
     @Singleton
     fun providesFirebaseFirestore(): FirebaseFirestore {
         return Firebase.firestore
+    }
+
+    @Provides
+    @Singleton
+    fun provideEncryptor(): Encryptor {
+        return Encryptor("3141592653589793")
+    }
+
+    @Provides
+    @Singleton
+    fun provideCameraManager(
+        @ApplicationContext context: Context
+    ): CameraManager {
+        return CameraManager(context)
     }
 }

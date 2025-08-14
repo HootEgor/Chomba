@@ -4,10 +4,10 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlin)
-    alias(libs.plugins.kotlinKapt)
     alias(libs.plugins.googleServices)
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -50,23 +50,23 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
+//    kotlinOptions {
+//        jvmTarget = "17"
+//    }
+//    composeOptions {
+//        kotlinCompilerExtensionVersion = "1.5.8"
+//    }
+//    packaging {
+//        resources {
+//            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+//        }
+//    }
 }
 
 dependencies {
@@ -98,10 +98,21 @@ dependencies {
     implementation(libs.material3.android)
     implementation(libs.ui.tooling.preview.android)
     implementation(libs.play.services.auth)
+
     //noinspection KaptUsageInsteadOfKsp
-    kapt (libs.moshi.kotlin.codegen)
+    ksp (libs.moshi.kotlin.codegen)
 
     implementation (libs.hilt.android)
-    kapt (libs.hilt.compiler)
+    ksp (libs.hilt.compiler)
     implementation(libs.hiltNavigationCompose)
+
+    implementation(libs.zxing)
+
+    //camera
+    implementation(libs.play.services.mlkit.barcode.scanning)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    //implementation(libs.androidx.camera.core)
+    implementation(libs.guava)
 }

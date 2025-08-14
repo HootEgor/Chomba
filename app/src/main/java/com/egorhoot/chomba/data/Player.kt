@@ -19,7 +19,9 @@ data class Player(
     var takenChombas: List<CardSuit> = listOf(),
     var userPicture: String = "",
 ){
-    constructor() : this(visible = true,
+    constructor() : this(
+        visible = true,
+        userId = "",
         name = generateRandomName(),
         color = generateRandomColor().toString(),
         scoreList = listOf(),

@@ -52,7 +52,7 @@
     <string name="speech_prompt">Speak now...</string>
     <string name="stop_recognition">стоп</string>
     <string name="five">пять</string>
-    <string name="speech_rec_idioma">Speech recognition language:</string>
+    <string name="speech_rec_idioma">Speech recognition language</string>
     <string name="tag_ua">uk-UA</string>
     <string name="tag_ru">ru-RU</string>
     <string name="tag_uk">en-GB</string>
@@ -97,4 +97,16 @@
     <string name="ready">Ready</string>
     <string name="get_players_from_last_game">Get last players</string>
     <string name="submit">Submit</string>
+    <string name="nickname">Nickname</string>
+    <string name="title_error">Error</string>
+    <string name="unvalid_qr_code">Invalid qr code</string>
+    <string name="request_permission_camera_message">To enhance your experience, our app needs access to your camera. Please enable camera services to continue.</string>
+    <string name="request_permission_camera_title">Camera permission required</string>
+    <string name="player_settings">Player settings</string>
+    <string name="merge_player">Merge player</string>
+    <string name="success">Success</string>
+    <string name="all_games_of">All games of</string>
+    <string name="now_your">now your</string>
+    <string name="merge_failed">Merge failed</string>
+    <string name="merging">Merging</string>
 </resources>

@@ -7,6 +7,10 @@ data class Game(
     var date: Long = 0,
     var playerList: List<Player> = listOf(),
     var uiState: GameUiState = GameUiState(),
+    val ownerId: String = "",
+    val editable: Boolean = false,
+    val playerListIds: List<String> = listOf(),
+    val process: Boolean = false,
 )
 
 fun Game.isFinished(): Boolean {

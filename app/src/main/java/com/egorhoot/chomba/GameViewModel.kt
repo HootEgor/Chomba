@@ -13,6 +13,7 @@ import com.egorhoot.chomba.ai.VoiceRecognitionViewModel
 import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
+import com.egorhoot.chomba.data.User
 import com.egorhoot.chomba.data.chombaScore
 import com.egorhoot.chomba.data.getChombaScore
 import com.egorhoot.chomba.data.getMissBarrel
@@ -21,12 +22,15 @@ import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.pages.user.ProfileViewModel
+import com.egorhoot.chomba.pages.user.camera.CameraManager
 import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.utils.Encryptor
 import com.egorhoot.chomba.utils.IdConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.collections.List
 import kotlin.math.round
 
 @HiltViewModel
@@ -35,6 +39,8 @@ class GameViewModel @Inject constructor(
     private val idConverter: IdConverter,
     val profileUi: MutableState<ProfileScreenUiState>,
     val pageState: MutableState<PageState>,
+    private val cameraManager: CameraManager,
+    private val encryptor: Encryptor,
     private val context: Context,
 ): ChombaViewModel() {
 
@@ -57,7 +63,7 @@ class GameViewModel @Inject constructor(
 
     fun newGame() {
         profileUi.value = profileUi.value.copy(currentGameIndex = null)
-        playerList.value = listOf()
+        newPlayers(3)
         uiState.value = GameUiState()
         setCurrentPage(1)
     }
@@ -76,9 +82,41 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    private fun newPlayers(quantity: Int) {
+        playerList.value = listOf()
+        val newPlayers = List(quantity) { Player() }
+        playerList.value = newPlayers
+        //make sure that all players name are unique
+        val names = playerList.value.map { it.name }
+        if (quantity != names.toSet().size) {
+            newPlayers(quantity)
+        }
+    }
+
     fun addPlayer() {
         val player = Player()
         playerList.value += player
+    }
+
+    fun getAvailableUsersToSelect(id: String): List<User> {
+        return profileUi.value.relatedUserList.filter { user ->
+            user.id != id
+        }
+    }
+
+    fun setPlayerFromUser(user: User, name: String) {
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer.name == name) {
+                existingPlayer.copy(
+                    name = user.nickname,
+                    userId = user.id,
+                    visible = true
+                )
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
     }
 
     fun getNumberOfVisiblePlayers(): Int {
@@ -502,6 +540,8 @@ class GameViewModel @Inject constructor(
         uiState.value = uiState.value.copy(winner = player)
         showAlert(profileUi, R.string.winner, "${player?.name}",
             {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+
+
     }
 
     fun startGame() {
@@ -524,6 +564,8 @@ class GameViewModel @Inject constructor(
             }
             uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
             setCurrentPage(2)
+
+            userRepo.createMissingUsers(playerList)
         }
     }
 
@@ -661,5 +703,67 @@ class GameViewModel @Inject constructor(
         Toast.makeText(context, sumString, Toast.LENGTH_SHORT).show()
     }
 
+    fun requestCamera() {
+        if (cameraManager.cameraPermissionDenied()) {
+            Log.d("PRG", "Camera: camera permission denied")
+            profileUi.value = profileUi.value.copy(
+                cameraPermissionDenied = true,
+                cameraPermissionGranted = false
+            )
+            return
+        }else if(cameraManager.cameraPermissionGranted()){
+            Log.d("PRG", "Camera: camera permission granted")
+            profileUi.value = profileUi.value.copy(
+                cameraPermissionDenied = false,
+                cameraPermissionGranted = true
+            )
+            return
+        }
+    }
+
+    fun onPermissionDenied() {
+        profileUi.value = profileUi.value.copy(
+            cameraPermissionDenied = true,
+            cameraPermissionGranted = false,
+            scanQrCode = false,
+        )
+        cameraManager.onPermissionDenied()
+    }
+
+    fun startScanner() {
+        if (uiState.value.inProgress) {
+            return
+        }
+//        onAlert(0,R.string.title_warning,R.string.not_implemented)
+        profileUi.value = profileUi.value.copy(scanQrCode = true)
+        requestCamera()
+    }
+
+    fun stopScanner() {
+        profileUi.value = profileUi.value.copy(scanQrCode = false)
+    }
+
+    fun onCameraError() {
+        profileUi.value = profileUi.value.copy(scanQrCode = false)
+        val qrMsg = idConverter.getString(R.string.unvalid_qr_code)
+        showAlert(profileUi, R.string.title_error, qrMsg,
+            {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+    }
+
+    fun onRecognizeId(userUid: String, name: String) {
+
+        val decryptedUid = encryptor.decrypt(userUid)
+
+        startProgressGame()
+        stopScanner()
+        viewModelScope.launch {
+            val user = userRepo.getUserByUid(decryptedUid){}
+
+            if (user != null) {
+                setPlayerFromUser(user, name)
+            }
+            stopProgressGame()
+        }
+    }
 
 }

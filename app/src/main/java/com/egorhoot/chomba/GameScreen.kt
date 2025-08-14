@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
@@ -42,10 +43,11 @@ fun GameScreen(
         dynamicColor = false
     ){
 
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.primaryContainer)
-        )
+
+//        Box(
+//            modifier = Modifier.fillMaxSize()
+//                .background(MaterialTheme.colorScheme.primaryContainer)
+//        )
 
         Surface(
             modifier = Modifier.fillMaxSize().systemBarsPadding(),

@@ -5,13 +5,25 @@ import androidx.compose.ui.graphics.Color
 
 data class LeaderBoardPlayer(
     val name: String,
+    val userId: String,
     val wins: Int,
     val totalScore: Int,
     val winStreak: Int,
     val totalChombas: Int,
     val soreList: List<Score>,
-    val colors : List<Color>
-)
+    val colors : List<String>
+){
+    constructor() : this(
+        name = "",
+        userId = "",
+        wins = 0,
+        totalScore = 0,
+        winStreak = 0,
+        totalChombas = 0,
+        soreList = emptyList(),
+        colors = emptyList()
+    )
+}
 
 fun List<LeaderBoardPlayer>.sortedByWins(): List<LeaderBoardPlayer> {
     return this.sortedByDescending { it.wins }

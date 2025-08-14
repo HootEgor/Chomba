@@ -1,31 +1,30 @@
 package com.egorhoot.chomba.pages.user
 
-import android.app.Application
+import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewModelScope
 import com.egorhoot.chomba.ChombaViewModel
-import com.egorhoot.chomba.GameUiState
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
-import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.data.getTotalScore
-import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.utils.Encryptor
 import com.egorhoot.chomba.utils.IdConverter
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import javax.inject.Singleton
+import androidx.core.graphics.createBitmap
+import com.egorhoot.chomba.pages.user.camera.CameraManager
 
 @HiltViewModel
 open class ProfileViewModel @Inject constructor(
     private val userRepo: UserRepository,
     val idConverter: IdConverter,
-    val leaderBoardViewModel: LeaderBoardViewModel,
+    private val encryptor: Encryptor,
+    private val cameraManager: CameraManager,
     val profileUi: MutableState<ProfileScreenUiState>
 ): ChombaViewModel() {
 
@@ -36,6 +35,7 @@ open class ProfileViewModel @Inject constructor(
                     displayName = userRepo.auth.currentUser?.displayName ?: "",
                     userPicture = userRepo.auth.currentUser?.photoUrl ?: Uri.EMPTY )
                 userRepo.loadVoiceRecLanguage(profileUi)
+                userRepo.loadGames(profileUi)
             }
         }
     }
@@ -119,7 +119,8 @@ open class ProfileViewModel @Inject constructor(
 
     fun isCurrentGameFinished(): Boolean {
         if(profileUi.value.currentGameIndex != null){
-            val game = profileUi.value.gameList.find { it.id == profileUi.value.currentGameIndex }!!
+            val game = profileUi.value.gameList.find { it.id == profileUi.value.currentGameIndex }
+            if(game == null) return false
             return isGameFinished(game)
         }
         return false
@@ -138,7 +139,6 @@ open class ProfileViewModel @Inject constructor(
             profileUi.value = profileUi.value.copy(currentScreen = 0)
         }else{
             profileUi.value = profileUi.value.copy(currentScreen = 2)
-            leaderBoardViewModel.getLeaderBoardPlayers(profileUi.value.gameList)
         }
     }
 
@@ -148,6 +148,112 @@ open class ProfileViewModel @Inject constructor(
         }else{
             setCurrentGame(profileUi.value.currentGame!!.id)
             profileUi.value = profileUi.value.copy(currentScreen = 3)
+        }
+    }
+
+    fun saveUserNickName(nickname: String){
+        if (userRepo.auth.currentUser != null) {
+            viewModelScope.launch {
+                userRepo.updateUserNickname(nickname)
+                val updatedRelatedUsers = profileUi.value.relatedUserList.map { user ->
+                    if (user.id == userRepo.auth.currentUser?.uid) user.copy(nickname = nickname) else user
+                }
+                profileUi.value = profileUi.value.copy(
+                    nickname = nickname,
+                    relatedUserList = updatedRelatedUsers)
+            }
+        }
+    }
+
+    fun getUserQRCode(color: Color, backColor: Color): Bitmap {
+        val uid = userRepo.auth.currentUser?.uid ?: return createBitmap(1, 1)
+        return encryptor.getUserQRCode(uid, 256, color, backColor)
+    }
+
+    fun requestCamera() {
+        if (cameraManager.cameraPermissionDenied()) {
+            Log.d("PRG", "Camera: camera permission denied")
+            profileUi.value = profileUi.value.copy(
+                cameraPermissionDenied = true,
+                cameraPermissionGranted = false
+            )
+            return
+        }else if(cameraManager.cameraPermissionGranted()){
+            Log.d("PRG", "Camera: camera permission granted")
+            profileUi.value = profileUi.value.copy(
+                cameraPermissionDenied = false,
+                cameraPermissionGranted = true
+            )
+            return
+        }
+    }
+
+    fun onPermissionDenied() {
+        profileUi.value = profileUi.value.copy(
+            cameraPermissionDenied = true,
+            cameraPermissionGranted = false,
+            scanQrCode = false,
+        )
+        cameraManager.onPermissionDenied()
+    }
+
+    fun startScanner() {
+        if (profileUi.value.inProgress) {
+            return
+        }
+//        onAlert(0,R.string.title_warning,R.string.not_implemented)
+        profileUi.value = profileUi.value.copy(scanQrCode = true)
+        requestCamera()
+    }
+
+    fun stopScanner() {
+        profileUi.value = profileUi.value.copy(scanQrCode = false)
+    }
+
+    fun onCameraError() {
+        profileUi.value = profileUi.value.copy(scanQrCode = false)
+        val qrMsg = idConverter.getString(R.string.unvalid_qr_code)
+        showAlert(profileUi, R.string.title_error, qrMsg,
+            {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+    }
+
+    fun onRecognizeId(userUid: String) {
+
+        val decryptedUid = encryptor.decrypt(userUid)
+
+        startProgressProfile()
+        stopScanner()
+        viewModelScope.launch {
+            var title = R.string.in_progress
+            var message = idConverter.getString(R.string.merging)
+
+            showAlert(profileUi, title, message,
+                {dismissAlert(profileUi)},
+                {dismissAlert(profileUi)})
+
+            userRepo.mergeUser(decryptedUid) {
+                success, mergedName ->
+
+                title = if (success) {
+                    R.string.success
+                } else {
+                    R.string.title_error
+                }
+
+                message = if (success) {
+                    idConverter.getString(R.string.all_games_of) + " $mergedName " +
+                            idConverter.getString(R.string.now_your)
+                } else {
+                    idConverter.getString(R.string.merge_failed)
+                }
+
+                profileUi.value = profileUi.value.copy(
+                    alertTitle = title,
+                    alertMsg = message
+                )
+            }
+            stopProgressProfile()
+
         }
     }
 }

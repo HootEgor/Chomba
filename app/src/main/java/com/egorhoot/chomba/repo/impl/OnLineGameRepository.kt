@@ -2,9 +2,7 @@ package com.egorhoot.chomba.repo.impl
 
 import android.util.Log
 import androidx.compose.runtime.MutableState
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.egorhoot.chomba.R
-import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.OnLineGame
 import com.egorhoot.chomba.data.Room
 import com.egorhoot.chomba.data.User
@@ -12,18 +10,11 @@ import com.egorhoot.chomba.data.isFull
 import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.repo.OnLineGameRepository
-import com.egorhoot.chomba.repo.UserRepository
 import com.egorhoot.chomba.utils.IdConverter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class OnLineGameRepositoryImpl @Inject constructor(

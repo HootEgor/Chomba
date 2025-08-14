@@ -1,5 +1,6 @@
 package com.egorhoot.chomba.ui.theme.composable
 
+import android.text.Editable
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -248,6 +249,9 @@ fun GameCard(
     onDelete: () -> Unit,
     onEdit: () -> Unit
 ){
+
+    val editable = game.editable
+
     Surface (
         shape = Shapes.large,
         color = MaterialTheme.colorScheme.background,
@@ -372,7 +376,7 @@ fun GameCard(
                 }
             }
 
-            AnimatedVisibility(visible = selected){
+            AnimatedVisibility(visible = selected && editable) {
                 Column {
                     IconButton(icon = R.drawable.baseline_border_color_24,
                         modifier = modifier

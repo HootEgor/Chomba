@@ -1,27 +1,21 @@
 package com.egorhoot.chomba.ai
 import android.Manifest
-import android.app.Activity
-import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.speech.RecognizerIntent
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.AndroidViewModel
 import com.egorhoot.chomba.ChombaViewModel
 import com.egorhoot.chomba.R
-import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.pages.speech.AudioUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.utils.IdConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
