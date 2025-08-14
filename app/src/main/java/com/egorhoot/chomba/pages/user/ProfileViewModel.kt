@@ -256,4 +256,8 @@ open class ProfileViewModel @Inject constructor(
 
         }
     }
+
+    fun isUserOwner(): Boolean{
+        return userRepo.auth.currentUser?.uid == profileUi.value.currentGame?.ownerId
+    }
 }

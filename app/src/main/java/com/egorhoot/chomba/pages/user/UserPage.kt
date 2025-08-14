@@ -173,7 +173,7 @@ fun BottomBar(
                 .smallButton()
                 .weight(1f),
             action = {gameViewModel.continueGame()},
-            isEnabled = uiState.currentGameIndex != null && uiState.currentScreen == 0 && !viewModel.isCurrentGameFinished()
+            isEnabled = uiState.currentGameIndex != null && uiState.currentScreen == 0 && !viewModel.isCurrentGameFinished() && viewModel.isUserOwner()
         )
 
     }

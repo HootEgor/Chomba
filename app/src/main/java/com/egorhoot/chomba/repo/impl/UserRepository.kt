@@ -813,6 +813,36 @@ class UserRepositoryImpl @Inject constructor(
         playerList.value = updatedPlayers
     }
 
+    suspend fun cleanLeaderboardDuplicates() {
+        val leaderboardRef = db.collection("leaderboard")
+
+        try {
+            val snapshot = leaderboardRef.get().await()
+
+            for (doc in snapshot.documents) {
+                val player = doc.toObject(LeaderBoardPlayer::class.java) ?: continue
+
+                val cleanedColors = player.colors.distinct()
+                val cleanedScores = player.soreList.distinct()
+
+                // Only update if something actually changed
+                if (cleanedColors != player.colors || cleanedScores != player.soreList) {
+                    leaderboardRef.document(doc.id).update(
+                        mapOf(
+                            "colors" to cleanedColors,
+                            "soreList" to cleanedScores
+                        )
+                    ).await()
+                    Log.d("cleanLeaderboard", "Cleaned duplicates for user ${doc.id}")
+                }
+            }
+
+            Log.d("cleanLeaderboard", "Finished cleaning all leaderboard entries")
+        } catch (e: Exception) {
+            Log.e("cleanLeaderboard", "Error cleaning leaderboard duplicates", e)
+        }
+    }
+
     override suspend fun mergeUser(userUid: String, onResult: (Boolean, String) -> Unit){
         val currentUserId = auth.currentUser?.uid ?: return
 
@@ -838,8 +868,8 @@ class UserRepositoryImpl @Inject constructor(
                                 totalScore = currentLb.totalScore + oldLb.totalScore,
                                 winStreak = maxOf(currentLb.winStreak, oldLb.winStreak),
                                 totalChombas = currentLb.totalChombas + oldLb.totalChombas,
-                                soreList = currentLb.soreList + oldLb.soreList,
-                                colors = currentLb.colors + oldLb.colors
+                                soreList = (currentLb.soreList + oldLb.soreList).distinct(),
+                                colors = (currentLb.colors + oldLb.colors).distinct()
                             )
                             leaderboardRef.document(currentUserId).set(mergedLb).await()
                         }
