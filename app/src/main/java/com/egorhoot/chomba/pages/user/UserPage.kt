@@ -2,15 +2,18 @@ package com.egorhoot.chomba.pages.user
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,6 +30,7 @@ import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.ext.smallButton
 import com.egorhoot.chomba.ui.theme.composable.GameCard
+import com.egorhoot.chomba.ui.theme.composable.TopBar
 import com.egorhoot.chomba.ui.theme.composable.UserNameBar
 
 @Composable
@@ -48,6 +52,7 @@ fun UserPage(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfile(
     modifier: Modifier = Modifier,
@@ -58,74 +63,101 @@ fun UserProfile(
 
     Column(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-            .padding(horizontal = 16.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween,
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceVariant),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (uiState.currentScreen!=1) {
+            Box(
+                modifier = Modifier.padding(bottom = 8.dp),
+            ){
+                TopBar(
+                    title = stringResource(uiState.title),
+                    firstIconEnabled = false
+                )
+            }
+        }
 
-        UserNameBar(
-            name = uiState.displayName,
-            picture = uiState.userPicture,
-            signOutAction = { viewModel.onSignOut() }
-        )
+        Column(
+            modifier = modifier
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(horizontal = 16.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        when(uiState.currentScreen){
-            0 -> if(uiState.gameList.isNotEmpty()){
-                Surface(
-                    shape = Shapes.medium,
-                    //shadowElevation = 4.dp,
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .weight(1f)
 
-                ) {
-                    LazyColumn(
+            when(uiState.currentScreen){
+                0 -> {
+                    Surface(
+                        shape = Shapes.medium,
+                        //shadowElevation = 4.dp,
                         modifier = modifier
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .fillMaxWidth()
+                            .weight(1f)
+
                     ) {
-                        items(uiState.gameList.size) { index ->
-                            GameCard(
+                        PullToRefreshBox(
+                            isRefreshing = uiState.inProgress,
+                            onRefresh = {viewModel.loadGames()},
+                            //modifier = modifier
+                        ) {
+                            LazyColumn(
                                 modifier = modifier
-                                    .fillMaxWidth(),
-                                game = uiState.gameList[index],
-                                onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
-                                selected = uiState.gameList[index].id == uiState.currentGameIndex,
-                                finished = viewModel.isCurrentGameFinished(),
-                                onDelete = { viewModel.onDeleteGame(uiState.gameList[index].id) },
-                                onEdit = { viewModel.toggleEditGame() }
-                            )
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                items(uiState.gameList.size) { index ->
+                                    GameCard(
+                                        modifier = modifier
+                                            .fillMaxWidth(),
+                                        game = uiState.gameList[index],
+                                        onSelect = { viewModel.setCurrentGame(uiState.gameList[index].id) },
+                                        selected = uiState.gameList[index].id == uiState.currentGameIndex,
+                                        finished = viewModel.isCurrentGameFinished(),
+                                        onDelete = { viewModel.onDeleteGame(uiState.gameList[index].id) },
+                                        onEdit = { viewModel.toggleEditGame() }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-            }else{
-                Text(
-                    text = stringResource(uiState.saveMsg),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            1 -> SettingsScreen(
-                modifier = modifier
-                    .weight(1f),
-                profileViewModel = viewModel
-            )
-            2 -> LeaderBoard(
-                modifier = modifier
-                    .weight(1f)
-            )
-            3 -> EditGameScreen(
-                modifier = modifier,
-                onBack = {viewModel.toggleEditGame()},
-            )
-        }
+                1 ->{
+                    UserNameBar(
+                        name = uiState.displayName,
+                        picture = uiState.userPicture,
+                        signOutAction = { viewModel.onSignOut() }
+                    )
 
-        if(uiState.currentScreen!=3){
-            BottomBar(
-                modifier = modifier.fillMaxWidth(),
-                gameViewModel = gameViewModel,
-                viewModel = viewModel,
-                uiState = uiState)
+                    SettingsScreen(
+                        modifier = modifier
+                            .weight(1f),
+                        profileViewModel = viewModel
+                    )
+                }
+                2 ->{
+                    LeaderBoard(
+                        modifier = modifier
+                            .weight(1f)
+                    )
+                }
+                3 ->{
+                    EditGameScreen(
+                        modifier = modifier,
+                        onBack = {viewModel.toggleEditGame()},
+                    )
+                }
+            }
+
+            if(uiState.currentScreen!=3){
+                BottomBar(
+                    modifier = modifier.fillMaxWidth(),
+                    gameViewModel = gameViewModel,
+                    viewModel = viewModel,
+                    uiState = uiState)
+            }
         }
     }
 }
@@ -149,14 +181,24 @@ fun BottomBar(
             modifier = modifier
                 .smallButton()
                 .weight(1f),
-            action = {viewModel.toggleSettings()}
+            action = {
+                viewModel.setTitle(R.string.game_list)
+                viewModel.toggleSettings()
+            }
         )
         IconButton(
             icon = if(uiState.currentScreen == 2) R.drawable.baseline_videogame_asset_24 else R.drawable.baseline_leaderboard_24,
             modifier = modifier
                 .smallButton()
                 .weight(1f),
-            action = {viewModel.toggleLeaderBoard() },
+            action = {
+                if(uiState.currentScreen == 2) {
+                    viewModel.setTitle(R.string.game_list)
+                } else {
+                    viewModel.setTitle(R.string.leader_board)
+                }
+                viewModel.toggleLeaderBoard()
+                     },
             isEnabled = uiState.currentScreen != 1 && uiState.relatedUserList.isNotEmpty()
         )
         IconButton(

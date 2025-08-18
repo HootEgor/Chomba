@@ -25,8 +25,10 @@ fun HomePage(
         TopBar(
             title = stringResource(R.string.app_name),
             firstButtonIcon = R.drawable.baseline_account_circle_24,
-            onFirstActionClick = { viewModel.setCurrentPage(3)
-                profileViewModel.loadGames()},
+            onFirstActionClick = {
+                viewModel.setCurrentPage(3)
+                //profileViewModel.loadGames()
+                                 },
         )
         Column(
             modifier = modifier.fillMaxSize(),
@@ -52,10 +54,12 @@ fun HomePage(
                 modifier = modifier.smallButton(),
                 action = {viewModel.newGame()})
 
-            BasicTextButton(text = R.string.load_games,
+            BasicTextButton(text = R.string.game_list,
                 modifier = modifier.smallButton(),
-                action = {viewModel.setCurrentPage(3)
-                    profileViewModel.loadGames()})
+                action = {
+                    viewModel.setCurrentPage(3)
+                    //profileViewModel.loadGames()
+                })
         }
     }
 

@@ -108,6 +108,11 @@ open class ProfileViewModel @Inject constructor(
 
     }
 
+    fun setTitle(title: Int){
+        profileUi.value = profileUi.value.copy(title = title)
+    }
+
+
     private fun isGameFinished(game: Game): Boolean {
         for (player in game.playerList){
             if (player.getTotalScore() == 1000){
@@ -144,9 +149,11 @@ open class ProfileViewModel @Inject constructor(
 
     fun toggleEditGame(){
         if(profileUi.value.currentScreen == 3){
+            setTitle(R.string.game_list)
             profileUi.value = profileUi.value.copy(currentScreen = 0)
         }else{
             setCurrentGame(profileUi.value.currentGame!!.id)
+            setTitle(R.string.edit_game)
             profileUi.value = profileUi.value.copy(currentScreen = 3)
         }
     }
@@ -223,38 +230,47 @@ open class ProfileViewModel @Inject constructor(
 
         startProgressProfile()
         stopScanner()
-        viewModelScope.launch {
-            var title = R.string.in_progress
-            var message = idConverter.getString(R.string.merging)
+        if (decryptedUid.length < 25){
+            viewModelScope.launch {
+                var title = R.string.in_progress
+                var message = idConverter.getString(R.string.merging)
 
-            showAlert(profileUi, title, message,
-                {dismissAlert(profileUi)},
-                {dismissAlert(profileUi)})
+                showAlert(profileUi, title, message,
+                    {dismissAlert(profileUi)},
+                    {dismissAlert(profileUi)})
 
-            userRepo.mergeUser(decryptedUid) {
-                success, mergedName ->
+                userRepo.mergeUser(decryptedUid) {
+                        success, mergedName ->
 
-                title = if (success) {
-                    R.string.success
-                } else {
-                    R.string.title_error
+                    title = if (success) {
+                        R.string.success
+                    } else {
+                        R.string.title_error
+                    }
+
+                    message = if (success) {
+                        idConverter.getString(R.string.all_games_of) + " $mergedName " +
+                                idConverter.getString(R.string.now_your)
+                    } else {
+                        idConverter.getString(R.string.merge_failed)
+                    }
+
+                    profileUi.value = profileUi.value.copy(
+                        alertTitle = title,
+                        alertMsg = message
+                    )
                 }
+                stopProgressProfile()
 
-                message = if (success) {
-                    idConverter.getString(R.string.all_games_of) + " $mergedName " +
-                            idConverter.getString(R.string.now_your)
-                } else {
-                    idConverter.getString(R.string.merge_failed)
-                }
-
-                profileUi.value = profileUi.value.copy(
-                    alertTitle = title,
-                    alertMsg = message
-                )
             }
+        }else{
+            val title = R.string.title_error
+            val message = idConverter.getString(R.string.you_cant_merge_registered_user)
+            showAlert(profileUi, title, message,
+                {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
             stopProgressProfile()
-
         }
+
     }
 
     fun isUserOwner(): Boolean{

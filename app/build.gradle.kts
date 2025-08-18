@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.egorhoot.chomba"
-    compileSdk = 35
+    compileSdk = 36
     val patch: Int
     val versionPropsFile = file("version.properties")
     if (versionPropsFile.canRead()) {
@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "com.egorhoot.chomba"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = patch
         versionName = versionN
 
@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.firebaseAuthKtx)
     implementation(libs.runtimeLivedata)
     implementation(libs.coilCompose)
+    implementation(libs.coilGif)
     implementation(libs.gson)
     implementation(libs.accompanistPermissions)
 
@@ -115,4 +116,8 @@ dependencies {
     implementation(libs.androidx.camera.view)
     //implementation(libs.androidx.camera.core)
     implementation(libs.guava)
+
+    //video player
+    implementation(libs.exoplayer)
+    implementation(libs.media3.ui)
 }

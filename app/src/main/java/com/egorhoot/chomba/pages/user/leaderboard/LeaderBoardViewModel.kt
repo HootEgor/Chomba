@@ -33,11 +33,21 @@ class LeaderBoardViewModel @Inject constructor(
     var uiState = mutableStateOf(LeaderBoardUiState())
         private set
 
-    suspend fun getLeaderBoardPlayers() {
+    fun startProgress() {
+        uiState.value = uiState.value.copy(inProgress = true)
+    }
+
+    fun stopProgress() {
+        uiState.value = uiState.value.copy(inProgress = false)
+    }
+
+    fun getLeaderBoardPlayers() {
         if (userRepo.auth.currentUser != null) {
+            startProgress()
             viewModelScope.launch {
                 val players = userRepo.getLeaderBoardPlayers(profileUi.value.relatedUserList)
                 uiState.value = uiState.value.copy(players = players.sortedByWins())
+                stopProgress()
             }
         }
     }

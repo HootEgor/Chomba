@@ -109,4 +109,9 @@
     <string name="now_your">now your</string>
     <string name="merge_failed">Merge failed</string>
     <string name="merging">Merging</string>
+    <string name="game_list">Game list</string>
+    <string name="leader_board">Leader board</string>
+    <string name="edit_game">Edit game</string>
+    <string name="you_cant_merge_registered_user">You can\'t merge registered users</string>
+    <string name="win">wins!</string>
 </resources>

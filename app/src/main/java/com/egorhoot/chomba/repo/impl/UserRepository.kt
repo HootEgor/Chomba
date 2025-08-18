@@ -201,8 +201,10 @@ class UserRepositoryImpl @Inject constructor(
                 .addOnSuccessListener { document ->
                     val existingGame = document.toObject(Game::class.java)
                     if (existingGame?.process == true) {
-                        // Update leaderboard players first
-                        updateLeaderBoardPlayersForGame(gameData)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            // Update leaderboard players first
+                            updateLeaderBoardPlayersForGame(gameData)
+                        }
 
                         // After updating leaderboard, save game with process = false
                         val finishedGame = gameData.copy(process = false)
@@ -380,14 +382,23 @@ class UserRepositoryImpl @Inject constructor(
         val gamesRef = db.collection("games")
 
         // 1️⃣ Query games where the current user is a player or owner
-        val result = gamesRef
-            .whereArrayContains("playerListIds", currentUserId) // User is a player
+        val playerQuery = gamesRef
+            .whereArrayContains("playerListIds", currentUserId)
             .orderBy("date", Query.Direction.DESCENDING)
             .get()
             .await()
 
+        val ownerQuery = gamesRef
+            .whereEqualTo("ownerId", currentUserId)
+            .orderBy("date", Query.Direction.DESCENDING)
+            .get()
+            .await()
+
+        // Merge results
+        val result = (playerQuery.documents + ownerQuery.documents).distinctBy { it.id }
+
         // 2️⃣ Map games and mark editable if owned by current user
-        val filteredGames = result.documents.mapNotNull { doc ->
+        val filteredGames = result.mapNotNull { doc ->
             doc.toObject(Game::class.java)?.copy(
                 editable = doc.getString("ownerId") == currentUserId
             )

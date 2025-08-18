@@ -51,6 +51,7 @@ import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.data.getZeroNum
 import com.egorhoot.chomba.pages.speech.VoiceRecognitionButton
+import com.egorhoot.chomba.pages.win.WinPage
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.composable.Chart
@@ -121,6 +122,23 @@ fun GamePage(
             }
         )
 
+        if(viewModel.isCurrentGameFinished()){
+            WinPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .padding(16.dp),
+                players = playerList,
+            )
+
+            BasicIconButton(text = R.string.save_and_exit,
+                icon = R.drawable.baseline_home_24,
+                modifier = Modifier.basicButton(),
+                action = {viewModel.saveGame(true)})
+
+            return@Column
+        }
+
             Column(
                 modifier = Modifier
                     .wrapContentSize()
@@ -155,13 +173,14 @@ fun GamePage(
 
 
 
-        if(viewModel.isCurrentGameFinished()){
-            BasicIconButton(text = R.string.save_and_exit,
-                icon = R.drawable.baseline_home_24,
-                modifier = Modifier.basicButton(),
-                action = {viewModel.saveGame(true)})
-        }
-        else if(uiState.declarer != null){
+//        if(viewModel.isCurrentGameFinished()){
+//            BasicIconButton(text = R.string.save_and_exit,
+//                icon = R.drawable.baseline_home_24,
+//                modifier = Modifier.basicButton(),
+//                action = {viewModel.saveGame(true)})
+//        }
+//        else
+        if(uiState.declarer != null){
             Row{
                 if(uiState.playerOnBarrel?.name != uiState.declarer?.name){
                     val visible = remember { mutableStateOf(false) }

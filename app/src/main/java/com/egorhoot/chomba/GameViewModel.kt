@@ -1,36 +1,27 @@
 package com.egorhoot.chomba
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.egorhoot.chomba.ai.VoiceRecognitionViewModel
 import com.egorhoot.chomba.data.CardSuit
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.User
-import com.egorhoot.chomba.data.chombaScore
 import com.egorhoot.chomba.data.getChombaScore
 import com.egorhoot.chomba.data.getMissBarrel
-import com.egorhoot.chomba.data.getScoreSum
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
-import com.egorhoot.chomba.pages.user.ProfileViewModel
 import com.egorhoot.chomba.pages.user.camera.CameraManager
-import com.egorhoot.chomba.pages.user.leaderboard.LeaderBoardViewModel
 import com.egorhoot.chomba.repo.UserRepository
 import com.egorhoot.chomba.utils.Encryptor
 import com.egorhoot.chomba.utils.IdConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.collections.List
 import kotlin.math.round
 
 @HiltViewModel
@@ -100,13 +91,13 @@ class GameViewModel @Inject constructor(
 
     fun getAvailableUsersToSelect(id: String): List<User> {
         return profileUi.value.relatedUserList.filter { user ->
-            user.id != id
+            user.id != id && user.id !in playerList.value.map { it.userId }
         }
     }
 
     fun setPlayerFromUser(user: User, name: String) {
         val updatedPlayerList = playerList.value.map { existingPlayer ->
-            if (existingPlayer.name == name) {
+            if (existingPlayer.name == name && user.id !in playerList.value.map { it.userId }){
                 existingPlayer.copy(
                     name = user.nickname,
                     userId = user.id,

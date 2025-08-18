@@ -35,7 +35,7 @@ fun ResizableText(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium,
+            style = style,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier

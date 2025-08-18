@@ -16,6 +16,8 @@ data class ProfileScreenUiState(
     val isAnonymous: Boolean = false,
     val userPicture: Uri? = null,
 
+    val title: Int = R.string.game_list,
+
     val gameList: List<Game> = emptyList(),
     val relatedUserList: List<User> = emptyList(),
 

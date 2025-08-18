@@ -28,11 +28,13 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +62,7 @@ import com.egorhoot.chomba.ui.theme.composable.ResizableText
 import com.egorhoot.chomba.ui.theme.composable.suitIcon
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LeaderBoard(
     modifier: Modifier = Modifier,
@@ -132,20 +135,26 @@ fun LeaderBoard(
             }
         }
 
-        LazyColumn{
-            items(uiState.players) {
-                    item ->
-                LeaderBoardItem(
-                    player = item,
-                    position = uiState.players.indexOf(item) + 1,
-                    generateQrCode = {
-                        viewModel.getUserQRCode(
-                            item.userId,
-                            256,
-                            color,
-                            backColor)
-                    }
-                )
+        PullToRefreshBox(
+            isRefreshing = uiState.inProgress,
+            onRefresh = {viewModel.getLeaderBoardPlayers()},
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            LazyColumn{
+                items(uiState.players) {
+                        item ->
+                    LeaderBoardItem(
+                        player = item,
+                        position = uiState.players.indexOf(item) + 1,
+                        generateQrCode = {
+                            viewModel.getUserQRCode(
+                                item.userId,
+                                256,
+                                color,
+                                backColor)
+                        }
+                    )
+                }
             }
         }
     }

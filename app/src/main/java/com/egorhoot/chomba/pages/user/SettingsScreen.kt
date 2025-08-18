@@ -216,6 +216,8 @@ fun PlayerSettings(
             horizontalArrangement = Arrangement.SpaceBetween
         ){
             OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth(0.7f),
                 value = userName.value,
                 label = {
                     Text(
@@ -261,7 +263,7 @@ fun PlayerSettings(
             Image(
                 painter = painterResource(R.drawable.outline_qr_code_scanner_24),
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth(0.6f).clickable {
+                modifier = Modifier.fillMaxWidth().clickable {
                     showQrCode()
                 },
             )

@@ -27,6 +27,7 @@ fun TopBar(
     secondButtonIcon: Int = R.drawable.baseline_save_24,
     onSecondActionClick: () -> Unit = {},
     titleClickAction: () -> Unit = {},
+    firstIconEnabled: Boolean = true,
     secondIconEnabled: Boolean = false,
     isMenuExpanded: Boolean = false,
     menu: @Composable () -> Unit = {}
@@ -44,7 +45,14 @@ fun TopBar(
                     modifier = Modifier
                         .fillMaxHeight()
                         .padding(2.dp),
-                    action = onFirstActionClick
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
+                    action = onFirstActionClick,
+                    isEnabled = firstIconEnabled,
+                    noIcon = !firstIconEnabled,
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
