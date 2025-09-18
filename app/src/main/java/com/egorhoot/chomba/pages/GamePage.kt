@@ -8,11 +8,26 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -25,7 +40,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,6 +72,7 @@ import com.egorhoot.chomba.data.getDissolution
 import com.egorhoot.chomba.data.getMissBarrel
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.data.getZeroNum
+import com.egorhoot.chomba.data.is555
 import com.egorhoot.chomba.pages.speech.VoiceRecognitionButton
 import com.egorhoot.chomba.pages.win.WinPage
 import com.egorhoot.chomba.ui.theme.Shapes
@@ -159,7 +182,9 @@ fun GamePage(
                         showScoreList = {viewModel.showScoreList(player, true)},
                         isDistributor = player.name == playerList[uiState.distributorIndex].name,
                         scoreClickAction = {setDeclarer.value = true},
-                        setBlind = {viewModel.setBlind(player)}
+                        setBlind = {viewModel.setBlind(player)},
+                        addEdge = { num -> viewModel.addPlayerEdge(player, num)},
+                        rotate = {angle ->  viewModel.rotatePlayer(player, angle) }
                     )
                 }
                 if(uiState.declarer == null){
@@ -542,7 +567,9 @@ fun PlayerCard(
     showScoreList: () -> Unit,
     isDistributor: Boolean,
     scoreClickAction: () -> Unit,
-    setBlind: () -> Unit
+    setBlind: () -> Unit,
+    addEdge: (Int) -> Unit,
+    rotate: (Float) -> Unit,
 ){
 
 
@@ -567,7 +594,7 @@ fun PlayerCard(
         ((player.getTotalScore() + player.declaration == 555 || player.getTotalScore() - player.declaration == 555)  && player.name == declarer?.name))
         warningColor = MaterialTheme.colorScheme.error.copy(alpha = glow)
 
-
+    val editChart = remember { mutableStateOf(false) }
 
     Surface(
         shape = Shapes.large,
@@ -773,18 +800,63 @@ fun PlayerCard(
                             .fillMaxSize(0.75f),
                         pressModifier = Modifier
                             .combinedClickable(
-                                onClick = {},
-                                onLongClick = {
+                                onClick = {
                                     showScoreList()
                                 },
+                                onLongClick = {
+                                    editChart.value = !editChart.value
+                                },
                                 onDoubleClick = { setBlind() }),
+                        numberOfSides = player.numberOfEdges,
+                        rotationAngle = player.rotationAngle,
                         value = player.getTotalScore(),
+                        is555 = player.is555(),
                         maxValue = 1000,
                         color = Color(player.color.toULong()),
                         zeroNum = if (player.getTotalScore() == 880) player.getMissBarrel() + 1
                         else 0,
                         blind = player.blind,
                     )
+
+                    if (editChart.value){
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(vertical = 18.dp, horizontal = 10.dp),
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.baseline_add_24),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.1f)
+                                    .clickable {
+                                        addEdge(1)
+                                    }
+                                    .align(Alignment.TopEnd)
+                            )
+
+                            Image(
+                                painter = painterResource(R.drawable.outline_remove_24),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.1f)
+                                    .clickable {
+                                        addEdge(-1)
+                                    }
+                                    .align(Alignment.BottomEnd)
+                            )
+
+                            Image(
+                                painter = painterResource(R.drawable.outline_rotate_right_24),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.1f)
+                                    .clickable {
+                                        rotate(-45f)
+                                    }
+                                    .align(Alignment.BottomStart)
+                            )
+                        }
+                    }
+
                 }
             }
 

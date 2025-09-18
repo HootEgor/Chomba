@@ -18,6 +18,8 @@ data class Player(
     var isPass: Boolean = false,
     var takenChombas: List<CardSuit> = listOf(),
     var userPicture: String = "",
+    val numberOfEdges: Int = 0,
+    val rotationAngle: Float = 0f
 ){
     constructor() : this(
         visible = true,
@@ -32,7 +34,9 @@ data class Player(
         isBot = false,
         isPass = false,
         takenChombas = listOf(),
-        userPicture = "")
+        userPicture = "",
+        numberOfEdges = 0,
+        rotationAngle = 0f)
 }
 
 fun generateRandomName(): String {
@@ -112,6 +116,41 @@ fun Player.getTotalScore(roundLimit: Int = -1): Int {
     }
 
     return totalScore
+}
+
+fun Player.is555(): Boolean {
+    var totalScore = 0
+    var zeroNum = 0
+    var dissolutionNum = 0
+
+    for (score in scoreList) {
+        if (totalScore == 555) {
+            totalScore = 0
+        }
+
+        when (score.type) {
+            0 -> {
+                totalScore -= score.value
+                zeroNum++
+            }
+            1, 3 -> totalScore += score.value
+            2 -> if (score.value == 120) totalScore += score.value
+            -1, -4 -> totalScore -= score.value
+            -3 -> dissolutionNum++
+        }
+
+        if (dissolutionNum == 3) {
+            dissolutionNum = 0
+            totalScore = 0
+        }
+
+        if (zeroNum == 3) {
+            zeroNum = 0
+            totalScore = 0
+        }
+    }
+
+    return totalScore == 555
 }
 
 fun Player.getScoreSum(): Int {

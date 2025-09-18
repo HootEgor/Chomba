@@ -402,7 +402,7 @@ class UserRepositoryImpl @Inject constructor(
             doc.toObject(Game::class.java)?.copy(
                 editable = doc.getString("ownerId") == currentUserId
             )
-        }
+        }.sortedByDescending { it.date }
 
         // 3️⃣ Update UI
         withContext(Dispatchers.Main) {

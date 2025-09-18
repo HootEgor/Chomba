@@ -254,6 +254,42 @@ class GameViewModel @Inject constructor(
         playerList.value = updatedPlayerList
     }
 
+    fun addPlayerEdge(player: Player, edge: Int) {
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer.name == player.name) {
+                if(existingPlayer.numberOfEdges + edge == 1) {
+                    existingPlayer.copy(numberOfEdges = 3)
+                } else if(existingPlayer.numberOfEdges + edge < 3) {
+                    existingPlayer.copy(numberOfEdges = 0)
+                } else if (existingPlayer.numberOfEdges + edge > 10) {
+                    existingPlayer.copy(numberOfEdges = 10)
+                }else{
+                    existingPlayer.copy(numberOfEdges = existingPlayer.numberOfEdges + edge)
+                }
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
+    }
+
+    fun rotatePlayer(player: Player, angle: Float) {
+        val updatedPlayerList = playerList.value.map { existingPlayer ->
+            if (existingPlayer.name == player.name) {
+                if (existingPlayer.rotationAngle + angle > 360f) {
+                    existingPlayer.copy(rotationAngle = (existingPlayer.rotationAngle + angle - 360f) % 360f)
+                } else if (existingPlayer.rotationAngle + angle < 0f) {
+                    existingPlayer.copy(rotationAngle = (existingPlayer.rotationAngle + angle + 360f) % 360f)
+                } else {
+                    existingPlayer.copy(rotationAngle = existingPlayer.rotationAngle + angle)
+                }
+            } else {
+                existingPlayer
+            }
+        }
+        playerList.value = updatedPlayerList
+    }
+
     fun getCurrentRound(): Int {
         return uiState.value.round
     }
@@ -377,7 +413,7 @@ class GameViewModel @Inject constructor(
                     score = declaration
                     type = -3
                 } else {
-                    score = declaration.div(2)
+                    score = if(declarer.blind) declaration else declaration.div(2)
                     score = (round((score / 5).toDouble()) * 5).toInt()
                     if(existingPlayer.getTotalScore() >= 880) {
                         score = 0
