@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.egorhoot.chomba.GameViewModel
@@ -32,6 +33,7 @@ import com.egorhoot.chomba.ui.theme.ext.smallButton
 import com.egorhoot.chomba.ui.theme.composable.GameCard
 import com.egorhoot.chomba.ui.theme.composable.TopBar
 import com.egorhoot.chomba.ui.theme.composable.UserNameBar
+import com.egorhoot.chomba.util.StringProvider
 
 @Composable
 fun UserPage(
@@ -60,7 +62,7 @@ fun UserProfile(
     viewModel: ProfileViewModel,
 ) {
     val uiState by viewModel.profileUi
-
+    val context = LocalContext.current
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -73,7 +75,7 @@ fun UserProfile(
                 modifier = Modifier.padding(bottom = 8.dp),
             ){
                 TopBar(
-                    title = stringResource(uiState.title),
+                    title = StringProvider(context).getString(uiState.titleKey),
                     firstIconEnabled = false
                 )
             }
@@ -182,7 +184,7 @@ fun BottomBar(
                 .smallButton()
                 .weight(1f),
             action = {
-                viewModel.setTitle(R.string.game_list)
+                viewModel.setTitleKey("game_list")
                 viewModel.toggleSettings()
             }
         )
@@ -193,9 +195,9 @@ fun BottomBar(
                 .weight(1f),
             action = {
                 if(uiState.currentScreen == 2) {
-                    viewModel.setTitle(R.string.game_list)
+                    viewModel.setTitleKey("game_list")
                 } else {
-                    viewModel.setTitle(R.string.leader_board)
+                    viewModel.setTitleKey("leader_board")
                 }
                 viewModel.toggleLeaderBoard()
                      },

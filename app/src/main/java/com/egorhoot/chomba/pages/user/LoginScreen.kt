@@ -20,11 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.egorhoot.chomba.GameViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.ui.theme.composable.IconButton
+import com.egorhoot.chomba.util.StringProvider
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
 
@@ -38,6 +38,8 @@ fun LoginScreen(
 ) {
     val email = remember { mutableStateOf("") }
     val oneTapClient: SignInClient = Identity.getSignInClient(LocalContext.current)
+
+    val stringProvider = StringProvider(LocalContext.current)
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
@@ -54,7 +56,7 @@ fun LoginScreen(
     )
 
     val onGoogleSignInClick = {
-        val apiKey = profileViewModel.idConverter.getString(R.string.default_web_client_id)
+        val apiKey = profileViewModel.stringProvider.getString("default_web_client_id")
         val request = viewModel.userRepo.getSignInRequest(apiKey)
         oneTapClient.beginSignIn(request)
             .addOnSuccessListener {
@@ -95,7 +97,7 @@ fun LoginScreen(
 //                .fillMaxWidth()
 //                .padding(8.dp),
 //            singleLine = true,
-//            placeholder = { Text(stringResource(R.string.email)) },
+//            placeholder = { Text(stringResource(stringProvider.getString(.email)) },
 //            colors = TextFieldDefaults.outlinedTextFieldColors(
 //                containerColor = MaterialTheme.colorScheme.background,
 //            ),
@@ -107,7 +109,7 @@ fun LoginScreen(
 //                onSignInEmail(email.value)
 //            },
 //        ) {
-//            Text(text = stringResource(R.string.sign_in_with_email))
+//            Text(text = stringResource(stringProvider.getString(.sign_in_with_email))
 //        }
 //
 //        Spacer(modifier = Modifier.height(16.dp))
@@ -118,7 +120,7 @@ fun LoginScreen(
                 onGoogleSignInClick()
             },
         ) {
-            Text(text = stringResource(R.string.sign_in_with_google))
+            Text(text = stringProvider.getString("sign_in_with_google"))
         }
 
         Spacer(modifier = Modifier.fillMaxHeight(0.7f))

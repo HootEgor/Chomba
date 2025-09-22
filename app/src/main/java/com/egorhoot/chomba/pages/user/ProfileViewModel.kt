@@ -1,31 +1,30 @@
 package com.egorhoot.chomba.pages.user
 
-import android.graphics.Bitmap
-import android.net.Uri
-import android.util.Log
+import android.graphics.Bitmap // Android specific, ok for app module ViewModel
+import android.net.Uri // Android specific
+import android.util.Log // Android specific
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color // Android specific Jetpack Compose
 import androidx.lifecycle.viewModelScope
 import com.egorhoot.chomba.ChombaViewModel
-import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
-import com.egorhoot.chomba.data.getTotalScore
+import com.egorhoot.chomba.data.getTotalScore // Assuming this is in shared Player/Game
 import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.util.StringProvider // Import KMP StringProvider
 import com.egorhoot.chomba.utils.Encryptor
-import com.egorhoot.chomba.utils.IdConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import androidx.core.graphics.createBitmap
+import androidx.core.graphics.createBitmap // Android specific
 import com.egorhoot.chomba.pages.user.camera.CameraManager
 
 @HiltViewModel
 open class ProfileViewModel @Inject constructor(
     private val userRepo: UserRepository,
-    val idConverter: IdConverter,
     private val encryptor: Encryptor,
     private val cameraManager: CameraManager,
-    val profileUi: MutableState<ProfileScreenUiState>
+    val profileUi: MutableState<ProfileScreenUiState>,
+    val stringProvider: StringProvider // StringProvider injected
 ): ChombaViewModel() {
 
     init {
@@ -41,8 +40,10 @@ open class ProfileViewModel @Inject constructor(
     }
 
     private fun startProgressProfile(){
-        profileUi.value = profileUi.value.copy(inProgress = true,
-            saveMsg = R.string.in_progress)
+        profileUi.value = profileUi.value.copy(
+            inProgress = true,
+            saveMsgKey = "in_progress"
+        )
     }
 
     private fun stopProgressProfile(){
@@ -57,7 +58,6 @@ open class ProfileViewModel @Inject constructor(
             profileUi.value = profileUi.value.copy(currentGameIndex = null)
             stopProgressProfile()
         }
-
     }
 
     fun signInWithGoogleToken(googleIdToken: String) {
@@ -68,27 +68,75 @@ open class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             userRepo.auth.signOut()
         }.invokeOnCompletion {
-            profileUi.value = profileUi.value.copy(isAuthenticated = false,
+            profileUi.value = profileUi.value.copy(
+                isAuthenticated = false,
                 displayName = "",
-                userPicture = Uri.EMPTY)
+                userPicture = Uri.EMPTY,
+                gameList = emptyList(),
+                relatedUserList = emptyList(),
+                currentGameIndex = null,
+                currentGame = null,
+                nickname = ""
+            )
         }
     }
 
+    private fun dismissAlert() {
+        profileUi.value = profileUi.value.copy(
+            showAlert = false,
+            alertTitleKey = "",
+            alertMsgKey = "",
+            alertMsgArgs = emptyList(),
+            resolvedAlertTitle = "", // Clear resolved string
+            resolvedAlertMessage = "" // Clear resolved string
+        )
+    }
+
+    private fun triggerAlert(
+        titleKey: String,
+        messageKey: String,
+        messageArgs: List<Any> = emptyList(),
+        onConfirm: () -> Unit,
+        onDismiss: () -> Unit = { dismissAlert() } // Default dismiss action
+    ) {
+        val resolvedTitle = if (titleKey.isNotBlank()) stringProvider.getString(titleKey) else ""
+        val resolvedMessage = if (messageKey.isNotBlank()) stringProvider.getString(messageKey, *messageArgs.toTypedArray()) else ""
+
+        profileUi.value = profileUi.value.copy(
+            showAlert = true,
+            alertTitleKey = titleKey,
+            alertMsgKey = messageKey,
+            alertMsgArgs = messageArgs,
+            resolvedAlertTitle = resolvedTitle,
+            resolvedAlertMessage = resolvedMessage,
+            alertAction = onConfirm,
+            alertDismiss = onDismiss
+        )
+    }
+
     fun onSignOut(){
-        showAlert(profileUi,R.string.sign_out, idConverter.getString(R.string.are_you_sure),
-            {signOut()
-            dismissAlert(profileUi)},
-            {dismissAlert(profileUi)})
+        triggerAlert(
+            titleKey = "sign_out",
+            messageKey = "are_you_sure",
+            onConfirm = {
+                signOut()
+                dismissAlert()
+            }
+        )
     }
 
-    fun onDeleteGame(id: String){
-        showAlert(profileUi,R.string.delete_game, idConverter.getString(R.string.are_you_sure),
-            {deleteGame(id)
-            dismissAlert(profileUi)},
-            {dismissAlert(profileUi)})
+    fun onDeleteGame(gameId: String){
+         triggerAlert(
+            titleKey = "delete_game",
+            messageKey = "are_you_sure",
+            onConfirm = {
+                deleteGameInternal(gameId)
+                dismissAlert()
+            }
+        )
     }
 
-    private fun deleteGame(id: String){
+    private fun deleteGameInternal(id: String){
         viewModelScope.launch {
             startProgressProfile()
             userRepo.deleteGame(id, profileUi)
@@ -99,62 +147,51 @@ open class ProfileViewModel @Inject constructor(
 
     fun setCurrentGame(id: String){
         if(profileUi.value.currentGameIndex == id){
-            profileUi.value = profileUi.value.copy(currentGameIndex = null)
+            profileUi.value = profileUi.value.copy(currentGameIndex = null, currentGame = null)
         }else{
-            val game = profileUi.value.gameList.find { it.id == id }!!
-            profileUi.value = profileUi.value.copy(currentGameIndex = id,
-                currentGame = game)
+            val game = profileUi.value.gameList.find { it.id == id }
+            profileUi.value = profileUi.value.copy(
+                currentGameIndex = game?.id,
+                currentGame = game
+            )
         }
-
     }
 
-    fun setTitle(title: Int){
-        profileUi.value = profileUi.value.copy(title = title)
+    fun setTitleKey(key: String){
+        profileUi.value = profileUi.value.copy(titleKey = key)
     }
-
 
     private fun isGameFinished(game: Game): Boolean {
-        for (player in game.playerList){
-            if (player.getTotalScore() == 1000){
-                return true
-            }
-        }
-        return false
+        return game.playerList.any { it.getTotalScore() == 1000 }
     }
 
     fun isCurrentGameFinished(): Boolean {
-        if(profileUi.value.currentGameIndex != null){
-            val game = profileUi.value.gameList.find { it.id == profileUi.value.currentGameIndex }
-            if(game == null) return false
-            return isGameFinished(game)
-        }
-        return false
+        val game = profileUi.value.currentGame ?: return false
+        return isGameFinished(game)
     }
 
     fun toggleSettings(){
-        if(profileUi.value.currentScreen == 1){
-            profileUi.value = profileUi.value.copy(currentScreen = 0)
-        }else{
-            profileUi.value = profileUi.value.copy(currentScreen = 1)
-        }
+        profileUi.value = profileUi.value.copy(
+            currentScreen = if(profileUi.value.currentScreen == 1) 0 else 1
+        )
     }
 
     fun toggleLeaderBoard(){
-        if(profileUi.value.currentScreen == 2){
-            profileUi.value = profileUi.value.copy(currentScreen = 0)
-        }else{
-            profileUi.value = profileUi.value.copy(currentScreen = 2)
-        }
+        profileUi.value = profileUi.value.copy(
+            currentScreen = if(profileUi.value.currentScreen == 2) 0 else 2
+        )
     }
 
     fun toggleEditGame(){
         if(profileUi.value.currentScreen == 3){
-            setTitle(R.string.game_list)
+            setTitleKey("game_list")
             profileUi.value = profileUi.value.copy(currentScreen = 0)
-        }else{
-            setCurrentGame(profileUi.value.currentGame!!.id)
-            setTitle(R.string.edit_game)
-            profileUi.value = profileUi.value.copy(currentScreen = 3)
+        } else {
+            profileUi.value.currentGame?.id?.let { gameId ->
+                setCurrentGame(gameId)
+                setTitleKey("edit_game")
+                profileUi.value = profileUi.value.copy(currentScreen = 3)
+            } ?: Log.w("ProfileViewModel", "ToggleEditGame called with null currentGame")
         }
     }
 
@@ -162,12 +199,14 @@ open class ProfileViewModel @Inject constructor(
         if (userRepo.auth.currentUser != null) {
             viewModelScope.launch {
                 userRepo.updateUserNickname(nickname)
+                val currentUid = userRepo.auth.currentUser?.uid
                 val updatedRelatedUsers = profileUi.value.relatedUserList.map { user ->
-                    if (user.id == userRepo.auth.currentUser?.uid) user.copy(nickname = nickname) else user
+                    if (user.id == currentUid) user.copy(nickname = nickname) else user
                 }
                 profileUi.value = profileUi.value.copy(
                     nickname = nickname,
-                    relatedUserList = updatedRelatedUsers)
+                    relatedUserList = updatedRelatedUsers
+                )
             }
         }
     }
@@ -179,19 +218,19 @@ open class ProfileViewModel @Inject constructor(
 
     fun requestCamera() {
         if (cameraManager.cameraPermissionDenied()) {
-            Log.d("PRG", "Camera: camera permission denied")
+            Log.d("ProfileViewModel", "Camera: camera permission denied flag is set")
             profileUi.value = profileUi.value.copy(
                 cameraPermissionDenied = true,
                 cameraPermissionGranted = false
             )
-            return
-        }else if(cameraManager.cameraPermissionGranted()){
-            Log.d("PRG", "Camera: camera permission granted")
+        } else if (cameraManager.cameraPermissionGranted()) {
+            Log.d("ProfileViewModel", "Camera: camera permission granted flag is set")
             profileUi.value = profileUi.value.copy(
                 cameraPermissionDenied = false,
                 cameraPermissionGranted = true
             )
-            return
+        } else {
+             Log.d("ProfileViewModel", "Camera: permissions neither denied nor granted explicitly by CameraManager state.")
         }
     }
 
@@ -199,16 +238,13 @@ open class ProfileViewModel @Inject constructor(
         profileUi.value = profileUi.value.copy(
             cameraPermissionDenied = true,
             cameraPermissionGranted = false,
-            scanQrCode = false,
+            scanQrCode = false
         )
         cameraManager.onPermissionDenied()
     }
 
     fun startScanner() {
-        if (profileUi.value.inProgress) {
-            return
-        }
-//        onAlert(0,R.string.title_warning,R.string.not_implemented)
+        if (profileUi.value.inProgress) return
         profileUi.value = profileUi.value.copy(scanQrCode = true)
         requestCamera()
     }
@@ -218,62 +254,66 @@ open class ProfileViewModel @Inject constructor(
     }
 
     fun onCameraError() {
-        profileUi.value = profileUi.value.copy(scanQrCode = false)
-        val qrMsg = idConverter.getString(R.string.unvalid_qr_code)
-        showAlert(profileUi, R.string.title_error, qrMsg,
-            {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+        profileUi.value = profileUi.value.copy(scanQrCode = false) // Stop scanning on error
+        triggerAlert(
+            titleKey = "title_error",
+            messageKey = "unvalid_qr_code",
+            onConfirm = { dismissAlert() }
+        )
     }
 
     fun onRecognizeId(userUid: String) {
-
         val decryptedUid = encryptor.decrypt(userUid)
 
         startProgressProfile()
         stopScanner()
-        if (decryptedUid.length < 25){
+
+        if (decryptedUid.length < 25) { // Anonymous user merge
+            // Initial alert while merging
+            triggerAlert(
+                titleKey = "in_progress",
+                messageKey = "merging",
+                onConfirm = { dismissAlert() }, // Or make it non-dismissable initially
+                onDismiss = { dismissAlert() }
+            )
+
             viewModelScope.launch {
-                var title = R.string.in_progress
-                var message = idConverter.getString(R.string.merging)
+                userRepo.mergeUser(decryptedUid) { success, mergedName ->
+                    val finalTitleKey: String
+                    val finalMsgKey: String
+                    val finalMsgArgs: List<Any>
 
-                showAlert(profileUi, title, message,
-                    {dismissAlert(profileUi)},
-                    {dismissAlert(profileUi)})
-
-                userRepo.mergeUser(decryptedUid) {
-                        success, mergedName ->
-
-                    title = if (success) {
-                        R.string.success
+                    if (success) {
+                        finalTitleKey = "success"
+                        finalMsgKey = "all_games_of_x_now_yours"
+                        finalMsgArgs = listOf(mergedName.takeIf { it.isNotBlank() } ?: "User")
                     } else {
-                        R.string.title_error
+                        finalTitleKey = "title_error"
+                        finalMsgKey = "merge_failed"
+                        finalMsgArgs = emptyList()
                     }
-
-                    message = if (success) {
-                        idConverter.getString(R.string.all_games_of) + " $mergedName " +
-                                idConverter.getString(R.string.now_your)
-                    } else {
-                        idConverter.getString(R.string.merge_failed)
-                    }
-
-                    profileUi.value = profileUi.value.copy(
-                        alertTitle = title,
-                        alertMsg = message
+                    // Update the alert with the result
+                    triggerAlert(
+                        titleKey = finalTitleKey,
+                        messageKey = finalMsgKey,
+                        messageArgs = finalMsgArgs,
+                        onConfirm = { dismissAlert() }
+                        // onDismiss can remain as default or be explicitly set
                     )
+                    stopProgressProfile()
                 }
-                stopProgressProfile()
-
             }
-        }else{
-            val title = R.string.title_error
-            val message = idConverter.getString(R.string.you_cant_merge_registered_user)
-            showAlert(profileUi, title, message,
-                {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+        } else { // Registered user
+            triggerAlert(
+                titleKey = "title_error",
+                messageKey = "you_cant_merge_registered_user",
+                onConfirm = { dismissAlert() }
+            )
             stopProgressProfile()
         }
-
     }
 
-    fun isUserOwner(): Boolean{
+    fun isUserOwner(): Boolean {
         return userRepo.auth.currentUser?.uid == profileUi.value.currentGame?.ownerId
     }
 }

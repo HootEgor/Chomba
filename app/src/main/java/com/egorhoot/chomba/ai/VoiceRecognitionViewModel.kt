@@ -14,15 +14,15 @@ import com.egorhoot.chomba.ChombaViewModel
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.pages.speech.AudioUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
-import com.egorhoot.chomba.utils.IdConverter
+import com.egorhoot.chomba.util.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class VoiceRecognitionViewModel @Inject constructor(
-    private val idConverter: IdConverter,
     val profileUi: MutableState<ProfileScreenUiState>,
     private val context: Context,
+    private val stringProvider: StringProvider
 ) : ChombaViewModel() {
 
     private val sharedPref = context.getSharedPreferences(
@@ -48,21 +48,21 @@ class VoiceRecognitionViewModel @Inject constructor(
                 audioPermissionDenied = true,
                 audioPermissionGranted = false
             )
-            Toast.makeText(context, R.string.please_enable_microphone_permission, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, stringProvider.getString("please_enable_microphone_permission"), Toast.LENGTH_SHORT).show()
             return
         }
 
         if(hasAudioPermission()) {
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE, idConverter.getString(profileUi.value.selectedLanguage.languageTag))
-                putExtra(RecognizerIntent.EXTRA_PROMPT, R.string.speech_prompt)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, profileUi.value.selectedLanguage.id)
+                putExtra(RecognizerIntent.EXTRA_PROMPT, stringProvider.getString("speech_prompt"))
             }
             try {
                 speechRecognizerLauncher?.launch(intent)
             } catch (e: ActivityNotFoundException) {
                 Toast.makeText(context,
-                    context.getString(R.string.your_device_does_not_support_speech_recognition), Toast.LENGTH_SHORT).show()
+                    stringProvider.getString("your_device_does_not_support_speech_recognition"), Toast.LENGTH_SHORT).show()
                 startSpeechRecognition()
             }
         }
@@ -71,7 +71,7 @@ class VoiceRecognitionViewModel @Inject constructor(
                 audioPermissionDenied = true,
                 audioPermissionGranted = false
             )
-            Toast.makeText(context, R.string.please_enable_microphone_permission, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, stringProvider.getString("please_enable_microphone_permission"), Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -79,10 +79,10 @@ class VoiceRecognitionViewModel @Inject constructor(
     fun processRecognizedText(recognizedText: String): Pair<Int, Boolean> {
         val score = recognizedText.filter { it.isDigit() }.toIntOrNull() ?: 0
 
-        val stopWord = idConverter.getString(R.string.stop_recognition)
+        val stopWord = stringProvider.getString("stop_recognition")
         val stop = recognizedText.contains(stopWord, ignoreCase = true)
 
-        val five = idConverter.getString(R.string.five)
+        val five = stringProvider.getString("five")
         if (score == 0 && recognizedText.contains(five, ignoreCase = true)) {
             return Pair(5, stop)
         }
@@ -121,4 +121,3 @@ class VoiceRecognitionViewModel @Inject constructor(
         }
     }
 }
-

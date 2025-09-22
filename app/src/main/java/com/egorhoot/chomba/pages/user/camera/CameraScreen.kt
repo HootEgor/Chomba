@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
+import com.egorhoot.chomba.util.StringProvider
 
 @Composable
 fun CameraScreen(
@@ -45,6 +46,8 @@ fun CameraScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(localContext) }
     val previewView = remember { PreviewView(localContext) }
+
+    val stringProvider = StringProvider(localContext)
 
     // This ensures that the camera is correctly setup when the composable is first composed
     LaunchedEffect(cameraProviderFuture) {
@@ -119,7 +122,7 @@ fun CameraScreen(
         )
 
         BasicIconButton(
-            text = R.string.back,
+            text = stringProvider.getString("back"),
             icon = R.drawable.baseline_arrow_back_ios_24,
             modifier = Modifier
                 .fillMaxWidth(0.5f)

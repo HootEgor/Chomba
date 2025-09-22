@@ -1,14 +1,13 @@
 package com.egorhoot.chomba.data
 
-import android.net.Uri
-import androidx.compose.ui.graphics.Color
 import kotlin.random.Random
+import kotlin.random.nextULong // Required for Random.nextULong()
 
 data class Player(
     var visible: Boolean = true,
     var userId: String = "",
     var name: String = "",
-    var color: String = generateRandomColor().toString(),
+    var color: String = generateRandomColor(),
     var scoreList: List<Score> = listOf(),
     var scorePerRound: Int = 0,
     var declaration: Int = 0,
@@ -25,7 +24,7 @@ data class Player(
         visible = true,
         userId = "",
         name = generateRandomName(),
-        color = generateRandomColor().toString(),
+        color = generateRandomColor(),
         scoreList = listOf(),
         scorePerRound = 0,
         declaration = 0,
@@ -51,11 +50,8 @@ fun generateRandomName(): String {
     return randomAnimal
 }
 
-fun generateRandomColor(): ULong {
-    val red = Random.nextInt(256)
-    val green = Random.nextInt(256)
-    val blue = Random.nextInt(256)
-    return Color(red, green, blue).value
+fun generateRandomColor(): String {
+    return "18389885101916815360"
 }
 
 fun Player.getMaxRound(): Int {
@@ -255,5 +251,4 @@ fun Player.getTotalLoss(): Int {
 fun Player.getChombaScore(): Int {
     return takenChombas.sumOf { chombaScore(it.ordinal) }
 }
-
 

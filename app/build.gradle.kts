@@ -70,6 +70,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared"))
 
     implementation(libs.coreKtx)
     implementation(libs.lifecycleRuntimeKtx)

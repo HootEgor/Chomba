@@ -1,11 +1,9 @@
 package com.egorhoot.chomba.repo.impl
 
-import android.R.string
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import com.egorhoot.chomba.GameUiState
-import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Language
 import com.egorhoot.chomba.data.LanguageId
@@ -20,16 +18,15 @@ import com.egorhoot.chomba.data.isWinner
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.repo.UserRepository
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.firebase.Firebase
 import com.google.firebase.auth.ActionCodeSettings
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
-import com.google.firebase.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -159,7 +156,7 @@ class UserRepositoryImpl @Inject constructor(
     ) {
         val userUid = auth.currentUser?.uid
         if (userUid == null) {
-            uiState.value = uiState.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
+            uiState.value = uiState.value.copy(saveMsgKey = "failed_you_are_not_authenticated") // Using saveMsgKey
             return
         }
 
@@ -189,10 +186,10 @@ class UserRepositoryImpl @Inject constructor(
             gamesRef.document(id)
                 .set(gameToSave, SetOptions.merge())
                 .addOnSuccessListener {
-                    uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
+                    uiState.value = uiState.value.copy(saveMsgKey = "successfully_saved") // Using saveMsgKey
                 }
                 .addOnFailureListener {
-                    uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
+                    uiState.value = uiState.value.copy(saveMsgKey = "failed_to_save_game") // Using saveMsgKey
                 }
 
         } else {
@@ -211,10 +208,10 @@ class UserRepositoryImpl @Inject constructor(
                         gamesRef.document(id)
                             .set(finishedGame, SetOptions.merge())
                             .addOnSuccessListener {
-                                uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
+                                uiState.value = uiState.value.copy(saveMsgKey = "successfully_saved") // Using saveMsgKey
                             }
                             .addOnFailureListener {
-                                uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
+                                uiState.value = uiState.value.copy(saveMsgKey = "failed_to_save_game") // Using saveMsgKey
                             }
                     } else {
                         // If process was not true before, just save with process = false
@@ -222,15 +219,15 @@ class UserRepositoryImpl @Inject constructor(
                         gamesRef.document(id)
                             .set(finishedGame, SetOptions.merge())
                             .addOnSuccessListener {
-                                uiState.value = uiState.value.copy(saveMsg = R.string.successfully_saved)
+                                uiState.value = uiState.value.copy(saveMsgKey = "successfully_saved") // Using saveMsgKey
                             }
                             .addOnFailureListener {
-                                uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
+                                uiState.value = uiState.value.copy(saveMsgKey = "failed_to_save_game") // Using saveMsgKey
                             }
                     }
                 }
                 .addOnFailureListener {
-                    uiState.value = uiState.value.copy(saveMsg = R.string.failed_to_save_game)
+                    uiState.value = uiState.value.copy(saveMsgKey = "failed_to_save_game") // Using saveMsgKey
                 }
         }
     }
@@ -283,7 +280,7 @@ class UserRepositoryImpl @Inject constructor(
 
                     // Merge score lists
                     val mergedScores = mutableListOf<Score>()
-                    if (oldData != null) mergedScores.addAll(oldData.soreList)
+                    if (oldData != null) mergedScores.addAll(oldData.scoreList) // Corrected soreList to scoreList
                     mergedScores.addAll(player.scoreList)
 
                     // Merge colors (unique)
@@ -298,7 +295,7 @@ class UserRepositoryImpl @Inject constructor(
                         totalScore = newTotalScore,
                         winStreak = maxWinStreak,
                         totalChombas = newTotalChombas,
-                        soreList = mergedScores,
+                        scoreList = mergedScores, // Corrected soreList to scoreList
                         colors = newColors
                     )
 
@@ -332,13 +329,13 @@ class UserRepositoryImpl @Inject constructor(
                 .document(game.id)
                 .set(game, SetOptions.merge())
                 .addOnSuccessListener {
-                    profileUi.value = profileUi.value.copy(saveMsg = R.string.successfully_saved)
+                    profileUi.value = profileUi.value.copy(saveMsgKey = "successfully_saved")
                 }
                 .addOnFailureListener {
-                    profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_save_game)
+                    profileUi.value = profileUi.value.copy(saveMsgKey = "failed_to_save_game")
                 }
         }else{
-            profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
+            profileUi.value = profileUi.value.copy(saveMsgKey = "failed_you_are_not_authenticated")
         }
     }
 
@@ -408,7 +405,7 @@ class UserRepositoryImpl @Inject constructor(
         withContext(Dispatchers.Main) {
             profileUi.value = profileUi.value.copy(
                 gameList = filteredGames,
-                saveMsg = if (filteredGames.isEmpty()) R.string.no_saved_games else 0,
+                saveMsgKey = "no_saved_games",
                 relatedUserList = relatedUsers,
                 nickname = relatedUsers.find { it.id == currentUserId }?.nickname ?: auth.currentUser?.displayName ?: ""
             )
@@ -521,7 +518,7 @@ class UserRepositoryImpl @Inject constructor(
                     totalScore = totalScore,
                     winStreak = maxWinStreak,
                     totalChombas = totalChombas,
-                    soreList = scoreList,
+                    scoreList = scoreList, // Corrected soreList to scoreList
                     colors = colors
                 )
             )
@@ -672,13 +669,13 @@ class UserRepositoryImpl @Inject constructor(
                 .document(id)
                 .delete()
                 .addOnSuccessListener {
-                    profileUi.value = profileUi.value.copy(saveMsg = R.string.successfully_deleted)
+                    profileUi.value = profileUi.value.copy(saveMsgKey = "successfully_deleted")
                 }
                 .addOnFailureListener {
-                    profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_to_delete_game)
+                    profileUi.value = profileUi.value.copy(saveMsgKey = "failed_to_delete_game")
                 }
         }else{
-            profileUi.value = profileUi.value.copy(saveMsg = R.string.failed_you_are_not_authenticated)
+            profileUi.value = profileUi.value.copy(saveMsgKey = "failed_you_are_not_authenticated")
         }
     }
 
@@ -689,7 +686,7 @@ class UserRepositoryImpl @Inject constructor(
             db.collection("users").document(userUid)
                 .collection("settings")
                 .document("voiceRecLanguage")
-                .set(LanguageId(language))
+                .set(LanguageId(language)) 
                 .addOnSuccessListener {
                     Log.d("dataBase", "DocumentSnapshot successfully written!")
                 }
@@ -702,24 +699,41 @@ class UserRepositoryImpl @Inject constructor(
     override fun loadVoiceRecLanguage(profileUi: MutableState<ProfileScreenUiState>){
         val db = Firebase.firestore
         val userUid = auth.currentUser?.uid
-        var language = Language(R.drawable.flag_ua, R.string.tag_ua)
+        // Use the new KMP-compatible factory method for the default
+        val defaultLanguage = Language.fromId("ua") // Default to "ua" or your desired default
+
         if (userUid != null) {
+            profileUi.value = profileUi.value.copy(selectedLanguage = defaultLanguage) // Optimistically set default
             db.collection("users").document(userUid)
                 .collection("settings")
                 .document("voiceRecLanguage")
                 .get()
                 .addOnSuccessListener { document ->
+                    var languageToSet = defaultLanguage
                     try{
-                        language = Language(document.data?.get("id").toString())
-                        profileUi.value = profileUi.value.copy(selectedLanguage = language)
-                        Log.w("dataBase", "loadVoiceRecLanguage: success")
+                        val languageIdFromDb = document.data?.get("id")?.toString()
+                        if (languageIdFromDb != null) {
+                            // Use the new KMP-compatible factory method
+                            languageToSet = Language.fromId(languageIdFromDb)
+                            Log.w("dataBase", "loadVoiceRecLanguage: success, loaded ID '$languageIdFromDb'")
+                        } else {
+                            Log.w("dataBase", "loadVoiceRecLanguage: success, but no ID in DB, using default.")
+                        }
+                        profileUi.value = profileUi.value.copy(selectedLanguage = languageToSet)
                     }catch (e: Exception){
-                        Log.w("dataBase", "loadVoiceRecLanguage:failure", e)
+                        val languageIdFromDb = document.data?.get("id")?.toString() // for logging
+                        Log.w("dataBase", "loadVoiceRecLanguage:failure processing ID '$languageIdFromDb', using default.", e)
+                        profileUi.value = profileUi.value.copy(selectedLanguage = defaultLanguage) 
                     }
                 }
                 .addOnFailureListener { exception ->
-                    Log.w("dataBase", "get failed with ", exception)
+                    Log.w("dataBase", "loadVoiceRecLanguage: Firestore query failed, using default.", exception)
+                    profileUi.value = profileUi.value.copy(selectedLanguage = defaultLanguage)
                 }
+        } else {
+            // If userUid is null, set the default language in the UI state
+            Log.w("dataBase", "loadVoiceRecLanguage: No user, using default language.")
+            profileUi.value = profileUi.value.copy(selectedLanguage = defaultLanguage)
         }
     }
 
@@ -834,14 +848,14 @@ class UserRepositoryImpl @Inject constructor(
                 val player = doc.toObject(LeaderBoardPlayer::class.java) ?: continue
 
                 val cleanedColors = player.colors.distinct()
-                val cleanedScores = player.soreList.distinct()
+                val cleanedScores = player.scoreList.distinct() // Corrected soreList to scoreList
 
                 // Only update if something actually changed
-                if (cleanedColors != player.colors || cleanedScores != player.soreList) {
+                if (cleanedColors != player.colors || cleanedScores != player.scoreList) { // Corrected soreList to scoreList
                     leaderboardRef.document(doc.id).update(
                         mapOf(
                             "colors" to cleanedColors,
-                            "soreList" to cleanedScores
+                            "soreList" to cleanedScores // Corrected soreList to scoreList but keeping original DB field name for now
                         )
                     ).await()
                     Log.d("cleanLeaderboard", "Cleaned duplicates for user ${doc.id}")
@@ -879,7 +893,7 @@ class UserRepositoryImpl @Inject constructor(
                                 totalScore = currentLb.totalScore + oldLb.totalScore,
                                 winStreak = maxOf(currentLb.winStreak, oldLb.winStreak),
                                 totalChombas = currentLb.totalChombas + oldLb.totalChombas,
-                                soreList = (currentLb.soreList + oldLb.soreList).distinct(),
+                                scoreList = (currentLb.scoreList + oldLb.scoreList).distinct(), // Corrected soreList to scoreList
                                 colors = (currentLb.colors + oldLb.colors).distinct()
                             )
                             leaderboardRef.document(currentUserId).set(mergedLb).await()

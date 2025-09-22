@@ -10,7 +10,7 @@ import com.egorhoot.chomba.data.isFull
 import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.repo.OnLineGameRepository
-import com.egorhoot.chomba.utils.IdConverter
+import com.egorhoot.chomba.util.StringProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class OnLineGameRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth,
     private val db: FirebaseFirestore,
-    private val idConverter: IdConverter
+    private val stringProvider: StringProvider,
 ): OnLineGameRepository {
 
     override fun isOwner(onLineGameUiState: MutableState<OnLineGameUiState>): Boolean {
@@ -47,7 +47,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
             val date = System.currentTimeMillis()
             val room = onLineGameUiState.value.copy(
                 game = OnLineGame(
-                    room = Room(id = roomId, private = true),
+                    room = Room(id = roomId, isPrivate = true),
                     date = date,
                     userList = listOf(gameUser)
                 )
@@ -61,7 +61,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                         game = room.game,
                     )
                     profileUi.value = profileUi.value.copy(
-                        alertMsg = idConverter.getString(R.string.room_created),
+                        alertMsgKey = "room_created",
                         isSuccess = true
                     )
                     onResult()
@@ -69,14 +69,14 @@ class OnLineGameRepositoryImpl @Inject constructor(
                 .addOnFailureListener { e ->
                     Log.w("TAG", "Error adding document", e)
                     profileUi.value = profileUi.value.copy(
-                        alertMsg = idConverter.getString(R.string.error),
+                        alertMsgKey = "error",
                         isSuccess = false
                     )
                     onResult()
                 }
         }else {
             profileUi.value = profileUi.value.copy(
-                alertMsg = idConverter.getString(R.string.failed_you_are_not_authenticated),
+                alertMsgKey = "failed_you_are_not_authenticated",
                 isSuccess = false
             )
             onResult()
@@ -144,7 +144,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                                                     game = room.game
                                                 )
                                                 profileUi.value = profileUi.value.copy(
-                                                    alertMsg = idConverter.getString(R.string.room_joined),
+                                                    alertMsgKey = "room_joined",
                                                     isSuccess = true
                                                 )
                                                 onResult()
@@ -152,7 +152,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                                             .addOnFailureListener { e ->
                                                 Log.w("TAG", "Error adding document", e)
                                                 profileUi.value = profileUi.value.copy(
-                                                    alertMsg = idConverter.getString(R.string.error),
+                                                    alertMsgKey = "error",
                                                     isSuccess = false
                                                 )
                                                 onResult()
@@ -162,7 +162,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                                             game = room.game
                                         )
                                         profileUi.value = profileUi.value.copy(
-                                            alertMsg = idConverter.getString(R.string.room_joined),
+                                            alertMsgKey = "room_joined",
                                             isSuccess = true
                                         )
                                         onResult()
@@ -171,7 +171,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
 
                                 }else{
                                     profileUi.value = profileUi.value.copy(
-                                        alertMsg = idConverter.getString(R.string.room_full),
+                                        alertMsgKey = "room_full",
                                         isSuccess = false
                                     )
                                     onResult()
@@ -182,7 +182,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                     .addOnFailureListener { exception ->
                         Log.w("TAG", "Error getting documents: ", exception)
                         profileUi.value = profileUi.value.copy(
-                            alertMsg = idConverter.getString(R.string.error),
+                            alertMsgKey = "error",
                             isSuccess = false
                         )
                         onResult()
@@ -190,7 +190,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
             }
 
             profileUi.value = profileUi.value.copy(
-                alertMsg = idConverter.getString(R.string.room_not_found),
+                alertMsgKey = "room_not_found",
                 isSuccess = false
             )
             onResult()
@@ -198,7 +198,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
 
         }else {
             profileUi.value = profileUi.value.copy(
-                alertMsg = idConverter.getString(R.string.failed_you_are_not_authenticated),
+                alertMsgKey = "failed_you_are_not_authenticated",
                 isSuccess = false
             )
             onResult()
@@ -226,7 +226,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                             game = newRoom
                         )
                         profileUi.value = profileUi.value.copy(
-                            alertMsg = idConverter.getString(R.string.room_exited),
+                            alertMsgKey = "room_exited",
                             isSuccess = true
                         )
                         onResult()
@@ -234,14 +234,14 @@ class OnLineGameRepositoryImpl @Inject constructor(
                     .addOnFailureListener { e ->
                         Log.w("TAG", "Error adding document", e)
                         profileUi.value = profileUi.value.copy(
-                            alertMsg = idConverter.getString(R.string.error),
+                            alertMsgKey = "error",
                             isSuccess = false
                         )
                         onResult()
                     }
             }else{
                 profileUi.value = profileUi.value.copy(
-                    alertMsg = idConverter.getString(R.string.room_exited),
+                    alertMsgKey = "room_exited",
                     isSuccess = false
                 )
                 onResult()
@@ -250,7 +250,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
 
         }else {
             profileUi.value = profileUi.value.copy(
-                alertMsg = idConverter.getString(R.string.failed_you_are_not_authenticated),
+                alertMsgKey = "failed_you_are_not_authenticated",
                 isSuccess = false
             )
             onResult()
@@ -287,7 +287,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                     rooms = rooms
                 )
                 profileUi.value = profileUi.value.copy(
-                    alertMsg = idConverter.getString(R.string.rooms_fetched),
+                    alertMsgKey = "rooms_fetched",
                     isSuccess = true
                 )
                 onResult()
@@ -295,7 +295,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
             .addOnFailureListener { exception ->
                 Log.w("TAG", "Error getting documents: ", exception)
                 profileUi.value = profileUi.value.copy(
-                    alertMsg = idConverter.getString(R.string.error),
+                    alertMsgKey = "error",
                     isSuccess = false
                 )
                 onResult()
@@ -331,7 +331,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
                         game = newGame
                     )
                     profileUi.value = profileUi.value.copy(
-                        alertMsg = idConverter.getString(R.string.ready),
+                        alertMsgKey = "ready",
                         isSuccess = true
                     )
                     onResult()
@@ -339,14 +339,14 @@ class OnLineGameRepositoryImpl @Inject constructor(
                 .addOnFailureListener { e ->
                     Log.w("TAG", "Error adding document", e)
                     profileUi.value = profileUi.value.copy(
-                        alertMsg = idConverter.getString(R.string.error),
+                        alertMsgKey = "error",
                         isSuccess = false
                     )
                     onResult()
                 }
         }else {
             profileUi.value = profileUi.value.copy(
-                alertMsg = idConverter.getString(R.string.failed_you_are_not_authenticated),
+                alertMsgKey = "failed_you_are_not_authenticated",
                 isSuccess = false
             )
             onResult()
@@ -391,7 +391,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
             .set(onLineGameUiState.value)
             .addOnSuccessListener {
                 profileUi.value = profileUi.value.copy(
-                    alertMsg = idConverter.getString(R.string.game_saved),
+                    alertMsgKey = "game_saved",
                     isSuccess = true
                 )
                 onResult()
@@ -399,7 +399,7 @@ class OnLineGameRepositoryImpl @Inject constructor(
             .addOnFailureListener { e ->
                 Log.w("TAG", "Error adding document", e)
                 profileUi.value = profileUi.value.copy(
-                    alertMsg = idConverter.getString(R.string.error),
+                    alertMsgKey = "game_saved",
                     isSuccess = false
                 )
                 onResult()

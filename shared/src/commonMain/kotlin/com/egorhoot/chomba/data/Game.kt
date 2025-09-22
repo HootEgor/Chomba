@@ -1,10 +1,13 @@
 package com.egorhoot.chomba.data
 
 import com.egorhoot.chomba.GameUiState
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-data class Game(
+
+data class Game @OptIn(ExperimentalTime::class) constructor(
     var id: String = "",
-    var startDate: Long = System.currentTimeMillis(),
+    var startDate: Long = Clock.System.now().epochSeconds,
     var date: Long = 0,
     var playerList: List<Player> = listOf(),
     var uiState: GameUiState = GameUiState(),

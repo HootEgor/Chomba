@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -20,33 +19,33 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.egorhoot.chomba.R
+import com.egorhoot.chomba.R // For R.drawable
 import com.egorhoot.chomba.pages.CenterStripesText
 import com.egorhoot.chomba.pages.ChombaCard
 import com.egorhoot.chomba.pages.RepeatIcon
 import com.egorhoot.chomba.pages.ToggleUnderlineText
+import com.egorhoot.chomba.util.StringProvider
 
 @Composable
 fun SaveGame(
     onDismissRequest: () -> Unit,
-    msg: Int,
+    msg: String,
     delayTimer: Float = -1.0f
 ) {
     val progress = remember { Animatable(delayTimer) }
+    val stringProvider = StringProvider(LocalContext.current)
 
     LaunchedEffect(delayTimer) {
         if (delayTimer >= 0) {
@@ -64,13 +63,14 @@ fun SaveGame(
 
     AlertDialog(
         onDismissRequest = {onDismissRequest()},
-        title = { Text(text = stringResource(R.string.saving), style = MaterialTheme.typography.headlineSmall) },
+        title = { Text(text = stringProvider.getString("saving"), style = MaterialTheme.typography.headlineSmall) },
         text = {
             Column(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.Start
             ){
-                Text(text = stringResource(msg),
+                val msgText = stringProvider.getString(msg)
+                Text(text = msgText,
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center)
 
@@ -104,38 +104,39 @@ fun SaveGame(
 @Composable
 fun Tips(
     onDismissRequest: () -> Unit,
-    msg: Int,
+    msg: String, // This parameter seems unused in the original text block
 ){
+    val stringProvider = StringProvider(LocalContext.current)
     AlertDialog(
         onDismissRequest = {onDismissRequest()},
-        title = { Text(text = stringResource(R.string.tips), style = MaterialTheme.typography.headlineSmall) },
+        title = { Text(text = stringProvider.getString("tips"), style = MaterialTheme.typography.headlineSmall) },
         text = {
             val pagerState = rememberPagerState(initialPage = 1,
                 pageCount = { 3 })
-            val currentPage = remember { mutableStateOf(1) }
-            LaunchedEffect(currentPage.value){
-                if(currentPage.value == -1) return@LaunchedEffect
-                pagerState.animateScrollToPage(currentPage.value)
-                currentPage.value = -1
+            val currentPage = remember { mutableIntStateOf(1) }
+            LaunchedEffect(currentPage.intValue){
+                if(currentPage.intValue == -1) return@LaunchedEffect
+                pagerState.animateScrollToPage(currentPage.intValue)
+                currentPage.intValue = -1
             }
             Column{
                 Row {
                     ToggleUnderlineText(
                         modifier = Modifier.weight(1f),
-                        text = stringResource(R.string.cards),
-                        onClick = { currentPage.value = 0 },
+                        text = stringProvider.getString("cards"),
+                        onClick = { currentPage.intValue = 0 },
                         isUnderlined = pagerState.currentPage == 0
                     )
                     ToggleUnderlineText(
                         modifier = Modifier.weight(1f),
-                        text = stringResource(R.string.chomba),
-                        onClick = { currentPage.value = 1 },
+                        text = stringProvider.getString("chomba"),
+                        onClick = { currentPage.intValue = 1 },
                         isUnderlined = pagerState.currentPage == 1
                     )
                     ToggleUnderlineText(
                         modifier = Modifier.weight(1f),
-                        text = stringResource(R.string.reshuffle),
-                        onClick = { currentPage.value = 2 },
+                        text = stringProvider.getString("reshuffle"),
+                        onClick = { currentPage.intValue = 2 },
                         isUnderlined = pagerState.currentPage == 2
                     )
                 }
@@ -186,7 +187,7 @@ fun Tips(
                             ) {
                                 val iconSize = 40.dp
                                 CenterStripesText(
-                                    text = stringResource(R.string.hand),
+                                    text = stringProvider.getString("hand"),
                                     stripeColor = MaterialTheme.colorScheme.primary
                                 )
                                 Text(text = "<13",
@@ -199,7 +200,7 @@ fun Tips(
                                     iconSize = iconSize,
                                     number = 4)
                                 CenterStripesText(
-                                    text = stringResource(R.string.pool),
+                                    text = stringProvider.getString("pool"),
                                     stripeColor = MaterialTheme.colorScheme.primary
                                 )
                                 Text(text = "<5",
@@ -253,7 +254,7 @@ fun Tips(
                 onClick = { onDismissRequest()}
             ) {
                 Text(
-                    text = stringResource(R.string.ok),
+                    text = stringProvider.getString("ok"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -265,16 +266,24 @@ fun Tips(
 }
 
 @Composable
-fun AlertOk(@StringRes title: Int, @StringRes message: Int, action: () -> Unit) {
+fun AlertOk(
+    titleKey: String,
+    messageKey: String,
+    action: () -> Unit) {
+    val stringProvider = StringProvider(LocalContext.current)
+
+    val titleKey = remember(titleKey) { titleKey }
+    val messageKey = remember(messageKey) { messageKey }
+
     AlertDialog(
         onDismissRequest = action,
-        title = { Text(text = stringResource(id = title), style = MaterialTheme.typography.headlineSmall) },
-        text = { Text(text = stringResource(id = message), style = MaterialTheme.typography.bodyMedium) },
+        title = { Text(text = stringProvider.getString(titleKey), style = MaterialTheme.typography.headlineSmall) },
+        text = { Text(text = stringProvider.getString(messageKey), style = MaterialTheme.typography.bodyMedium) },
         confirmButton = {
             TextButton(
                 onClick = action
             ) {
-                Text(text = stringResource(R.string.confirm_button), style = MaterialTheme.typography.bodyMedium)
+                Text(text = stringProvider.getString("confirm_button"), style = MaterialTheme.typography.bodyMedium)
             }
         }
     )

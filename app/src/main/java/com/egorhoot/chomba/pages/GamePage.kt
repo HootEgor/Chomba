@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -90,6 +91,7 @@ import com.egorhoot.chomba.ui.theme.composable.rememberPickerState
 import com.egorhoot.chomba.ui.theme.composable.suitIcon
 import com.egorhoot.chomba.ui.theme.composable.typeIcon
 import com.egorhoot.chomba.ui.theme.ext.basicButton
+import com.egorhoot.chomba.util.StringProvider
 
 @Composable
 fun GamePage(
@@ -103,6 +105,9 @@ fun GamePage(
     val showTip = remember { mutableStateOf(false) }
     val saveAlert = remember { mutableStateOf(false) }
     val isMenuExpanded = remember { mutableStateOf(false) }
+
+    val stringProvider = StringProvider(LocalContext.current)
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -112,7 +117,7 @@ fun GamePage(
     ) {
 
         TopBar(
-            title = stringResource(R.string.round) + " " + viewModel.getCurrentRound().toString(),
+            title = stringProvider.getString("round") + " " + viewModel.getCurrentRound().toString(),
             onFirstActionClick = { viewModel.setCurrentPage(0) },
             secondButtonIcon = R.drawable.baseline_menu_24,
             onSecondActionClick = {isMenuExpanded.value = true},
@@ -121,10 +126,10 @@ fun GamePage(
             isMenuExpanded = true,
             menu = {
                 val buttonsWithIcons = listOf(
-                    R.drawable.baseline_lightbulb_24 to stringResource(R.string.tips),
-                    R.drawable.baseline_save_24 to stringResource(R.string.save_game),
-                    R.drawable.baseline_hail_24 to stringResource(R.string.set_declarer),
-                    R.drawable.baseline_undo_24 to stringResource(R.string.undo),
+                    R.drawable.baseline_lightbulb_24 to stringProvider.getString("tips"),
+                    R.drawable.baseline_save_24 to stringProvider.getString("save_game"),
+                    R.drawable.baseline_hail_24 to stringProvider.getString("set_declarer"),
+                    R.drawable.baseline_undo_24 to stringProvider.getString("undo"),
                 )
 
                 Dropdown(
@@ -154,7 +159,7 @@ fun GamePage(
                 players = playerList,
             )
 
-            BasicIconButton(text = R.string.save_and_exit,
+            BasicIconButton(text = stringProvider.getString("save_and_exit"),
                 icon = R.drawable.baseline_home_24,
                 modifier = Modifier.basicButton(),
                 action = {viewModel.saveGame(true)})
@@ -199,7 +204,7 @@ fun GamePage(
 
 
 //        if(viewModel.isCurrentGameFinished()){
-//            BasicIconButton(text = R.string.save_and_exit,
+//            BasicIconButton(text = stringProvider.getString(.save_and_exit,
 //                icon = R.drawable.baseline_home_24,
 //                modifier = Modifier.basicButton(),
 //                action = {viewModel.saveGame(true)})
@@ -209,7 +214,7 @@ fun GamePage(
             Row{
                 if(uiState.playerOnBarrel?.name != uiState.declarer?.name){
                     val visible = remember { mutableStateOf(false) }
-                    BasicIconButton(text = R.string.dissolution,
+                    BasicIconButton(text = stringProvider.getString("dissolution"),
                         icon = R.drawable.baseline_border_color_24,
                         modifier = Modifier
                             .basicButton()
@@ -219,9 +224,9 @@ fun GamePage(
                     if(visible.value){
                         AlertDialog(
                             onDismissRequest = {visible.value = false},
-                            title = { Text(text = stringResource(R.string.make_dissolution), style = MaterialTheme.typography.headlineSmall) },
+                            title = { Text(text = stringProvider.getString("make_dissolution"), style = MaterialTheme.typography.headlineSmall) },
                             text = {
-                                Text(text = stringResource(R.string.are_you_sure),
+                                Text(text = stringProvider.getString("are_you_sure"),
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Center)
                             },
@@ -231,7 +236,7 @@ fun GamePage(
                                         viewModel.makeDissolution()}
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.ok),
+                                        text = stringProvider.getString("ok"),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -242,7 +247,7 @@ fun GamePage(
                                     onClick = { visible.value= false}
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.cancel),
+                                        text = stringProvider.getString("cancel"),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -253,7 +258,7 @@ fun GamePage(
 
                 }
 
-                BasicIconButton(text = R.string.next_round,
+                BasicIconButton(text = stringProvider.getString("next_round"),
                     icon = R.drawable.baseline_calculate_24,
                     modifier = Modifier
                         .basicButton()
@@ -263,7 +268,7 @@ fun GamePage(
 
         }
         else{
-            BasicIconButton(text = R.string.set_declarer,
+            BasicIconButton(text = stringProvider.getString("set_declarer"),
                 icon = R.drawable.baseline_hail_24,
                 modifier = Modifier.basicButton(),
                 action = {setDeclarer.value = true})
@@ -273,20 +278,20 @@ fun GamePage(
     }
 
     if(saveAlert.value){
-        var delayTimer by remember(uiState.saveMsg) { mutableFloatStateOf(-1.0f) }
+        var delayTimer by remember(uiState.saveMsgKey) { mutableFloatStateOf(-1.0f) }
 
         // Start the delay only when msg changes
-        LaunchedEffect(uiState.saveMsg) {
+        LaunchedEffect(uiState.saveMsgKey) {
             delayTimer = 5.0f
         }
         SaveGame(onDismissRequest = {saveAlert.value = false},
-            msg = uiState.saveMsg,
+            msg = uiState.saveMsgKey,
             delayTimer = delayTimer)
     }
 
     if(showTip.value){
         Tips(onDismissRequest = {showTip.value = false},
-            msg = R.string.tips)
+            msg = stringProvider.getString("tips"))
     }
 
     if(setDeclarer.value){
@@ -308,7 +313,7 @@ fun GamePage(
                 ) {
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = stringResource(R.string.set_declarer),
+                        text = stringProvider.getString("set_declarer"),
                         style = MaterialTheme.typography.headlineSmall)
                     VoiceRecognitionButton(
                         modifier = Modifier
@@ -381,7 +386,7 @@ fun GamePage(
                     }
                 ) {
                     Text(
-                        text = stringResource(R.string.ok),
+                        text = stringProvider.getString("ok"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -392,7 +397,7 @@ fun GamePage(
                     onClick = { setDeclarer.value = false}
                 ) {
                     Text(
-                        text = stringResource(R.string.cancel),
+                        text = stringProvider.getString("cancel"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -405,7 +410,7 @@ fun GamePage(
     if(nextRound.value){
         AlertDialog(
             onDismissRequest = { nextRound.value = false },
-            title = { Text(text = stringResource(R.string.next_round), style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(text = stringProvider.getString("next_round"), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Column {
                     for(player in playerList){
@@ -424,7 +429,7 @@ fun GamePage(
                     }
                 ) {
                     Text(
-                        text = stringResource(R.string.ok),
+                        text = stringProvider.getString("ok"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -435,7 +440,7 @@ fun GamePage(
                     onClick = { nextRound.value = false}
                 ) {
                     Text(
-                        text = stringResource(R.string.cancel),
+                        text = stringProvider.getString("cancel"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -905,13 +910,14 @@ fun ScoreListAlert(
     onMakePenalty: () -> Unit
 ){
     val penalty = remember { mutableStateOf(false) }
+    val stringProvider = StringProvider(LocalContext.current)
     AlertDialog(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight(0.7f),
         onDismissRequest = { setVisible(false)},
         title = {
-            Text(text = stringResource(R.string.player_score_list) +" "+ player.name,
+            Text(text = stringProvider.getString("player_score_list") +" "+ player.name,
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.combinedClickable(
                     onClick = {},
@@ -935,7 +941,7 @@ fun ScoreListAlert(
                 onClick = {setVisible(false)}
             ) {
                 Text(
-                    text = stringResource(R.string.ok),
+                    text = stringProvider.getString("ok"),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -949,7 +955,7 @@ fun ScoreListAlert(
                         setVisible(false)}
                 ) {
                     Text(
-                        text = stringResource(R.string._120),
+                        text = stringProvider.getString("_120"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )

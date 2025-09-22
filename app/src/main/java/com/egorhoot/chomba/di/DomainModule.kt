@@ -8,7 +8,6 @@ import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.pages.user.camera.CameraManager
 import com.egorhoot.chomba.utils.Encryptor
-import com.egorhoot.chomba.utils.IdConverter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
@@ -23,10 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DomainModule {
-    @Provides
-    fun provideIdConverter(@ApplicationContext context: Context): IdConverter {
-        return IdConverter(context)
-    }
 
     @Provides
     @Singleton

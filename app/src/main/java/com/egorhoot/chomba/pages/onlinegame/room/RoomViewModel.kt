@@ -3,22 +3,18 @@ package com.egorhoot.chomba.pages.onlinegame.room
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.egorhoot.chomba.ChombaViewModel
-import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.OnLineGame
 import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.onlinegame.OnLineGameUiState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.repo.OnLineGameRepository
 import com.egorhoot.chomba.repo.UserRepository
-import com.egorhoot.chomba.utils.IdConverter
+import com.egorhoot.chomba.util.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,11 +23,11 @@ import javax.inject.Inject
 class RoomViewModel @Inject constructor(
     val userRepo: UserRepository,
     val onLineGameRepo: OnLineGameRepository,
-    private val idConverter: IdConverter,
     val profileUi: MutableState<ProfileScreenUiState>,
     val pageState: MutableState<PageState>,
     val onLineGameUiState: MutableState<OnLineGameUiState>,
     private val context: Context,
+    private val stringProvider: StringProvider,
 ) : ChombaViewModel(){
 
     val roomUiState = mutableStateOf(RoomUiState())
@@ -46,9 +42,42 @@ class RoomViewModel @Inject constructor(
         browseRooms()
     }
 
+    private fun dismissAlert() {
+        profileUi.value = profileUi.value.copy(
+            showAlert = false,
+            alertTitleKey = "",
+            alertMsgKey = "",
+            alertMsgArgs = emptyList(),
+            resolvedAlertTitle = "", // Clear resolved string
+            resolvedAlertMessage = "" // Clear resolved string
+        )
+    }
+
+    private fun showAlert(
+        titleKey: String,
+        messageKey: String,
+        messageArgs: List<Any> = emptyList(),
+        onConfirm: () -> Unit,
+        onDismiss: () -> Unit = { dismissAlert() } // Default dismiss action
+    ) {
+        val resolvedTitle = if (titleKey.isNotBlank()) stringProvider.getString(titleKey) else ""
+        val resolvedMessage = if (messageKey.isNotBlank()) stringProvider.getString(messageKey, *messageArgs.toTypedArray()) else ""
+
+        profileUi.value = profileUi.value.copy(
+            showAlert = true,
+            alertTitleKey = titleKey,
+            alertMsgKey = messageKey,
+            alertMsgArgs = messageArgs,
+            resolvedAlertTitle = resolvedTitle,
+            resolvedAlertMessage = resolvedMessage,
+            alertAction = onConfirm,
+            alertDismiss = onDismiss
+        )
+    }
+
     private fun startProgress(){
         profileUi.value = profileUi.value.copy(inProgress = true,
-            alertMsg = idConverter.getString(profileUi.value.saveMsg))
+            alertMsgKey = profileUi.value.saveMsgKey)
     }
 
     private fun stopProgress(){
@@ -67,12 +96,12 @@ class RoomViewModel @Inject constructor(
     fun createRoom(){
         viewModelScope.launch {
             startProgress()
-            showAlert(profileUi, R.string.creating_room, idConverter.getString(profileUi.value.saveMsg),
+            showAlert( "creating_room", profileUi.value.saveMsgKey, emptyList(),
                 {
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 },
                 {
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 }
             )
 
@@ -95,12 +124,12 @@ class RoomViewModel @Inject constructor(
         }
         viewModelScope.launch {
             startProgress()
-            showAlert(profileUi, R.string.getting_rooms, idConverter.getString(profileUi.value.saveMsg),
+            showAlert( "getting_rooms", "getting_rooms", emptyList(),
                 {
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 },
                 {
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 }
             )
             onLineGameRepo.getAvailableRooms(onLineGameUiState, profileUi){
@@ -115,12 +144,12 @@ class RoomViewModel @Inject constructor(
     private fun startJoinRoom(code: String){
         viewModelScope.launch {
             startProgress()
-            showAlert(profileUi, R.string.joining_room, idConverter.getString(R.string.in_progress),
+            showAlert( "joining_room", "in_progress", emptyList(),
                 {
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 },
                 {
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 }
             )
             onLineGameRepo.joinRoom(code, onLineGameUiState, profileUi){
@@ -137,15 +166,14 @@ class RoomViewModel @Inject constructor(
     fun leaveGame(){
         viewModelScope.launch {
             startProgress()
-            showAlert(profileUi, R.string.leave_room, idConverter.getString(R.string.are_you_sure),
-                action =
+            showAlert( "leave_room", "are_you_sure", emptyList(),
                 {
                     onLeaveRoom()
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 },
                 {
                     stopProgress()
-                    dismissAlert(profileUi)
+                    dismissAlert()
                 }
             )
         }
@@ -158,7 +186,7 @@ class RoomViewModel @Inject constructor(
                 stopProgress()
                 homePage()
                 if(profileUi.value.isSuccess){
-                    profileUi.value = profileUi.value.copy(alertMsg = idConverter.getString(R.string.room_left))
+                    profileUi.value = profileUi.value.copy(alertMsgKey = "room_left")
                 }
             }
         }
@@ -192,7 +220,7 @@ class RoomViewModel @Inject constructor(
             clipboard.setPrimaryClip(clip)
 
             // Optionally, you might want to show a confirmation (e.g., a Toast)
-            Toast.makeText(context, idConverter.getString(R.string.room_copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, stringProvider.getString("room_copied_to_clipboard"), Toast.LENGTH_SHORT).show()
         }
     }
 

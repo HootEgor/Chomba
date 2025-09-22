@@ -3,19 +3,16 @@ package com.egorhoot.chomba.pages.user.editgame
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.egorhoot.chomba.ChombaViewModel
-import com.egorhoot.chomba.data.Game
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.repo.UserRepository
-import com.egorhoot.chomba.utils.IdConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class EditGameViewModel @Inject constructor(
     val userRepo: UserRepository,
-    private val idConverter: IdConverter,
     val profileUi: MutableState<ProfileScreenUiState>
 ) : ChombaViewModel(){
     var uiState = mutableStateOf(EditGameUiState())

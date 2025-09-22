@@ -17,8 +17,8 @@ import com.egorhoot.chomba.pages.PageState
 import com.egorhoot.chomba.pages.user.ProfileScreenUiState
 import com.egorhoot.chomba.pages.user.camera.CameraManager
 import com.egorhoot.chomba.repo.UserRepository
+import com.egorhoot.chomba.util.StringProvider
 import com.egorhoot.chomba.utils.Encryptor
-import com.egorhoot.chomba.utils.IdConverter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,12 +27,12 @@ import kotlin.math.round
 @HiltViewModel
 class GameViewModel @Inject constructor(
     val userRepo: UserRepository,
-    private val idConverter: IdConverter,
     val profileUi: MutableState<ProfileScreenUiState>,
     val pageState: MutableState<PageState>,
     private val cameraManager: CameraManager,
     private val encryptor: Encryptor,
     private val context: Context,
+    private val stringProvider: StringProvider
 ): ChombaViewModel() {
 
     val playerList = mutableStateOf<List<Player>>(listOf())
@@ -45,12 +45,45 @@ class GameViewModel @Inject constructor(
 
     private fun startProgressGame(){
         uiState.value = uiState.value.copy(inProgress = true,
-            saveMsg = R.string.in_progress)
+            saveMsgKey = "in_progress")
     }
 
     private fun stopProgressGame(){
         uiState.value = uiState.value.copy(inProgress = false)
     }
+    private fun dismissAlert() {
+        profileUi.value = profileUi.value.copy(
+            showAlert = false,
+            alertTitleKey = "",
+            alertMsgKey = "",
+            alertMsgArgs = emptyList(),
+            resolvedAlertTitle = "", // Clear resolved string
+            resolvedAlertMessage = "" // Clear resolved string
+        )
+    }
+
+    private fun showAlert(
+        titleKey: String,
+        messageKey: String,
+        messageArgs: List<Any> = emptyList(),
+        onConfirm: () -> Unit,
+        onDismiss: () -> Unit = { dismissAlert() } // Default dismiss action
+    ) {
+        val resolvedTitle = if (titleKey.isNotBlank()) stringProvider.getString(titleKey) else ""
+        val resolvedMessage = if (messageKey.isNotBlank()) stringProvider.getString(messageKey, *messageArgs.toTypedArray()) else ""
+
+        profileUi.value = profileUi.value.copy(
+            showAlert = true,
+            alertTitleKey = titleKey,
+            alertMsgKey = messageKey,
+            alertMsgArgs = messageArgs,
+            resolvedAlertTitle = resolvedTitle,
+            resolvedAlertMessage = resolvedMessage,
+            alertAction = onConfirm,
+            alertDismiss = onDismiss
+        )
+    }
+
 
     fun newGame() {
         profileUi.value = profileUi.value.copy(currentGameIndex = null)
@@ -219,7 +252,7 @@ class GameViewModel @Inject constructor(
             }
         }
 
-        // Ensure the last player's score adjusts so that the total equals 120
+        // Ensure the last player\'s score adjusts so that the total equals 120
         if (totalScore > 0) {
             val lastPlayer = uiState.value.takePlayerNameList.last()
             updatedPlayerList = updatedPlayerList.map { existingPlayer ->
@@ -565,8 +598,8 @@ class GameViewModel @Inject constructor(
 
     private fun setWinner(player: Player?) {
         uiState.value = uiState.value.copy(winner = player)
-        showAlert(profileUi, R.string.winner, "${player?.name}",
-            {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+        showAlert("winner", "${player?.name}", emptyList(),// player?.name is a format arg, not a key
+            {dismissAlert()}, {dismissAlert()})
 
 
     }
@@ -577,16 +610,16 @@ class GameViewModel @Inject constructor(
             playerList.value = updatedPlayerList
             for (player in playerList.value){
                 if (player.name.trim() == ""){
-                    showAlert(profileUi, R.string.error, idConverter.getString(R.string.player_name_empty),
-                        {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+                    showAlert("error", "player_name_empty", emptyList(),
+                        {dismissAlert()}, {dismissAlert()})
                     return@launch
                 }
             }
 
             val names = playerList.value.map { it.name }
             if (names.size != names.toSet().size){
-                showAlert(profileUi, R.string.error, idConverter.getString(R.string.duplicate_names),
-                    {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+                showAlert("error", "duplicate_names",  emptyList(),
+                    {dismissAlert()}, {dismissAlert()})
                 return@launch
             }
             uiState.value = uiState.value.copy(distributorIndex = nextDistributorIndex())
@@ -650,10 +683,10 @@ class GameViewModel @Inject constructor(
     }
 
     fun onUndoLastRound(){
-        showAlert(profileUi, R.string.undo_last_round, idConverter.getString(R.string.are_you_sure),
+        showAlert("undo_last_round", "are_you_sure", emptyList(),
             {undoLastRound()
-            dismissAlert(profileUi)},
-            {dismissAlert(profileUi)})
+            dismissAlert()},
+            {dismissAlert()})
     }
 
     private fun undoLastRound(){
@@ -761,7 +794,7 @@ class GameViewModel @Inject constructor(
         if (uiState.value.inProgress) {
             return
         }
-//        onAlert(0,R.string.title_warning,R.string.not_implemented)
+//        onAlert(0,stringProvider.getString(.title_warning,stringProvider.getString(.not_implemented)
         profileUi.value = profileUi.value.copy(scanQrCode = true)
         requestCamera()
     }
@@ -772,9 +805,9 @@ class GameViewModel @Inject constructor(
 
     fun onCameraError() {
         profileUi.value = profileUi.value.copy(scanQrCode = false)
-        val qrMsg = idConverter.getString(R.string.unvalid_qr_code)
-        showAlert(profileUi, R.string.title_error, qrMsg,
-            {dismissAlert(profileUi)}, {dismissAlert(profileUi)})
+        // val qrMsg = idConverter.getString(stringProvider.getString(.unvalid_qr_code) // This line is removed
+        showAlert("title_error", "unvalid_qr_code", emptyList(),
+            {dismissAlert()}, {dismissAlert()})
     }
 
     fun onRecognizeId(userUid: String, name: String) {

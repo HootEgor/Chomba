@@ -11,34 +11,28 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -55,6 +49,7 @@ import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.TopBar
+import com.egorhoot.chomba.util.StringProvider
 
 @Composable
 fun Room(
@@ -64,6 +59,7 @@ fun Room(
     val uiState = viewModel.roomUiState.value
     val onLineGameUiState = viewModel.onLineGameUiState.value
     val profileUiState = viewModel.profileUi.value
+    val stringProvider = StringProvider(LocalContext.current)
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -71,7 +67,7 @@ fun Room(
     ) {
         if(uiState.page!=1){
             TopBar(
-                title = stringResource(R.string.online_game),
+                title = stringProvider.getString("online_game"),
                 onFirstActionClick = { viewModel.homePage()}
             )
         }
@@ -95,7 +91,7 @@ fun Room(
                         viewModel = viewModel)
                 }
                 else{
-                    Text(stringResource(R.string.in_progress))
+                    Text(stringProvider.getString("in_progress"))
                 }
             }
             else -> {
@@ -116,6 +112,7 @@ fun PreGameRoom(
     modifier: Modifier = Modifier,
     viewModel: RoomViewModel = hiltViewModel(),
 ){
+    val stringProvider = StringProvider(LocalContext.current)
     Surface(
         modifier = modifier.fillMaxSize()
     ) {
@@ -149,10 +146,10 @@ fun PreGameRoom(
                     modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
                     action = { viewModel.leaveGame()},
                     shape = Shapes.extraLarge)
-                BasicTextButton(text = R.string.leave,
+                BasicTextButton(text = stringProvider.getString("leave"),
                     modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
                     action = { viewModel.setRoomPage(0)})
-                BasicTextButton(text = if(viewModel.isOwner()) R.string.start else R.string.ready,
+                BasicTextButton(text = if(viewModel.isOwner()) stringProvider.getString("start") else stringProvider.getString("ready"),
                     modifier = Modifier.weight(1f).padding(2.dp, 0.dp),
                     action = { viewModel.readyToPlay()},
                     isEnabled = if(viewModel.isOwner()) viewModel.isNonOwnerReady() else true)
@@ -250,6 +247,7 @@ fun Choose(
     browse:()->Unit = {},
     isCodeValid: Boolean = false
 ) {
+    val stringProvider = StringProvider(LocalContext.current)
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
@@ -260,10 +258,10 @@ fun Choose(
             modifier = modifier.weight(1f).padding(2.dp, 0.dp),
             action = { browse()},
             shape = MaterialTheme.shapes.extraLarge)
-        BasicTextButton(text = R.string.create_room,
+        BasicTextButton(text = stringProvider.getString("create_room"),
             modifier = modifier.weight(1f).padding(2.dp, 0.dp),
             action = { create() })
-        BasicTextButton(text = R.string.join,
+        BasicTextButton(text = stringProvider.getString("join"),
             modifier = modifier.weight(1f).padding(2.dp, 0.dp),
             action = { join() },
             isEnabled = isCodeValid)

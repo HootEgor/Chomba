@@ -57,6 +57,7 @@ import com.egorhoot.chomba.data.getMaxRound
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.ui.theme.composable.ResizableText
 import com.egorhoot.chomba.ui.theme.composable.suitIcon
+import com.egorhoot.chomba.util.StringProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
@@ -78,6 +79,8 @@ fun WinPage(
     }
 
     val winner = remember { mutableStateOf("")  }
+
+    val stringProvider = StringProvider(LocalContext.current)
 
     Box(
         modifier = modifier,
@@ -110,7 +113,7 @@ fun WinPage(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = winner.value + " " + stringResource(id = R.string.win),
+                        text = winner.value + " " + stringProvider.getString("win"),
                         style = TextStyle(
                             fontSize = 40.sp,
                             fontWeight = FontWeight.Bold,

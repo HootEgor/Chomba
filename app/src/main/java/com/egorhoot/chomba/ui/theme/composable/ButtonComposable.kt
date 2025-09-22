@@ -1,7 +1,6 @@
 package com.egorhoot.chomba.ui.theme.composable
 
 import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,12 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun BasicIconButton(@StringRes text: Int, @DrawableRes icon: Int, modifier: Modifier, action: () -> Unit) {
+fun BasicIconButton(
+    text: String,
+    @DrawableRes icon: Int,
+    modifier: Modifier,
+    action: () -> Unit) {
     Button(
         onClick = action,
         modifier = modifier,
@@ -54,7 +55,7 @@ fun BasicIconButton(@StringRes text: Int, @DrawableRes icon: Int, modifier: Modi
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = stringResource(text),
+                text = text,
                 fontSize = 16.sp
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -64,7 +65,7 @@ fun BasicIconButton(@StringRes text: Int, @DrawableRes icon: Int, modifier: Modi
 
 @Composable
 fun BasicTextButton(
-    @StringRes text: Int,
+    text: String,
     modifier: Modifier,
     action: () -> Unit,
     colors: ButtonColors = ButtonDefaults.buttonColors(
@@ -87,7 +88,7 @@ fun BasicTextButton(
         enabled = isEnabled
     ) {
         Text(
-            text = stringResource(text),
+            text = text,
             fontSize = 16.sp
         )
     }

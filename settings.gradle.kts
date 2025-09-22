@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Chomba"
 include(":app")
- 
+include(":shared")

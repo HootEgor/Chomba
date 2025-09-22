@@ -1,7 +1,6 @@
 package com.egorhoot.chomba.data
 
-import android.annotation.SuppressLint
-import androidx.compose.ui.graphics.Color
+// Score and CardSuit are expected to be in this package in the shared module
 
 data class LeaderBoardPlayer(
     val name: String,
@@ -10,7 +9,7 @@ data class LeaderBoardPlayer(
     val totalScore: Int,
     val winStreak: Int,
     val totalChombas: Int,
-    val soreList: List<Score>,
+    val scoreList: List<Score>, // Corrected from soreList
     val colors : List<String>
 ){
     constructor() : this(
@@ -20,7 +19,7 @@ data class LeaderBoardPlayer(
         totalScore = 0,
         winStreak = 0,
         totalChombas = 0,
-        soreList = emptyList(),
+        scoreList = emptyList(), // Corrected from soreList
         colors = emptyList()
     )
 }
@@ -41,7 +40,7 @@ fun List<LeaderBoardPlayer>.sortedByTotalChombas(): List<LeaderBoardPlayer> {
     return this.sortedByDescending { it.totalChombas }
 }
 
-@SuppressLint("DefaultLocale")
+// @SuppressLint("DefaultLocale") removed
 fun LeaderBoardPlayer.getScoreText(): String {
     return when {
         totalScore < 0 -> "0"
@@ -52,13 +51,13 @@ fun LeaderBoardPlayer.getScoreText(): String {
 }
 
 fun LeaderBoardPlayer.getChombaNum(suit: CardSuit): Int {
-    return soreList.filter { it.takenChombas.contains(suit) }.size
+    return scoreList.filter { it.takenChombas.contains(suit) }.size // Corrected from soreList
 }
 
 fun LeaderBoardPlayer.getTotalGain(): Int {
-    return soreList.filter { (it.type == 1 || it.type == 3) && it.value != -120 }.sumOf { it.value }
+    return scoreList.filter { (it.type == 1 || it.type == 3) && it.value != -120 }.sumOf { it.value } // Corrected from soreList
 }
 
 fun LeaderBoardPlayer.getTotalLoss(): Int {
-    return soreList.filter { it.type == -1 || it.type == -4 }.sumOf { -it.value }
+    return scoreList.filter { it.type == -1 || it.type == -4 }.sumOf { -it.value } // Corrected from soreList
 }

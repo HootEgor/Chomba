@@ -1,9 +1,9 @@
 package com.egorhoot.chomba.pages.user
 
 import android.net.Uri
-import com.egorhoot.chomba.R
+// import com.egorhoot.chomba.R // R may no longer be needed here
 import com.egorhoot.chomba.data.Game
-import com.egorhoot.chomba.data.Language
+import com.egorhoot.chomba.data.Language // Should resolve to shared Language
 import com.egorhoot.chomba.data.User
 
 data class ProfileScreenUiState(
@@ -14,9 +14,9 @@ data class ProfileScreenUiState(
     val nickname: String = "",
     val isAuthenticated: Boolean = false,
     val isAnonymous: Boolean = false,
-    val userPicture: Uri? = null,
+    val userPicture: Uri? = null, // Stays as Uri for Android-specific UI state
 
-    val title: Int = R.string.game_list,
+    val titleKey: String = "game_list", // Changed from title: Int, default key
 
     val gameList: List<Game> = emptyList(),
     val relatedUserList: List<User> = emptyList(),
@@ -27,18 +27,22 @@ data class ProfileScreenUiState(
     val inProgress: Boolean = false,
     val isSuccess: Boolean = false,
 
-    val saveMsg: Int = R.string.in_progress,
+    val saveMsgKey: String = "in_progress", // Changed from saveMsg: Int, default key
 
     val currentScreen: Int = 0,
 
-    val selectedLanguage: Language = Language(R.drawable.flag_ua, R.string.tag_ua),
+    val selectedLanguage: Language = Language.fromId("ua"), // Uses KMP Language
+
     val showAlert: Boolean = false,
-    val alertTitle: Int = R.string.in_progress,
-    val alertMsg: String = "",
+    val alertTitleKey: String = "in_progress", // Key for the title
+    val alertMsgKey: String = "",           // Key for the message
+    val alertMsgArgs: List<Any> = emptyList(), // Arguments for formatted message
+    val resolvedAlertTitle: String = "",    // << ADDED: Pre-resolved title for the alert
+    val resolvedAlertMessage: String = "",  // << ADDED: Pre-resolved message for the alert
     val alertAction: () -> Unit = {},
     val alertDismiss: () -> Unit = {},
 
     val scanQrCode: Boolean = false,
     val cameraPermissionDenied: Boolean = false,
-    val cameraPermissionGranted: Boolean = false,
-    )
+    val cameraPermissionGranted: Boolean = false
+)

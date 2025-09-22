@@ -1,5 +1,6 @@
 package com.egorhoot.chomba.pages
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -59,6 +60,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -80,6 +82,7 @@ import com.egorhoot.chomba.ui.theme.composable.CircleLoader
 import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.TopBar
 import com.egorhoot.chomba.ui.theme.ext.basicButton
+import com.egorhoot.chomba.util.StringProvider
 import com.github.skydoves.colorpicker.compose.ColorEnvelope
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -96,6 +99,8 @@ fun NewGamePage(
     val playerList by viewModel.playerList
 
     val playerName = remember { mutableStateOf("") }
+
+    val stringProvider = StringProvider(LocalContext.current)
 
     if(profileUi.scanQrCode){
         if (!profileUi.cameraPermissionGranted) {
@@ -123,7 +128,7 @@ fun NewGamePage(
         verticalArrangement = Arrangement.Center
     ) {
         TopBar(
-            title = stringResource(R.string.new_game),
+            title = stringProvider.getString("new_game"),
             onFirstActionClick = { viewModel.setCurrentPage(0) }
         )
         Spacer(modifier = modifier.height(32.dp))
@@ -160,7 +165,7 @@ fun NewGamePage(
             CircleLoader(visible = uiState.inProgress)
 //            AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() < 3) {
 //                BasicIconButton(
-//                    text = R.string.add_player,
+//                    text = stringProvider.getString(.add_player,
 //                    icon = R.drawable.baseline_add_24,
 //                    modifier = modifier.basicButton(),
 //                    action = { viewModel.addPlayer() }
@@ -168,7 +173,7 @@ fun NewGamePage(
 //            }
             if (viewModel.isAuthorized()){
                 BasicTextButton(
-                    text = R.string.get_players_from_last_game,
+                    text = stringProvider.getString("get_players_from_last_game"),
                     modifier = modifier
                         .basicButton()
                         .padding(bottom = 4.dp),
@@ -177,7 +182,7 @@ fun NewGamePage(
             }
             AnimatedVisibility(viewModel.getNumberOfVisiblePlayers() == 3) {
                 BasicTextButton(
-                    text = R.string.start,
+                    text = stringProvider.getString("start"),
                     modifier = modifier
                         .basicButton()
                         .padding(bottom = 16.dp),
@@ -249,6 +254,7 @@ fun DraggablePlayerList(
                         }
                     }
             ) {
+                Log.d("Color", player.color)
                 PlayerItem(
                     modifier = Modifier.fillMaxSize(),
                     viewModel = viewModel,
@@ -295,6 +301,8 @@ fun PlayerItem(
     val isEditing = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
     val availableUsers = viewModel.getAvailableUsersToSelect(player.userId ?: "") + User()
+
+    val stringProvider = StringProvider(LocalContext.current)
 
     Row(
         modifier = modifier
@@ -344,7 +352,7 @@ fun PlayerItem(
                             saveColor = { onSave(userName.value, color.value) }
                         )
                     },
-                    placeholder = { Text(stringResource(R.string.player)) },
+                    placeholder = { Text(stringProvider.getString("player")) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.background,
                         unfocusedContainerColor = MaterialTheme.colorScheme.background,
@@ -371,7 +379,7 @@ fun PlayerItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = userName.value.ifBlank { stringResource(R.string.player) },
+                        text = userName.value.ifBlank { stringProvider.getString("player") },
                         style = TextStyle(color = MaterialTheme.colorScheme.onBackground)
                     )
                     ColorPickerButton(
@@ -422,6 +430,8 @@ fun ColorPickerButton(
     val showDialog = remember { mutableStateOf(false) }
     val controller = rememberColorPickerController()
 
+    val stringProvider = StringProvider(LocalContext.current)
+
     Column {
         IconButton(
             icon = R.drawable.baseline_square_24,
@@ -457,7 +467,7 @@ fun ColorPickerButton(
                             showDialog.value = false
                         }
                     ) {
-                        Text(text = stringResource(R.string.ok))
+                        Text(text = stringProvider.getString("ok"))
                     }
 
                 },
@@ -467,7 +477,7 @@ fun ColorPickerButton(
                             showDialog.value = false
                         }
                     ) {
-                        Text(text = stringResource(R.string.cancel))
+                        Text(text = stringProvider.getString("cancel"))
                     }
                 }
             )

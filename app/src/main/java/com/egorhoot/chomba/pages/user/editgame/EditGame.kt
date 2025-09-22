@@ -7,23 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.egorhoot.chomba.R
-import com.egorhoot.chomba.ui.theme.composable.IconButton
-import com.egorhoot.chomba.ui.theme.ext.smallButton
-
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,28 +22,31 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Player
 import com.egorhoot.chomba.data.Score
 import com.egorhoot.chomba.data.getChombas
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.Dropdown
+import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.suitIcon
 import com.egorhoot.chomba.ui.theme.composable.typeIcon
+import com.egorhoot.chomba.ui.theme.ext.smallButton
+import com.egorhoot.chomba.util.StringProvider
 
 @Composable
 fun EditGameScreen(
@@ -96,6 +89,8 @@ fun EditPlayerCard(
     player: Player,
     viewModel: EditGameViewModel,
 ){
+    val stringProvider = StringProvider(LocalContext.current)
+
     val expanded = remember {mutableStateOf(false)}
     Surface (
         shape = Shapes.large,
@@ -138,7 +133,7 @@ fun EditPlayerCard(
                             .padding(4.dp, 16.dp),
                         singleLine = true,
                         textStyle = MaterialTheme.typography.titleMedium,
-                        placeholder = { Text(stringResource(R.string.score)) },
+                        placeholder = { Text(stringProvider.getString("score"))},
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedContainerColor = MaterialTheme.colorScheme.background,
                         ),
@@ -179,6 +174,8 @@ fun EditScoreCard(
     onEditScoreType: (Int) -> Unit = {}
 ){
 
+    val stringProvider = StringProvider(LocalContext.current)
+
     val buttonsWithIcons = listOf(
         R.drawable.baseline_close_24 to (-1).toString(),
         R.drawable.baseline_horizontal_rule_24 to 0.toString(),
@@ -209,7 +206,7 @@ fun EditScoreCard(
                 .weight(0.7f),
             singleLine = true,
             textStyle = MaterialTheme.typography.titleMedium,
-            placeholder = { Text(stringResource(R.string.score)) },
+            placeholder = { Text(stringProvider.getString("score")) },
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
             ),
@@ -239,7 +236,7 @@ fun EditScoreCard(
                     .padding(0.dp, 4.dp),
                 singleLine = true,
                 textStyle = MaterialTheme.typography.titleMedium,
-                placeholder = { Text(stringResource(R.string.score)) },
+                placeholder = { Text(stringProvider.getString("score")) },
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.background,
                 ),

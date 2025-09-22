@@ -1,28 +1,19 @@
 package com.egorhoot.chomba.pages.onlinegame
 
-import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -39,23 +30,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.egorhoot.chomba.R
 import com.egorhoot.chomba.data.Player
-import com.egorhoot.chomba.data.User
 import com.egorhoot.chomba.data.getTotalScore
 import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.BasicTextButton
 import com.egorhoot.chomba.ui.theme.composable.CardView
-import com.egorhoot.chomba.ui.theme.composable.IconButton
 import com.egorhoot.chomba.ui.theme.composable.ScoreBar
 import com.egorhoot.chomba.ui.theme.composable.TopBar
+import com.egorhoot.chomba.util.StringProvider
 import kotlinx.coroutines.delay
 
 @Composable
@@ -64,6 +52,7 @@ fun OnLineGame(
     viewModel: OnLineGameViewModel = hiltViewModel(),
 ) {
     val uiState = viewModel.onLineGameUiState.value
+    val stringProvider = StringProvider(LocalContext.current)
     Surface(
         modifier = modifier.fillMaxSize()
     ) {
@@ -139,7 +128,7 @@ fun OnLineGame(
 
                     if(uiState.game.isBindingEnd){
                         BasicTextButton(
-                            text = R.string.submit,
+                            text = stringProvider.getString("submit"),
                             action = {
                                 //viewModel.submit()
                             },
@@ -148,7 +137,7 @@ fun OnLineGame(
                     }else{
                         Row{
                             BasicTextButton(
-                                text = R.string.pass,
+                                text = stringProvider.getString("pass"),
                                 action = {
                                     viewModel.pass()
                                 },
@@ -156,7 +145,7 @@ fun OnLineGame(
                                 isEnabled = uiState.game.currentActionPlayer == viewModel.thatUserName
                             )
                             BasicTextButton(
-                                text = R.string._5,
+                                text = stringProvider.getString("_5"),
                                 action = {
                                     viewModel.binding()
                                 },

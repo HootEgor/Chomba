@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.egorhoot.chomba.R
@@ -19,6 +20,7 @@ import com.egorhoot.chomba.ui.theme.Shapes
 import com.egorhoot.chomba.ui.theme.composable.AlertOk
 import com.egorhoot.chomba.ui.theme.composable.BasicIconButton
 import com.egorhoot.chomba.ui.theme.ext.smallButton
+import com.egorhoot.chomba.util.StringProvider
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -35,6 +37,8 @@ fun CameraPermissionRequest(
     val permissionsState = rememberPermissionState(
         android.Manifest.permission.CAMERA
     )
+
+    val stringProvider = StringProvider(LocalContext.current)
 
     if (permissionsState.status.isGranted) {
         onPermissionGranted()
@@ -57,9 +61,9 @@ fun CameraPermissionRequest(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Spacer(modifier = modifier.fillMaxHeight(0.4f))
-                    Text(text = stringResource(R.string.request_permission_camera_message))
+                    Text(text = stringProvider.getString("request_permission_camera_message"))
                     BasicIconButton(
-                        text = R.string.request_permission,
+                        text = stringProvider.getString("request_permission"),
                         icon = R.drawable.baseline_error_outline_24,
                         modifier = modifier
                             .smallButton()
@@ -75,8 +79,8 @@ fun CameraPermissionRequest(
     } else {
         if (permissionDenied) return
         AlertOk(
-            title = R.string.request_permission_camera_title,
-            message = R.string.request_permission_camera_message
+            titleKey = "request_permission_camera_title",
+            messageKey = "request_permission_camera_message"
         ) {
             permissionsState.run { launchPermissionRequest() }
         }
