@@ -69,8 +69,8 @@ class GameViewModel @Inject constructor(
         onConfirm: () -> Unit,
         onDismiss: () -> Unit = { dismissAlert() } // Default dismiss action
     ) {
-        val resolvedTitle = if (titleKey.isNotBlank()) stringProvider.getString(titleKey) else ""
-        val resolvedMessage = if (messageKey.isNotBlank()) stringProvider.getString(messageKey, *messageArgs.toTypedArray()) else ""
+        val resolvedTitle = if (titleKey.isNotBlank()) stringResource(titleKey) else ""
+        val resolvedMessage = if (messageKey.isNotBlank()) stringResource(messageKey, *messageArgs.toTypedArray()) else ""
 
         profileUi.value = profileUi.value.copy(
             showAlert = true,
@@ -794,7 +794,7 @@ class GameViewModel @Inject constructor(
         if (uiState.value.inProgress) {
             return
         }
-//        onAlert(0,stringProvider.getString(.title_warning,stringProvider.getString(.not_implemented)
+//        onAlert(0,stringResource(.title_warning,stringResource(.not_implemented)
         profileUi.value = profileUi.value.copy(scanQrCode = true)
         requestCamera()
     }
@@ -805,7 +805,7 @@ class GameViewModel @Inject constructor(
 
     fun onCameraError() {
         profileUi.value = profileUi.value.copy(scanQrCode = false)
-        // val qrMsg = idConverter.getString(stringProvider.getString(.unvalid_qr_code) // This line is removed
+        // val qrMsg = idConverter.getString(stringResource(.unvalid_qr_code) // This line is removed
         showAlert("title_error", "unvalid_qr_code", emptyList(),
             {dismissAlert()}, {dismissAlert()})
     }

@@ -6,7 +6,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.toArgb
 import com.egorhoot.chomba.ui.theme.primaryContainerDark
 import com.egorhoot.chomba.ui.theme.primaryContainerLight

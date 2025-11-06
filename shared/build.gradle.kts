@@ -1,14 +1,15 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.jetbrainsCompose) // Added Compose Multiplatform plugin
     alias(libs.plugins.android.lint)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlinxSerialization) // Added Kotlinx Serialization plugin
+    alias(libs.plugins.kotlin.native.cocoapods)
 }
 
 kotlin {
 
-    // Target declarations - add or remove as needed below. These define
-    // which platforms this KMP module supports.
-    // See: https://kotlinlang.org/docs/multiplatform-discover-project.html#targets
     androidLibrary {
         namespace = "com.egorhoot.shared"
         compileSdk = 36
@@ -24,13 +25,6 @@ kotlin {
         }
     }
 
-    // For iOS targets, this is also where you should
-    // configure native binary output. For more information, see:
-    // https://kotlinlang.org/docs/multiplatform-build-native-binaries.html#build-xcframeworks
-
-    // A step-by-step guide on how to include this library in an XCode
-    // project can be found here:
-    // https://developer.android.com/kotlin/multiplatform/migrate
     val xcfName = "sharedKit"
 
     iosX64 {
@@ -51,31 +45,57 @@ kotlin {
         }
     }
 
-    // Source set declarations.
-    // Declaring a target automatically creates a source set with the same name. By default, the
-    // Kotlin Gradle Plugin creates additional source sets that depend on each other, since it is
-    // common to share sources between related targets.
-    // See: https://kotlinlang.org/docs/multiplatform-hierarchy.html
+    // Enable Compose for the project
+    compose {
+
+    }
+
     sourceSets {
-        commonMain {
-            dependencies {
-                implementation(libs.kotlin.stdlib)
-                // Add KMP dependencies here
-            }
+        commonMain.dependencies {
+            implementation(libs.kotlin.stdlib)
+            // Add KMP dependencies here
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.resources)
+            implementation(libs.compose.ui)
+            implementation(libs.kotlinx.coroutines.core) // Added KMP coroutines
+
+            // Ktor for networking
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+
+            // Kotlinx Serialization for JSON
+            implementation(libs.kotlinx.serialization.json)
+
+            // Koin DI
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+
+            // Coil3 for KMP image loading
+            implementation(libs.coil3.compose)
+            implementation(libs.coil3.network.ktor)
         }
 
-        commonTest {
-            dependencies {
-                implementation(libs.kotlin.test)
-            }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.koin.test) // Koin for testing
         }
 
-        androidMain {
-            dependencies {
-                // Add Android-specific dependencies here. Note that this source set depends on
-                // commonMain by default and will correctly pull the Android artifacts of any KMP
-                // dependencies declared in commonMain.
-            }
+        androidMain.dependencies {
+
+            implementation(libs.ktor.client.android)
+
+            // Firebase
+            implementation(project.dependencies.platform(libs.firebaseBom))
+            implementation(libs.firebase.common)
+            implementation(libs.firebase.auth)
+            implementation(libs.firebase.firestore)
+            implementation(libs.firebase.database)
+
+            //permissions
+            implementation(libs.accompanistPermissions)
         }
 
         getByName("androidDeviceTest") {
@@ -86,15 +106,24 @@ kotlin {
             }
         }
 
-        iosMain {
-            dependencies {
-                // Add iOS-specific dependencies here. This a source set created by Kotlin Gradle
-                // Plugin (KGP) that each specific iOS target (e.g., iosX64) depends on as
-                // part of KMP’s default source set hierarchy. Note that this source set depends
-                // on common by default and will correctly pull the iOS artifacts of any
-                // KMP dependencies declared in commonMain.
-            }
+        iosMain.dependencies {
+
+            implementation(libs.ktor.client.darwin)
+
         }
     }
 
+    cocoapods {
+        version = "10.22.0"
+        summary = "Shared module for Chomba"
+        homepage = "your.project.url" // Replace with actual URL
+        ios.deploymentTarget = "13.0" // Match your project's target
+        framework {
+            baseName = "sharedKit" // Matches your xcfName
+        }
+
+        pod("FirebaseAuth")
+        pod("FirebaseFirestore")
+        pod("FirebaseDatabase")
+    }
 }
